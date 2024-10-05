@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interface</title>
+    <link rel="stylesheet" href="styles_interface.css">
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="icon" type="image/svg+xml" href="./img/Logo.svg">
+    <!-- Fallback to a PNG favicon for browsers that do not support SVG -->
+    <link rel="alternate icon" href="./img/Logo.png">
+</head>
+<body>
+    <div id="headder">
+        <ul class="tabs">
+            <li data-tab-target="#introduction_tab" class="tab">Introduction</li>
+            <li data-tab-target="#import_data_tab" class="tab">Import Data</li>
+            <li data-tab-target="#edit_data_tab" class="tab">Edit Data</li>
+            <li data-tab-target="#analysis_tab" class="tab">Analysis</li>
+            <li data-tab-target="#log_tab" class="tab">Logs</li>
+        </ul>
+    </div>
+    <div id="message_box" class=""><img src="./img/icon/info.svg" class="message_box_icon"></div>
+    <div class="tab-content">
+        <div id="introduction_tab" data-tab-content class="active_tab">
+            <div class="introduction_container">
+                <h1 class="introduction_heading">Einführung</h1>
+                <div class="introduction_warning">Warnung: Diese Website ist noch nicht für Handys im Hochformat optimiert. Bitte benutzen Sie ein PC. Website ist noch in Entwicklung und momentan reines Front-End. Das bedeutet, dass alles, was auf dem PC selbst passiert, weitestgehend funktioniert, aber alles, was auf dem Server passiert, noch nicht. Außerdem sind Englisch und Deutsch noch durcheinander.</div>
+                <div class="introduction_section">
+                    <h2 class="introduction_section_heading">Ziel des Projektes</h2>
+                    <p>Das Ziel dieses Projektes ist es, eine voll funktionsfähige Website zu erstellen (mit Front- und Backend), die anhand eines Scores für jeden Spieler faire Teams bilden kann. Der Fokus liegt dabei auf Variabilität und Benutzerfreundlichkeit.</p>
+                    <p>Diese Einführung soll dir, Dani, erklären, wie das Ganze funktioniert, was ich mir dabei gedacht habe und um dir meine Fragen zu stellen.</p>
+                </div>
+                <div class="introduction_section">
+                    <h2 class="introduction_section_heading">Tab-Übersicht</h2>
+                    <p>Ich gehe einfach mal jeden Tab durch und erkläre, was alles bedeutet.</p>
+                    <h3 class="introduction_bold">Import-Data Tab</h3>
+                    <p>Dieser Tab ist dafür gedacht, einfachen und schnellen Zugriff auf vergangene Projekte, wie Klassen oder Gruppen, zu haben.</p>
+                    <ul class="introduction_list">
+                        <li class="introduction_list_item">Das linke Fenster in diesem Tab ist dafür gedacht, ein auf dem Server gespeichertes Projekt auszuwählen. Man kann das Projekt manuell und automatisch (alle paar Minuten) speichern lassen, um einfach und schnell von überall auf die Projekte zugreifen zu können. Ich habe schon eine Login-Seite, die ich noch einbinden muss, um für jedem Benutzer private Projekte zu ermöglichen.</li>
+                        <li class="introduction_list_item">Das Upload-File-Fenster in der Mitte ist dafür gedacht, dass man die Projektdatei über dieses Fenster ausgewählt und importieren kann. Die Idee ist, dass man sich das Projekt jeder Zeit als Datei herunterladen kann. Die Datei wird eine JSON-Datei sein, die man wie eine Textdatei bearbeiten kann.</li>
+                        <li class="introduction_list_item">Im rechten Fenster kann man dann die Daten des Projekts einsehen, das man entweder im linken Fenster ausgewählt hat oder über das mittlere Fenster geladen hat.</li>
+                    </ul>
+                    <h3 class="introduction_bold">Edit-Data Tab</h3>
+                    <p>Dieser Tab ist dafür gedacht, die Spieler-Daten einfach bearbeiten zu können. Er umfasst eine Tabelle zum Bearbeiten der Punkte jedes Spielers und eine Tabelle für das Verhältnis von Spieler zu Spieler.</p>
+                    <h4 class="introduction_bold">Spielerfähigkeiten-Tabelle</h4>
+                    <p>Die erste Spalte ist zum Erfassen der Anwesenheit jedes Spielers. Man kann die Anwesenheit per Klick ein- und ausschalten. Personen, die nicht anwesend sind, werden in der Teambildung nicht berücksichtigt.</p>
+                    <p>Die zweite Spalte ist zum Eingeben der Namen der Spieler.</p>
+                    <p>Die beiden weiteren Spalten sind nur Beispiele. Die Tabelle kann um unendlich viele Spalten erweitert werden. Jede Spalte, die nach der Namensspalte kommt, ist eine Spalte zum Vergeben von Scores, wie gut jeder einzelne Spieler ist. Wenn man eine Score-Spalte hinzufügt, wird ein Eingabefenster erscheinen.</p>
+                    <div class="introduction_code">
+                        \( \sum_{\text{Team}} * \sum_{\text{Individuum}} \)
+                    </div>
+                    <p>Neue Spieler kann man einfach hinzufügen indem man eine neue Reihe einfügt.</p>
+                    <h4 class="introduction_bold">Spieler-Zu-Spieler-Tabelle</h4>
+                    <p>Diese Tabelle kann über den Knopf unten links unter der Spielerfähigkeiten-Tabelle geöffnet werden. Sie ist dafür gedacht, mehr Kontrolle darüber zu haben, wer mit wem in ein Team kommt.</p>
+                    <p>Veränderungen in der Spielerfähigkeiten-Tabelle werden direkt in diese Tabelle übernommen. Da es immer zwei Eingabefelder für jede Spielerkombination gibt, wird das zweite Eingabefeld, egal welches, automatisch geändert. Die Kombination aus zweimal demselben Spieler wird automatisch gesperrt.</p>
+                    <h3 class="introduction_bold">Analyze Tab</h3>
+                    <p>Dieser Tab lässt dich die Bedingungen des Spiels einstellen und liefert die Ergebnisse.</p>
+                    <p>Beim ersten Mal Öffnen dieses Tabs wirst du mit dem Einstellungsfenster begrüßt. Hier kann man zuerst die Anzahl der Spielfelder einstellen (1 Spielfeld = 2 Teams). Du kannst außerdem austauschbare Teams hier ein- und ausschalten. Austauschbare Teams bedeuten, dass alle Teams ungefähr gleich stark sein müssen, sodass jedes Team gegen jedes andere Team spielen kann. Ansonsten werden jede Runde neue Teams gebildet.</p>
+                    <p>Der Cancel-Button bringt dich zurück zur Spielerfähigkeiten-Tabelle. Der Analyze-Button lässt eine 2-sekündige Ladeanimation abspielen und zeigt dann ein Beispiel, wie die Ergebnisse präsentiert werden. Die Ladezeit ist derzeit künstlich. Es wird von einer Ladezeit um 1-2 Sekunden zu rechnen sein.</p>
+                    <p>Das Ergebnisfenster zeigt die Teamzusammensetzungen und deren Scores pro Spielfeld an. Wenn zuvor 2 Spielfelder in die Einstellungen eingegeben wurden, werden hier die Teams für jedes der 2 Spielfelder angezeigt. Für jedes Team wird außerdem der Endscore angezeigt, der ausgerechnet wurde. Rechts im Fenster gibt es zusätzlich eine Liste der Spieler, die aussetzen, sowie eine Liste der nicht anwesenden Spieler.</p>
+                </div>
+                <div class="introduction_section">
+                    <h2 class="introduction_section_heading">Zum Schluss noch meine Fragen:</h2>
+                    <ul class="introduction_list">
+                        <li class="introduction_list_item">Wie wichtig fändest du die Möglichkeit, Kategorien zusammenhängend zu machen? Also Spieler zum Beispiel in Angriff, Mittelfeld und Verteidigung einzuschätzen und dann die Mannschaften so bilden zu lassen, dass nicht fünf Menschen, die gut im Angriff sind, in ein Team kommen, sondern Spieler mit verschiedenen Stärken und Schwächen.</li>
+                        <li class="introduction_list_item">Wie wichtig wäre ein heller Modus für die Website?</li>
+                        <li class="introduction_list_item">Fändest du es gut, wenn es die Option gäbe, anhand der Spielergebnisse die Scores der Spieler automatisch anzupassen?</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div id="import_data_tab" data-tab-content>
+            <div class="window_background_dimming hide" id="add_project_window_dimming"></div>
+            <div id="add_project_window" class="hide">
+                <div class="display_flex" id="add_project_window_row">
+                    <label for="add_project_name_input">Name: </label>
+                    <input type="text" placeholder="Name" id="add_project_name_input">
+                    <label for="add_project_autosave_option" id="add_project_autosave_option_text">Auto-Save</label>
+                    <button class="checkboxes" id="add_project_autosave_option"></button>
+                </div>
+                <label for="project_description_input">Beschreibung: </label>
+                <textarea rows="2" id="add_project_description_input"></textarea>
+                <div class="align">
+                    <p>Farbe auswählen: </p>
+                    <input type="color" name="" id="project_color_input" value="#ffffff">
+                </div>
+                <div class="display_flex space_around">
+                    <button class="red_button" id="cancle_add_project_window">Cancle</button>
+                    <button class="blue_button">Add</button>
+                </div>
+            </div>
+            <div id="import_data_windows">
+                <div id="list_saved_json">
+                    <ul id="list_saves">
+                        <li>
+                            <div id="add_new_save">
+                                <img src="./img/icon/add.svg">
+                                <p id="add_new_save_text_field">Neues Projekt</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <div id="json_import">
+                    <img src="./img/icon/upload.svg" id="upload_icon">
+                    <p>Upload File with Playerdata</p>
+                    <input type="file" accept=".json" id="json_import_input">
+                    <button id="clear_input_button"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/></svg></button>
+                </div>
+                <div id="properties_save">
+                    <div class="properties_name-and-player">
+                        <div class="properties_name"><p>Name:</p><input type="text" id="properties_name_input" placeholder="Name"></div>
+                        <div class="properties_player"><p>Players:</p> <input type="text" disabled placeholder="" id="properties_player_count_input"></div>
+                    </div>
+                    <div class="properties_notes"><p>Beschreibung: </p><input type="text" id="properties_notes_input" placeholder="Description"></div>
+                    <div class="properties_list_players">
+                        <ul id="properties_list_players_list">
+                        </ul>
+                    </div>
+                </div>
+            </div>
+                <div class="button_center"><button class="blue_button" id="load_config">Load</button></div>
+            </div>
+        <div id="edit_data_tab" data-tab-content>
+            <div id="edit_players_values">
+                <div class="window_background_dimming hide" id="add_row_window_dimming"></div>
+                <div id="add_column_window" class="hide">
+                    <div class="input-group">
+                        <label for="add_column_window_name">Kategorie Name: </label>
+                        <input type="text" placeholder="Bezeichnung der Kategorie" id="add_column_window_name" class="add_column_input">
+                    </div>
+                    <div class="input-group">
+                        <label for="add_column_window_min">Zahlen von </label>
+                        <input type="number" id="add_column_window_min" class="add_column_input"> 
+                        <label for="add_column_window_max"> bis </label>
+                        <input type="number" class="add_column_input" id="add_column_window_max">
+                    </div>
+                    <div class="input-group">
+                        <label for="add_column_window_default_number">Standard Wert festlegen</label>
+                        <input id="add_column_window_default_value" type="number">
+                    </div>
+                    <div class="input-group">
+                        <label for="select_type">Typ für Berechnung</label>
+                        <select name="select_type" id="add_column_window_calc_type" class="add_column_input">
+                            <option value="add">Individuum</option>
+                            <option value="multiply">Team</option>
+                        </select>
+                    </div>
+                    <div id="add_column_window_buttons">
+                        <button id="add_column_window_close">Abbrechen</button>
+                        <button id="add_column_window_add">Spalte hinzufügen</button>
+                    </div>
+                </div>
+                <div id="edit_player_table_container">
+                    <div id="edit_player_table_wrapper">
+                        <table id="edit_player_table" style="width:96%" cellspacing="0">
+                            <tr id="edit_player_table_topbar">
+                            </tr>
+                        </table>
+                    </div>
+                    <div id="add_column">+</div>
+                    <div id="add_row">+</div>
+                </div>
+                <div id="edit_data_tab_buttons">
+                    <a href="#table_player_to_player">
+                        <button id="table_player_to_player_toggler" class="lightblue_button">Spieler zu Spieler</button>
+                    </a>
+                    <button class="red_button">Änderungen Verwerfen</button>
+                    <button class="blue_button" id="save_and_download_button">Save & Download</button>
+                    <button class="blue_button">Analyze</button>
+                </div>
+                <div id="table_player_to_player_window" class="hide">
+                    <table id="table_player_to_player" style="width: 100%;">
+                        <thead id="table_player_to_player_thead">
+                            <tr id="table_player_to_player_thead">
+                                <th style="width: 15%;"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="table_player_to_player_tbody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div id="analysis_tab" data-tab-content>
+            <div id="analyze_results">
+                <div id="analyze_results_pitches">
+                    <div id="analyze_configure_add_pitch_container">
+                        <div id="analyze_configure_add_pitch_button">
+                            <img src="./img/icon/add.svg" alt="Add Pitch">
+                            <p>Spielfeld hinzufügen</p>
+                        </div>
+                    </div>
+                </div>
+                <div id="analyze_settings">
+                    <h1 class="analyze">Einstellungen</h1>
+                    <div class="analyze_settings_container" id="analyze_settings_interchangeable_toggle_container">
+                        <p>Austauschbare Teams</p>
+                        <div class="checkboxes" id="analyze_settings_interchangeable_toggle"></div>
+                    </div>
+                    <div class="analyze_settings_container">
+                        <p>Maximale Anzahl aussetzende Spieler</p>
+                        <input type="number" placeholder="0" id="analyze_settings_max_sit_out_players" class="input_number">
+                    </div>
+                    <div class="analyze_settings_container">
+                        <p>Maximaler Unterschied in Spieleranzahl zwischen Teams</p>
+                        <input type="number" placeholder="0" id="analyze_settings_max_difference_teams" class="input_number">
+                    </div>
+                    <div class="analyze_settings_container">
+                        <p>Maximaler Unterschied in Spieleranzahl zwischen Spielfeldern</p>
+                        <input type="number" placeholder="0" id="analyze_settings_max_difference_pitches" class="input_number">
+                    </div>
+                    <button class="blue_button">Analyze</button>
+                </div>
+            </div>
+        </div>
+        <div id="log_tab" data-tab-content>
+            <h2>Coming soon</h2>
+        </div>
+    </div>
+    <script src="script_interface.js"></script>
+</body>
+</html>

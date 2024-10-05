@@ -1,0 +1,107 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+body {
+    background-color: #0d1117;
+    height: 100vh;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.form-container {
+    background: #010409;
+    color: white;
+    width: 90%;
+    max-width: 500px;
+    padding: 20px;
+    text-align: center;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+}
+
+.tab-container {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
+}
+
+.tab {
+    cursor: pointer;
+    color: #a5a5a5;
+    font-size: 1.5rem;
+    transition: font-size 0.3s, color 0.3s;
+}
+
+.tab.active {
+    font-size: 2rem;
+    color: white;
+}
+
+.input-field {
+    display: flex;
+    align-items: center;
+    margin: 10px 0;
+    position: relative;
+}
+
+input {
+    background: #161b22;
+    color: white;
+    border: none;
+    height: 40px;
+    width: 100%;
+    padding: 0 10px 0 40px;
+    border-radius: 10px;
+}
+
+input::placeholder {
+    color: #cfcfcf;
+}
+
+img {
+    position: absolute;
+    left: 10px;
+    width: 20px;
+    height: 20px;
+}
+
+.button-container {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.button {
+    background: transparent;
+    color: white;
+    border: none;
+    height: 40px;
+    padding: 0 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    flex: 1;
+    margin: 0 5px;
+}
+
+.blue-button {
+    background: #092655;
+}
+
+.blue-button:hover {
+    background-color: #223b63;
+}
+
+.red-button {
+    background: #560f08;
+}
+
+.red-button:hover {
+    background-color: #881308;
+}

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login & Sign Up</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: #0d1117;
+            color: #fff;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: #010409;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            width: 100%;
+            max-width: 400px;
+            overflow: hidden;
+            transition: max-height 0.5s ease;
+        }
+
+        .container h1 {
+            margin-bottom: 20px;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .container input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: none;
+            border-radius: 5px;
+            background: #161b22;
+            color: #fff;
+        }
+
+        .container input::placeholder {
+            color: #cfcfcf;
+        }
+
+        .container button {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background: #092655;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .container button:hover {
+            background: #223b63;
+        }
+
+        .toggle-link {
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        .toggle-link a {
+            color: #1d9bf0;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .toggle-link a:hover {
+            text-decoration: underline;
+        }
+
+        .signup-fields {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease;
+        }
+
+        .container.signup .signup-fields {
+            max-height: 200px; /* Adjust based on content height */
+        }
+
+        .container.signup .toggle-link span {
+            display: none;
+        }
+
+        .container.signup .toggle-link .login-text {
+            display: inline;
+        }
+
+        #tab-container{
+            display: flex;
+            list-style: none;
+            justify-content: space-around;
+        }
+
+        #tab-container li h1:hover{
+            cursor: pointer;
+        }
+
+        .active{
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="container">
+        <ul id="tab-container">
+            <li><h1 class="active" id="Login-Tab" onclick="">Login</h1></li>
+            <li><h1 id="Sign-Up-Tab">Sign-Up</h1></li>
+        </ul>
+        <input type="email" placeholder="Email" required class="signup-fields"> 
+        <input type="text" placeholder="Username" required>
+        <input type="password" placeholder="Password" required>
+        <input type="password" placeholder="Confirm Password" required>
+        <button id="login-button" onclick="">Login</button>
+        <button id="signup-button">Sign Up</button>
+    </div>
+
+    <script>
+        function toggleForm() {
+            const container = document.getElementById('container');
+            container.classList.toggle('signup');
+            container.querySelector('h1').textContent = container.classList.contains('signup') ? 'Sign Up' : 'Login';
+        }
+    </script>
+</body>
+</html>
