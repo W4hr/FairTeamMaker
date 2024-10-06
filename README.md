@@ -1,4 +1,3 @@
-[README text]
 # FairTeamMaker ⚖️
 
 ![Project Logo](#) <!-- Placeholder for your logo -->
@@ -51,6 +50,7 @@ FairTeamMaker is a web app designed to create **balanced teams** using **player 
 
 ## Future Roadmap 🛣️
 
+- **Actual non AI README**
 - **Genetic algorithms** for scalable team balancing.
 - **Mobile App** and **real-time collaboration** features.
 
