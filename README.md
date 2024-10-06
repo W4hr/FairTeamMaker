@@ -1,6 +1,6 @@
 # FairTeamMaker ⚖️
 
-![Project Logo](#) <!-- Placeholder for your logo -->
+![Project Logo](/frontend/UI/img/Logo.png) <!-- Placeholder for your logo -->
 
 FairTeamMaker is a web app designed to create **balanced teams** using **player scores** and **relationships**. With algorithms like brute force and greedy, it ensures fairness by balancing both skill levels and interpersonal dynamics.
 
