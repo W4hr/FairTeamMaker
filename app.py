@@ -8,13 +8,17 @@ from passlib.context import CryptContext
 from pymongo import MongoClient
 import database
 import json
+from dotenv import load_dotenv
+import os
 
 from backend.db.models import TokenData, UserDB, Token
 
 
 app = FastAPI()
 
-SECRET_KEY = "e4852d8660fda6f5f21637818338c639b0d267bda1d228e04fb91ec3dde06ed1"
+load_dotenv()
+
+SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORYTHM = "HS256"
 ACCESS_TOKEN_EXPIRES = 1800 # Seconds (1800 = 30 min)
 
