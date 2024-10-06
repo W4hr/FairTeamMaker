@@ -1,6 +1,4 @@
-Here's a more concise version of the README, formatted as requested:
-
-```[README text]
+[README text]
 # FairTeamMaker ⚖️
 
 ![Project Logo](#) <!-- Placeholder for your logo -->
@@ -65,4 +63,3 @@ We welcome contributions! Fork the repo, create a branch, and submit a pull requ
 Licensed under the MIT License.
 
 ![Team or Additional Screenshot](#) <!-- Placeholder for team or additional screenshot -->
-```
