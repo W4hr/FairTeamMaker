@@ -1,2 +1,3 @@
-- Replace "KEY" with env_variable
+- add dispersion quantifier to data["setttings"]
 - Hash password
+- compress players from {player_name: {"primaryScore" : primary_Score}} to {player_name: primary_Score}

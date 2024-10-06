@@ -1,4 +1,4 @@
-from typing import List, Dict, Tuple, Optional
+from typing import List, Dict, Tuple, Optional, Any
 import itertools
 
 def get_opponent_index(index_team: int, 
@@ -114,7 +114,7 @@ def get_possible_teams_sizes(teams_sizes_range : List[List[int]]) -> List[List[i
 def check_validity_possible_teams_sizes(possible_teams_sizes: List[List[int]],
                                         maxDifferenceTeams: int,
                                         maxDifferencePitch: int,
-                                        teams: Dict[str, Dict[str]],
+                                        teams: Dict[str, Dict[str, Any]],
                                         matches: Dict[str, str],
                                         player_count: int,
                                         maximum_number_players_sitting_out: int
@@ -141,13 +141,13 @@ def check_validity_possible_teams_sizes(possible_teams_sizes: List[List[int]],
 
 # Sort the possible team sizes by most similar:
 def teams_sizes_sorted(valid_possible_teams_sizes: List[List[int]],
-                       teams: Dict[str, Dict[str]],
+                       teams: Dict[str, Dict[str, Any]],
                        matches: Dict[str, str],
                        difference_between_teams: List[int],
                        weight_difference_team_to_pitches:int
                        ) -> List[List[int]]:
     def get_list_pitch_difference(valid_possible_teams_sizes: List[List[int]],
-                                teams: Dict[str, Dict[str]],
+                                teams: Dict[str, Dict[str, Any]],
                                 matches: Dict[str, str]
                                 ) -> List[int]: 
         valid_possible_teams_pitch_differences = []
