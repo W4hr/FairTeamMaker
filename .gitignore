@@ -1,3 +1,13 @@
 venv/
 .env
 tests/testdata.py
+
+__pycache__
+backend\algorithms\__pycache__
+
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.egg-info/
+*.env
