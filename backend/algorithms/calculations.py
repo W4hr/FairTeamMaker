@@ -2,23 +2,30 @@ import math
 from typing import List, Dict
 from normalization import normalize_lin, normalize_norm
 
-def calculate_team_scores(game: Dict[str, List[Dict]],
+def calculate_team_scores(game: Dict[str, List[dict]],
 						  pairPerformance: Dict[str, Dict[str, int]],
-						  teams: Dict[str, Dict],
-						  players_data: Dict[str, Dict]
+						  teams: Dict[str, dict],
+						  players_data: Dict[str, dict]
 						  ) -> Dict[str, int]:
 	team_scores = {}
+	# Convert game to Dictionary
+	game_dict: Dict[str, Dict[str, dict]] = {}
+	for team, players in game.items():
+		game_dict[team] = {player_name: player_data for player_name, player_data in players}
+	
+	# Add allocated players to game
 	allocated_player_data = {team_name: {player: players_data[player] for player in team_data["players"]} for team_name, team_data in teams.items()}
-	for team, players in allocated_player_data.items():
+	for team, player in allocated_player_data.items():
 		if team in game:
-			game[team].update(players)
-	for team_name, team_players in game.items():
+			game_dict[team].update(player)
+
+	for team_name, team_players in game_dict.items():
 		team_scores[team_name] = 0
 		for player_name, player_data in team_players.items():
 			primaryScore = player_data["primaryScore"]
 			team_scores[team_name] += primaryScore
 			for player_name_pair in team_players:
-				team_scores[player_name] += pairPerformance[player_name][player_name_pair]
+				team_scores[team_name] += pairPerformance[player_name][player_name_pair]
 				break
 	return team_scores
 

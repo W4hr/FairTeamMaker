@@ -28,7 +28,7 @@ def set_min_team_size(teams_sizes: List[Optional[int]],
                       ) -> List[Optional[int]]:
     minimum_team_sizes = [None] * len(teams)
     for index, team in enumerate(teams_sizes): # iterate over all Teams. Requires output from: set_team_sizes 
-        if team == None:
+        if team is None:
             potential_minimum_teams_sizes = [1] # set the absolute minimum team size to 1 -> appending all possible minimum team sizes later
             # maxDifferenceTeams to opponent as minimum
             opponent_index = get_opponent_index(index, teams, matches)
@@ -75,7 +75,6 @@ def set_max_team_size(teams_sizes: List[Optional[int]],
                 if minimum_team_sizes_exist:
                     potential_maximum_team_sizes.append(player_count - (sum([x-1 for i,x in enumerate(minimum_team_sizes) if x is not None and i != index]) + sum([x - 1 for x in determined_team_sizes]) + (len(teams) - 1))) # if there are variable team sizes -> possible max at player_count minux the minimum_teams_sizes of the other teams (minus one for each to ballance later subtracing one player for each team) minus the players already allocated to a other team and lastly minus one player for each other team
                 else:
-                    print("else")
                     potential_maximum_team_sizes.append(player_count - sum([x - 1 for x in determined_team_sizes]) - (len(teams) - 1)) # possible max when subtracting allocated player count and one player from each other team from the total player count
             else:
                 if [x for x in minimum_team_sizes if x is not None]:
@@ -188,6 +187,7 @@ def teams_sizes(teams : Dict[str, dict],
     maximum_teams_sizes = set_max_team_size(teams_sizes, determined_team_sizes, maxDifferenceTeams, maxDifferencePitch, teams, matches, player_count, minimum_teams_sizes)
     min_max_teams_sizes = combine_team_size_min_max(teams_sizes, minimum_teams_sizes, maximum_teams_sizes)
 
-    possible_team_sizes = get_possible_teams_sizes(get_teams_sizes_ranges(min_max_teams_sizes))
+    possible_team_sizes_ranges = get_teams_sizes_ranges(min_max_teams_sizes)
+    possible_team_sizes = get_possible_teams_sizes(possible_team_sizes_ranges)
     valid_possible_team_sizes, difference_between_teams = check_validity_possible_teams_sizes(possible_team_sizes, maxDifferenceTeams, maxDifferencePitch, teams, matches, player_count, maximum_number_players_sitting_out)
     return teams_sizes_sorted(valid_possible_team_sizes, teams, matches, difference_between_teams, 1)

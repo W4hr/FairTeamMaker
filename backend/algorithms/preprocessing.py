@@ -2,7 +2,7 @@ from typing import Dict, List
 import copy
 from normalization import normalize_lin, normalize_sig
 
-def compress_players_dictionary(players: Dict[str, Dict]
+def compress_players_dictionary(players: Dict[str, dict]
                                 ) -> Dict[str, Dict[str, int]]:
     return {p : {"primaryScore" : players[p]["primaryScore"]} for p in players} # remove all data that is currently irrelevant to save memory
 
@@ -13,7 +13,6 @@ def normalize_primary_score(players: Dict[str, Dict[str, int]],
                             maximum_value: int
                             ) -> Dict[str, Dict[str, int]]: # max_score and min_score between two values the primaryScore takes playe and min and max defines between two values the output will be
     primary_scores = [players[p]["primaryScore"] for p in players]
-    print(primary_scores)
     if max_score is None:
         max_score = max(primary_scores)
     if min_score is None:
