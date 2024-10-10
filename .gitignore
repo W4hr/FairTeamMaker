@@ -1,9 +1,10 @@
 venv/
 .env
 tests/testdata.py
+.vscode/
 
 __pycache__
-backend\algorithms\__pycache__
+backend/algorithms/__pycache__/
 
 *.pyc
 *.pyo
