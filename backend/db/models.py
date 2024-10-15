@@ -1,9 +1,11 @@
 from pydantic import BaseModel, Field, ConfigDict
+from datetime import datetime
 
 class UserModel(BaseModel):
     id: int = Field(alias="_id", default=None)
     username: str
     disabled: bool
+    hashed_password: str
     model_config = ConfigDict(
         extra="forbid",
         populate_by_name= True,
@@ -11,7 +13,8 @@ class UserModel(BaseModel):
             "example": {
                 "_id": 1,
                 "username": "example_user",
-                "disabled": True
+                "disabled": True,
+                "hashed_password": "example_hash"
             }
         }
     )
@@ -20,7 +23,8 @@ class UserDB(UserModel):
     hashed_password: str
 
 class TokenData(BaseModel):
-    username : str | None = None
+    sub : str | None = None
+    exp: datetime
 
 class Token(BaseModel):
     access_token: str

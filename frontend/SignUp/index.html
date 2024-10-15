@@ -7,23 +7,24 @@
     <title id="Site_Title">Sign In</title>
 </head>
 <body>
+    <div id="message_box" class=""><img src="./img/icon/info.svg" class="message_box_icon"></div>
     <div class="form-container">
         <div class="tab-container">
-            <h1 class="tab active">Sign In</h1>
+            <h1 class="tab active" id="signInTab">Sign In</h1>
             <h1 class="tab">Sign Up</h1>
         </div>
-        <form>
+        <form id="auth-form" onsubmit="return false;">
             <div class="input-field">
                 <img src="./img/icon/user.svg" alt="User Icon">
-                <input type="text" placeholder="User">
+                <input type="text" placeholder="User" id="input_username">
             </div>
             <div class="input-field">
                 <img src="./img/icon/password.svg" alt="Password Icon">
-                <input type="password" placeholder="Password">
+                <input type="password" placeholder="Password" id="input_password">
             </div>
             <div class="button-container">
                 <button type="reset" class="button red-button">Clear</button>
-                <button type="submit" class="button blue-button">Sign In</button>
+                <button class="button blue-button" id="submit_button">Sign In</button>
             </div>
         </form>
     </div>

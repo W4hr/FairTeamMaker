@@ -1,14 +1,40 @@
+# Python Virtual Environment
 venv/
 .env
-tests/testdata.py
-.vscode/
 
-__pycache__
-backend/algorithms/__pycache__/
-
+# Python Bytecode
+__pycache__/
 *.pyc
 *.pyo
 *.pyd
-*.db
+
+# Python Egg Info
 *.egg-info/
-*.env
+
+# Temporary Files
+*.db
+*.log
+*.tmp
+*.bak
+
+# Build Files
+backend/algorithms/Makefile
+backend/algorithms/__pycache__/
+
+# IDE/Editor Configurations
+.vscode/
+
+# Test Data
+tests/testdata.py
+
+# CMake Files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+build/
+backend\algorithms\CMakeLists.txt
+
+# OS-specific Files
+.DS_Store
+Thumbs.db

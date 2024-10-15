@@ -1,25 +1,25 @@
 from fastapi import FastAPI, status, Body, Response, Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from pymongo import MongoClient
-import database
-import json
 from dotenv import load_dotenv
 import os
+from bson.objectid import ObjectId
+from inspect import currentframe
 
-from backend.db.models import TokenData, UserDB, Token
-
+from backend.db.models import TokenData, UserDB, Token, UserModel
 
 app = FastAPI()
 
 load_dotenv()
 
 SECRET_KEY = os.getenv("SECRET_KEY")
-ALGORYTHM = "HS256"
+ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRES = 1800 # Seconds (1800 = 30 min)
 
 # MongoDB
@@ -27,9 +27,23 @@ mongoclient = MongoClient("mongodb://localhost:27017")
 mongodb = mongoclient["myWebsiteDB"]
 mongousers = mongodb["users"]
 mongoprojects = mongodb["projects"]
+mongologs = mongodb["logs"]
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-oAuth2_scheme = OAuth2PasswordBearer(takenURL="token")
+oAuth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+def log_error(error: str, error_type: str, line:int):
+    try:
+        time = datetime.now(tz=timezone.utc).isoformat()
+        log_entry = {
+            "time": time,
+            "type": error_type,
+            "error": error,
+            "line": line
+        }
+        mongologs.insert_one(log_entry)
+    except Exception as e:
+        print(f"failed to log {e}")
 
 def verify_password(password:str, hashed_password:str):
     return pwd_context.verify(password, hashed_password)
@@ -43,7 +57,7 @@ def get_user(username:str) -> dict:
 
 def authenticate_user(username:str , password: str) -> bool:
     user = get_user(username)
-    if user and verify_password(password, get_user(username)["password"]):
+    if user and verify_password(password, user["password"]):
         return True
     return False
     
@@ -53,23 +67,25 @@ def create_jwt_access_token(data: dict, expires_delta: timedelta | None = None):
         expires_date = datetime.utcnow() + expires_delta
     else:
         expires_date = datetime.utcnow() + timedelta(minutes=15)
-    encode_data.update({"expires_date": expires_date})
-    encoded_jwt_token = jwt.encode(encode_data, SECRET_KEY, algorithm=ALGORYTHM)
+    encode_data.update({"exp": expires_date})
+    encoded_jwt_token = jwt.encode(encode_data, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt_token
 
 async def get_current_user(token: str = Depends(oAuth2_scheme)):
     credential_exception = HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials", headers={"WWW-Authenticate" : "Bearer"})
     try:
-        jwt_payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORYTHM])
-        username : str = jwt_payload.get("sub") # Needs to be understood
+        jwt_payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username : str = jwt_payload.get("sub")
         if username == None:
+            log_error("Username is None. Probably an error with the jwt token format.", "TypeError", int(currentframe().f_lineno))
             raise credential_exception
-        
-        Token_Data = TokenData(username=username) # Maybe Remove
+        if jwt_payload.get("exp") < datetime.utcnow().timestamp():
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="token expired")
+        token_data = TokenData(username=username)
     except JWTError:
         raise credential_exception
     
-    user = get_user(username=Token_Data.username)
+    user = get_user(username=token_data.username)
     if user is None:
         raise credential_exception
     
@@ -78,7 +94,6 @@ async def get_current_user(token: str = Depends(oAuth2_scheme)):
 async def get_current_active_user(current_user: UserDB = Depends(get_current_user)):
     if current_user.disabled:
         raise HTTPException(status_code=400, detail="Inactive user")
-    
     return current_user
 
 @app.post("/token", response_model=Token)
@@ -87,58 +102,45 @@ async def login_token(login_form: OAuth2PasswordRequestForm = Depends()):
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="incorrect username or password", headers={"WWW-Authenticate" : "Bearer"})
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRES)
-
-class UserModel(BaseModel):
-    id: int = Field(alias="_id", default=None)
-    username: str
-    password: str
-    model_config = ConfigDict(
-        extra="forbid",
-        populate_by_name= True,
-        json_schema_extra= {
-            "example": {
-                "_id": 1,
-                "username": "example_user",
-                "password": "hashed_password"
-            }
-        }
-
-    )
+    access_token = create_jwt_access_token(data = {"sub": login_form.username}, expires_delta=access_token_expires)
+    return {"access_token" : access_token, "token_type" : "bearer"}
 
 
 @app.post(
-        "/addUser",
+        "/SignUp",
         response_description="Sign Up User",
         response_model=UserModel,
         status_code=status.HTTP_201_CREATED,
-        response_model_by_alias= False)
-async def addUser(user: UserModel = Body(...)):
-    if len(user.username) < 3 and len(user.password) > 4:
-        return {"msg-sign-up": "password or username is too short"}
-    else:
-        if users.find({"username" : user.username}):
-            return status.HTTP_409_CONFLICT
+        response_model_by_alias= False
+        )
+async def SignUp(user: UserModel = Body(...)):
+    try:
+        if len(user.username) > 3 or len(user.password) > 4:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Password or username is too short")
+        user_existing = mongousers.find_one({"username" : user.username})
+        if user_existing:
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Username already taken")
+        user.hashed_password = generate_password_hash(user.password)
+        new_user = mongousers.insert_one(user.model_dump(by_alias=False, exclude=["id", "password"]))
+        return {"message": "User created successfully"}
+    except:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An unexpected error occurred.")
+
+@app.post("/savespreview")
+async def get_user_data(Token: Token):
+    try:
+        user = await get_current_active_user(Token.access_token)
+        if user:
+            mongouser = await mongousers.find_one({"username": user.username})
+            if mongouser:
+                projects_previews = await mongoprojects.find(
+                     {"user_id": ObjectId(mongouser["_id"])}
+                )
+                return JSONResponse([project["preview_project"] for project in projects_previews])
+            else:
+                log_error("User does not exist", "User_not_found", int(currentframe().f_lineno))
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User does not exist")
         else:
-            new_user = await users.insert_one(user.model_dump(by_alias=False, exclude=["id"]))
-            return status.HTTP_201_CREATED
-
-@app.post(
-    "/login",
-)
-async def login(user: UserModel = Body(...), response: Response = Response()):
-
-    user_data = await users.find_one({"username": user.username})
-    if user_data and user_data["password"] == user.password:
-        token = jwt.encode({
-            "username": user.username,
-            "date": datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
-            }, SECRET_KEY, algorithm='HS256')
-        response.set_cookie(
-            key="session_token", 
-            value=token,
-            httponly=True,
-            expires=1800,
-            max_age=1800)
-        return {"msg": "Session Authenticated for 30 Minutes"}, status.HTTP_202_ACCEPTED
-    else:
-        return {"msg":"Unauthorized"}, status.HTTP_401_UNAUTHORIZED
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An unexpected error occurred.")
+    except:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An unexpected error occurred.")
