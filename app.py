@@ -102,7 +102,13 @@ async def login_token(login_form: OAuth2PasswordRequestForm = Depends()):
     if not user_exists:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="incorrect username or password", headers={"WWW-Authenticate" : "Bearer"})
     access_token = create_jwt_access_token(data = {"sub": login_form.username}, expires_delta=ACCESS_TOKEN_EXPIRES)
-    return {"access_token" : access_token, "token_type" : "bearer"}
+    response = JSONResponse(content={"msg": "Login was successful"})
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True
+        )
+    return response
 
 @app.post(
         "/SignUp",

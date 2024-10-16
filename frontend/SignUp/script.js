@@ -1,3 +1,6 @@
+const interface_url = "http://127.0.0.1:5500/frontend/UI/interface.html"
+
+
 document.addEventListener("DOMContentLoaded", () => {
 
     const tabs = document.querySelectorAll(".tab");
@@ -25,8 +28,13 @@ document.addEventListener("DOMContentLoaded", () => {
         let username = input_username.value;
         let password = input_password.value;
         if (action == "Sign In"){
-            login(username, password)
+            try{
+                login(username, password)
+            } catch (error){
+                console.error("Error during login:", error)
+            }
         } else if (action == "Sign Up"){
+            sign_up(username, password)
         } else{
             show_message("There is an error with your submission. Please reload the site.", "warning")
             console.error("action does not match function")
@@ -55,20 +63,18 @@ function show_message(message, type_message){
 
 async function login(username, password) {
     try {
-        const api_response = await fetch("/login", {
+        const api_response = await fetch("/token", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ username, password })
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({ username, password }),
+            credentials: "include"
         });
 
-        const data = await api_response.json();
-
         if (api_response.ok) {
-            const token = data.access_token;
-            localStorage.setItem("token", token);
-            window.location.href = "http://127.0.0.1:5500/frontend/UI/interface.html";
+            window.location.href = interface_url;
         } else {
-            console.error("Error during login");
+            const data = await api_response.json();
+            console.error("Error during login:", data.detail || "Unknown error");
             show_message("⚙️System Error: \n An error occurred during login.");
         }
     } catch (error) {
@@ -81,11 +87,10 @@ async function sign_up(username, password) {
     try {
         const api_response = await fetch("/SignUp", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ username, password })
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({ username, password }),
+            credentials: "include"
         });
-
-        const data = await api_response.json();
 
         if (api_response.ok) {
             show_message("Account successfully created", "success");
