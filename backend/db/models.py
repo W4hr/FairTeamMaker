@@ -1,11 +1,11 @@
 from pydantic import BaseModel, Field, ConfigDict
 from datetime import datetime
-from bson import ObjectId
+from typing import Optional
 
 class UserModel(BaseModel):
-    _id: ObjectId
+    _id: Optional[str] = Field(None, alias="_id")
     username: str
-    disabled: bool
+    disabled: bool = False
     hashed_password: str
     model_config = ConfigDict(
         extra="forbid",
@@ -25,8 +25,12 @@ class UserDB(UserModel):
 
 class TokenData(BaseModel):
     sub : str | None = None
-    exp: datetime
+    exp: int
 
 class Token(BaseModel):
     access_token: str
     token_type: str
+
+class LogInForm(BaseModel):
+    username: str
+    password: str

@@ -12,7 +12,7 @@ import os
 from bson.objectid import ObjectId
 from inspect import currentframe
 
-from backend.db.models import TokenData, UserDB, Token, UserModel
+from backend.db.models import TokenData, UserDB, Token, UserModel, LogInForm
 
 app = FastAPI()
 
@@ -69,7 +69,7 @@ def create_jwt_access_token(data: dict, expires_delta: timedelta | None = None):
         expires_date = datetime.utcnow() + expires_delta
     else:
         expires_date = datetime.utcnow() + timedelta(minutes=15)
-    encode_data.update({"exp": expires_date})
+    encode_data.update({"exp": int(expires_date.timestamp())})
     encoded_jwt_token = jwt.encode(encode_data, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt_token
 
@@ -111,15 +111,18 @@ async def login_token(login_form: OAuth2PasswordRequestForm = Depends()):
         "/SignUp",
         status_code=status.HTTP_201_CREATED
         )
-async def SignUp(user: UserModel = Body(...)):
+async def SignUp(LogInForm):
     try:
-        if len(user.username) < 3 or len(user.password) < 4:
+        if len(LogInForm.username) < 3 or len(LogInForm.password) < 4:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Password or username is too short")
-        user_existing = mongousers.find_one({"username" : user.username})
+        user_existing = mongousers.find_one({"username" : LogInForm.username})
         if user_existing:
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Username already taken")
-        user.hashed_password = generate_password_hash(user.password)
-        new_user = mongousers.insert_one(user.model_dump(by_alias=False, exclude=["id", "password"]))
+        user_in_db = UserModel(
+            username=LogInForm.username,
+            hashed_password=generate_password_hash(LogInForm.password),
+            disabled=False)
+        new_user = mongousers.insert_one(user_in_db.model_dump(by_alias=False, exclude=["id"]))
         return {"message": "User created successfully"}
     except:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An unexpected error occurred.")
@@ -132,7 +135,7 @@ async def get_user_data(token:str = Depends(oAuth2_scheme)):
             mongouser = await mongousers.find_one({"username": user.username})
             if mongouser:
                 projects_previews = await mongoprojects.find(
-                     {"user_id": ObjectId(mongouser["_id"])}
+                     {"user_id": str(mongouser["_id"])}
                 )
                 return JSONResponse([project["preview_project"] for project in projects_previews])
             else:
