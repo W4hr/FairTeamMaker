@@ -1,8 +1,9 @@
 from pydantic import BaseModel, Field, ConfigDict
 from datetime import datetime
+from bson import ObjectId
 
 class UserModel(BaseModel):
-    id: int = Field(alias="_id", default=None)
+    _id: ObjectId
     username: str
     disabled: bool
     hashed_password: str
@@ -11,7 +12,7 @@ class UserModel(BaseModel):
         populate_by_name= True,
         json_schema_extra= {
             "example": {
-                "_id": 1,
+                "_id": "6512fbd2c9b3129f730c1234",
                 "username": "example_user",
                 "disabled": True,
                 "hashed_password": "example_hash"

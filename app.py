@@ -52,12 +52,14 @@ def generate_password_hash(password: str):
     return pwd_context.hash(password)
 
 def get_user(username:str) -> dict:
-    user = mongousers.find_one({"username": username}, {"_id": 0, "username": 1,"password": 1})
-    return user if user else None
+    user = mongousers.find_one({"username": username}, {"_id": 0, "username": 1,"hashed_password": 1, "disabled": 1})
+    if user:
+        return UserModel(**user)
+    return None
 
 def authenticate_user(username:str , password: str) -> bool:
     user = get_user(username)
-    if user and verify_password(password, user["password"]):
+    if user and verify_password(password, user.hashed_password):
         return True
     return False
     
@@ -74,18 +76,17 @@ def create_jwt_access_token(data: dict, expires_delta: timedelta | None = None):
 async def get_current_user(token: str = Depends(oAuth2_scheme)):
     credential_exception = HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials", headers={"WWW-Authenticate" : "Bearer"})
     try:
-        jwt_payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        jwt_payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM], options={"verify_exp": True})
         username : str = jwt_payload.get("sub")
         if username == None:
-            log_error("Username is None. Probably an error with the jwt token format.", "TypeError", int(currentframe().f_lineno))
             raise credential_exception
-        if jwt_payload.get("exp") < datetime.utcnow().timestamp():
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="token expired")
-        token_data = TokenData(username=username)
-    except JWTError:
-        raise credential_exception
+        token_data = TokenData(sub=username, exp=jwt_payload.get("exp"))
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token expired")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
     
-    user = get_user(username=token_data.username)
+    user = get_user(username=token_data.sub)
     if user is None:
         raise credential_exception
     
@@ -108,14 +109,11 @@ async def login_token(login_form: OAuth2PasswordRequestForm = Depends()):
 
 @app.post(
         "/SignUp",
-        response_description="Sign Up User",
-        response_model=UserModel,
-        status_code=status.HTTP_201_CREATED,
-        response_model_by_alias= False
+        status_code=status.HTTP_201_CREATED
         )
 async def SignUp(user: UserModel = Body(...)):
     try:
-        if len(user.username) > 3 or len(user.password) > 4:
+        if len(user.username) < 3 or len(user.password) < 4:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Password or username is too short")
         user_existing = mongousers.find_one({"username" : user.username})
         if user_existing:
@@ -127,9 +125,9 @@ async def SignUp(user: UserModel = Body(...)):
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An unexpected error occurred.")
 
 @app.post("/savespreview")
-async def get_user_data(Token: Token):
+async def get_user_data(token:str = Depends(oAuth2_scheme)):
     try:
-        user = await get_current_active_user(Token.access_token)
+        user = await get_current_active_user()
         if user:
             mongouser = await mongousers.find_one({"username": user.username})
             if mongouser:
@@ -138,7 +136,6 @@ async def get_user_data(Token: Token):
                 )
                 return JSONResponse([project["preview_project"] for project in projects_previews])
             else:
-                log_error("User does not exist", "User_not_found", int(currentframe().f_lineno))
                 raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User does not exist")
         else:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An unexpected error occurred.")
