@@ -33,7 +33,7 @@ CMakeFiles/
 cmake_install.cmake
 Makefile
 build/
-backend\algorithms\CMakeLists.txt
+backend/algorithms/CMakeLists.txt
 
 # OS-specific Files
 .DS_Store
