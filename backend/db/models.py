@@ -20,9 +20,6 @@ class UserModel(BaseModel):
         }
     )
 
-class UserDB(UserModel):
-    hashed_password: str
-
 class TokenData(BaseModel):
     sub : str | None = None
     exp: int
