@@ -1,4 +1,4 @@
-from fastapi import FastAPI, status, Body, Response, Depends, HTTPException
+from fastapi import FastAPI, status, Body, Form, Response, Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.responses import JSONResponse
 from typing import List, Optional
@@ -114,18 +114,18 @@ async def login_token(login_form: OAuth2PasswordRequestForm = Depends()):
         "/SignUp",
         status_code=status.HTTP_201_CREATED
         )
-async def SignUp(login_form: LogInForm = Body(...)):
+async def SignUp(username: str = Form(...), password: str = Form(...)):
     try:
-        if len(login_form.username) < 3 or len(login_form.password) < 4:
+        if len(username) < 3 or len(password) < 4:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Password or username is too short")
-        user_existing = await mongousers.find_one({"username" : login_form.username})
+        user_existing = await mongousers.find_one({"username" : username})
         if user_existing:
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Username already taken")
         user_in_db = UserModel(
-            username=login_form.username,
-            hashed_password=generate_password_hash(login_form.password),
+            username=username,
+            hashed_password=generate_password_hash(password),
             disabled=False)
-        new_user = await mongousers.insert_one(user_in_db.model_dump(by_alias=False, exclude=["_id"]))
+        await mongousers.insert_one(user_in_db.model_dump(by_alias=False, exclude=["_id"]))
         return {"message": "User created successfully"}
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"An unexpected error occurred: {e}")

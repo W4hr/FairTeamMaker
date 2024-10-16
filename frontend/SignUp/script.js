@@ -96,7 +96,8 @@ async function sign_up(username, password) {
             show_message("Account successfully created", "success");
             document.getElementById("signInTab").click();
         } else {
-            console.error("Error during sign up");
+            const data = await api_response.json();
+            console.error("Error during sign up:", data.detail || "Unknown error");
             show_message("⚙️System Error: \n An error occurred during sign up.");
         }
     } catch (error) {
