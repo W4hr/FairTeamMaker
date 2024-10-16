@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Optional
 
 class UserModel(BaseModel):
-    _id: Optional[str] = Field(None, alias="_id")
+    id: Optional[str] = Field(None, alias="_id")
     username: str
     disabled: bool = False
     hashed_password: str
