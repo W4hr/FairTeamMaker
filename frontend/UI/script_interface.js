@@ -1,5 +1,6 @@
 // API URL
-const api_address = "http://localhost:8080";
+const api_address = "http://127.0.0.1:8000/";
+const login_url = "http://127.0.0.1:8000/login"
 /*Tab Management*/
 
 const tabs = document.querySelectorAll('[data-tab-target]');
@@ -101,8 +102,8 @@ document.getElementById("add_column_window_add").addEventListener("click", () =>
             "maximumValue": parseIntButForEmptyString(add_column_window_max),
             "calculation": add_column_window_calc
         })
-        selected_save_data_edit.players.forEach(player => {
-            player.scores[add_column_window_name] = parseInt(add_column_window_default_value)
+        Object.keys(selected_save_data_edit.players).forEach(player => {
+            selected_save_data_edit["players"][player].scores[add_column_window_name] = parseInt(add_column_window_default_value)
         })
         }
 });
@@ -160,10 +161,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
         /*  Number Cells  */ 
         const new_player = {
-            "name": new_player_name,
-            "attendanceState": true,
-            "primaryScore": 0,
-            "scores": {
+            [new_player_name]: {
+                "attendanceState": "True",
+                "primaryScore": 0,
+                "scores": {}
             }
         };
         for (let i = 0; i < selected_save_data.categories.length; i++) {
@@ -181,10 +182,12 @@ document.addEventListener("DOMContentLoaded", () => {
             NewNumberCell_input.setAttribute("value", selected_save_data.categories[i].standardValue );
             NewNumberCell.appendChild(NewNumberCell_input);
             NewRow.appendChild(NewNumberCell)
-            new_player.scores[selected_save_data.categories[i].name] = Number(NewNumberCell_input.value);
+            new_player[new_player_name]["scores"][selected_save_data.categories[i].name] = Number(NewNumberCell_input.value);
         }
         edit_player_table.appendChild(NewRow)
-        selected_save_data_edit.players.push(new_player)
+        selected_save_data_edit.players[new_player_name] = new_player[new_player_name];
+        console.log(selected_save_data_edit)
+        console.log(`NEW_PLAYER = ${new_player_name}`)
 
         const PlayerPairPerformance = {}
         PlayerPairPerformance[new_player_name] = {};
@@ -200,7 +203,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
         build_player_to_player_table(selected_save_data_edit);
         apply_changes_to_data_name();
-        apply_changes_to_skills();
+        apply_changes_to_skills_single_player(NewRow);
         update_list_players()
     });
 });
@@ -243,14 +246,18 @@ async function load_save_preview(selected_save) {
     const number_players_property_save = document.getElementById("properties_player_count_input")
     const description_property_save = document.getElementById("properties_notes_input")
     try {
-        const response_user_save = await fetch(`${api_address}/user_selected_save?selected_save=${selected_save.id}`)
+        const response_user_save = await fetch(`${api_address}/user-project-previews`, { //REWORK
+            method: "GET",
+            credentials: "include",
+        })
         if(!response_user_save.ok){
             throw new Error("Selected Save API request returned not ok: " + response_user_save.statusText)
         }
         selected_save_data = await response_user_save.json();
-        for(let i = 0; i < selected_save_data.players.length; i++) {
-            build_player_preview(selected_save_data, i)
-        }
+        Object.keys(selected_save_data.players).forEach(player_name => {
+            build_player_preview(selected_save_data, player_name)
+        })
+
         name_property_save.value = selected_save_data["name"]
         number_players_property_save.setAttribute("placeholder", selected_save_data["number of players"])
         description_property_save.value = selected_save_data["description"]
@@ -313,8 +320,12 @@ let list_saves_json = [];
 const list_saves = document.getElementById("list_saves")
 document.addEventListener("DOMContentLoaded", async () => {
     try {
-        const response_user_saves = await fetch(`${api_address}/usersaves`);
+        const response_user_saves = await fetch(`${api_address}/user-project-previews`, {
+            method: "POST",
+            credentials: "include"
+        });
         if (!response_user_saves.ok) {
+            // window.location.href = login_url
             throw new Error("Saves API request returned not ok: " + response_user_saves.statusText);
         }
         list_saves_json = await response_user_saves.json();
@@ -395,7 +406,6 @@ function clear_list (list){
         list.removeChild(list.firstChild)
     }
 }
-const load_config = document.getElementById("load_config")
 
 function build_save_items(){
     clear_list(list_saves)
@@ -436,13 +446,10 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // Build list of Players in preview
-function build_player_preview(data, i){
+function build_player_preview(data, player_name){
     // Create Child Elements
     const properties_players_list = document.getElementById("properties_list_players_list")
 
-    if(i === 0){
-        properties_players_list.innerHTML = ""
-    }
     const properties_player = document.createElement("li")
 
     const properties_player_container = document.createElement("div")
@@ -453,11 +460,11 @@ function build_player_preview(data, i){
 
     const properties_player_name = document.createElement("div")
     properties_player_name.classList.add("properties_list_player_item_identifier")
-    properties_player_name.innerText = data["players"][i]["name"]
+    properties_player_name.innerText = player_name
 
     const properties_player_score = document.createElement("div")
     properties_player_score.classList.add("properties_list_player_item_score")
-    properties_player_score.innerText = data["players"][i]["primaryScore"]
+    properties_player_score.innerText = data["players"][player_name]["primaryScore"]
 
     const properties_player_empty_div = document.createElement("div")
 
@@ -490,12 +497,15 @@ function add_delete_option_for_players_in_preview() {
         player_to_deltete_delete.addEventListener("click", () => {
             delete_player(player_to_deltete_delete)
             const player_to_delete_name = player_to_deltete_delete.parentElement.children[1].innerText
-            selected_save_data_preview.players = selected_save_data_preview.players.filter((player) => player.name !== player_to_delete_name)
-            delete selected_save_data_preview.pairPerformance[player_to_delete_name];
-            Object.keys(selected_save_data_preview.pairPerformance).forEach(pairPerformancePlayer => {
-                delete selected_save_data_preview.pairPerformance[pairPerformancePlayer][player_to_delete_name];
-            })
-            selected_save_data_preview["number of players"] -= 1;
+            if (save_preview_players_delete["players"][player_to_delete_name]){
+                delete save_preview_players_delete["players"][player_to_delete_name]
+                delete selected_save_data_preview.pairPerformance[player_to_delete_name];
+                Object.keys(selected_save_data_preview.pairPerformance).forEach(pairPerformancePlayer => {
+                    delete selected_save_data_preview.pairPerformance[pairPerformancePlayer][player_to_delete_name];
+                })
+                selected_save_data_preview["number of players"] -= 1;
+
+            }
             document.getElementById("properties_player_count_input").setAttribute("placeholder", selected_save_data_preview["number of players"])
         })
     })
@@ -707,18 +717,19 @@ function build_player_table_header(selected_save_data){
     edit_player_table_topbar.appendChild(edit_player_table_topbar_attendance)
     edit_player_table_topbar.appendChild(edit_player_table_topbar_name)
     edit_player_table_topbar.appendChild(edit_player_table_topbar_skill)
-    selected_save_data["categories"].forEach(categorie => {
-         const edit_player_table_topbar_categorie = document.createElement("th")
-         edit_player_table_topbar_categorie.innerText = categorie["name"]
-         edit_player_table_topbar.appendChild(edit_player_table_topbar_categorie)
-    })
+    if (selected_save_data["categories"]){
+        selected_save_data["categories"].forEach(categorie => {
+            const edit_player_table_topbar_categorie = document.createElement("th")
+            edit_player_table_topbar_categorie.innerText = categorie["name"]
+            edit_player_table_topbar.appendChild(edit_player_table_topbar_categorie)
+        })
+    }
     edit_player_table.appendChild(edit_player_table_topbar)
 }
 
 function build_player_table_body(selected_save_data){
     const edit_player_table = document.getElementById("edit_player_table")
-
-    selected_save_data["players"].forEach(player => {
+    Object.keys(selected_save_data["players"]).forEach(player => {
         const edit_player_table_row = document.createElement("tr")
         edit_player_table_row.classList.add("player_data_row")
 
@@ -727,7 +738,7 @@ function build_player_table_body(selected_save_data){
 
         edit_player_table_player_attendance_button = document.createElement("div")
         edit_player_table_player_attendance_button.classList.add("button_activation_attendance")
-        if (!player.attendanceState){
+        if (!selected_save_data["players"][player].attendanceState){
             edit_player_table_player_attendance_button.classList.add("red_deactivated")
         }
 
@@ -739,7 +750,7 @@ function build_player_table_body(selected_save_data){
         const edit_player_table_player_name_input = document.createElement("textarea")
         edit_player_table_player_name_input.classList.add("table_input_text")
         edit_player_table_player_name_input.classList.add("table_input_name")
-        edit_player_table_player_name_input.value = player.name
+        edit_player_table_player_name_input.value = player
 
         edit_player_table_player_name.appendChild(edit_player_table_player_name_input)
 
@@ -753,13 +764,13 @@ function build_player_table_body(selected_save_data){
         edit_player_table_row.appendChild(edit_player_table_player_attendance)
         edit_player_table_row.appendChild(edit_player_table_player_name)
         edit_player_table_row.appendChild(edit_player_table_player_skill)
-        for(let i = 0; i < Object.keys(player.scores).length; i++){
+        for(let i = 0; i < Object.keys(selected_save_data["players"][player].scores).length; i++){
             const edit_player_table_player_score = document.createElement("td")
 
             const edit_player_table_player_score_input = document.createElement("input")
             edit_player_table_player_score_input.setAttribute("type", "number")
             edit_player_table_player_score_input.classList.add("table_input_number")
-            edit_player_table_player_score_input.value = Object.values(player.scores)[i]
+            edit_player_table_player_score_input.value = Object.values(selected_save_data["players"][player].scores)[i]
             edit_player_table_player_score_input.setAttribute("min", selected_save_data["categories"][i].minimumValue)
             edit_player_table_player_score_input.setAttribute("max", selected_save_data["categories"][i].maximumValue)
             edit_player_table_player_score.appendChild(edit_player_table_player_score_input)
@@ -773,13 +784,14 @@ function clear_player_table(){
     const edit_player_table = document.getElementById("edit_player_table")
     edit_player_table.innerHTML = ""
 }
-
+//  Search
 document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("load_config").addEventListener("click", () => {
         if (selected_save_data == "") {
             show_message("No save selected:Please either select a saved project or create one", "warning")
         } else {
             selected_save_data = selected_save_data_preview
+            selected_save_data_edit = selected_save_data_preview
             clear_player_table()
             build_player_table(selected_save_data)
             build_player_to_player_table(selected_save_data)
@@ -873,7 +885,7 @@ function build_player_to_player_table_tbody(selected_save_data){
 
 function update_player_to_player_upon_change(){
     const build_player_to_player_table = document.getElementById("table_player_to_player")
-    const player_to_player_input_cells = document.querySelectorAll(".table_input_number")
+    const player_to_player_input_cells = build_player_to_player_table.querySelectorAll(".table_input_number")
     player_to_player_input_cells.forEach(cell => {
         cell.addEventListener("change", () => {
             build_player_to_player_table.rows[cell.closest("td").cellIndex].cells[cell.closest("tr").rowIndex].children[0].value = cell.value
@@ -940,14 +952,39 @@ function apply_changes_to_skills(){
             if (isNumericalNoDecimalNotEmpty(changed_input.value)){
                 changed_input_row_Index = changed_input.closest("tr").rowIndex - 1
                 if (changed_input.closest("td").cellIndex == 2){
-                    selected_save_data_edit.players[changed_input_row_Index].primaryScore = Number(changed_input.value)
+                    selected_save_data_edit.players[Object.keys(selected_save_data_edit.players)[changed_input_row_Index]].primaryScore = Number(changed_input.value)
                 } else if (changed_input.closest("td").cellIndex > 2){
                     changed_input_cell_Index = changed_input.closest("td").cellIndex - 2
                     const changed_categorie = document.getElementById("edit_player_table").rows[0].cells[changed_input_cell_Index + 2]
-                    selected_save_data_edit.players[changed_input_row_Index].scores[changed_categorie.innerText] = Number(changed_input.value)
+                    selected_save_data_edit.players[Object.keys(selected_save_data_edit.players)[changed_input_row_Index]].scores[changed_categorie.innerText] = Number(changed_input.value)
                 } else {
+                    show_message("The changes could not be applied", "warning")
                     console.error("The changed number could not be applied")
                 }
+                console.log(selected_save_data)
+            } else {
+                show_message("One Value is either empty or not a number. Please remove any letters or decimal points.", "warning")
+            }
+        })
+    })
+}
+
+function apply_changes_to_skills_single_player(player){
+    player.querySelectorAll(".table_input_number").forEach(changed_input => {
+        changed_input.addEventListener("change", () => {
+            if (isNumericalNoDecimalNotEmpty(changed_input.value)){
+                changed_input_row_Index = changed_input.closest("tr").rowIndex - 1
+                if (changed_input.closest("td").cellIndex == 2){
+                    selected_save_data_edit.players[Object.keys(selected_save_data_edit.players)[changed_input_row_Index]].primaryScore = Number(changed_input.value)
+                } else if (changed_input.closest("td").cellIndex > 2){
+                    changed_input_cell_Index = changed_input.closest("td").cellIndex - 2
+                    const changed_categorie = document.getElementById("edit_player_table").rows[0].cells[changed_input_cell_Index + 2]
+                    selected_save_data_edit.players[Object.keys(selected_save_data_edit.players)[changed_input_row_Index]].scores[changed_categorie.innerText] = Number(changed_input.value)
+                } else {
+                    show_message("The changes could not be applied", "warning")
+                    console.error("The changed number could not be applied")
+                }
+                console.log(selected_save_data)
             } else {
                 show_message("One Value is either empty or not a number. Please remove any letters or decimal points.", "warning")
             }
@@ -959,9 +996,8 @@ var list_players = []
 var list_players_allocated = []
 
 function update_list_players(){
-    list_players = selected_save_data_edit.players
-        .filter(player => player.name && !list_players_allocated.includes(player.name))
-        .map(player => player.name);
+    list_players = Object.keys(selected_save_data_edit.players)
+        .filter(player_name => player_name && !list_players_allocated.includes(player_name))
     update_pitches_selectors();
 }
 
@@ -1025,6 +1061,7 @@ document.addEventListener("DOMContentLoaded", () => {
         dl.href = `data:application/json;charset=utf-8,${JSON.stringify(selected_save_data)}`
         dl.click()
     })
+    add_project_eventlistener()
 })
 
 const import_data_input = document.getElementById("json_import_input");
@@ -1044,9 +1081,9 @@ import_data_input.addEventListener("change", () => {
                 number_players_property_save.setAttribute("placeholder", selected_save_data["number of players"]);
                 description_property_save.value = selected_save_data["description"];
 
-                for(let i = 0 ; i < selected_save_data.players.length ; i++){
-                    build_player_preview(selected_save_data, i)
-                }
+                Object.keys(selected_save_data.players).forEach(player_name => {
+                    build_player_preview(selected_save_data, player_name)
+                })
 
                 add_delete_option_for_players_in_preview();
                 AttendanceIndicatorPreviewEventListeners();
@@ -1071,5 +1108,76 @@ function addjust_num_player_selection(){
         })
         selection.querySelectorAll("option").forEach(option => {
         })
+    })
+}
+
+
+// New Project Button
+function add_project_eventlistener(){
+    const default_new_project = {
+        "name": "Project Name",
+        "description": "Project Description",
+        "color": "#ffffff",
+        "number of players": 2,
+        "matches":{},
+        "teams":{},
+        "settings":{
+            "interachangableTeams": "True",
+            "maxSittingOut": 2,
+            "maxDifferenceTeams": 2,
+            "maxDifferencePitches": 2,
+            "auto-save": "False"
+        },
+        "categories":[],
+        "players": {
+            "player 1" : {
+                "attendanceState": "True",
+                "primaryScore": 0,
+                "scores": {}
+            },
+            "player 2" : {
+                "attendanceState": "True",
+                "primaryScore": 0, 
+                "scores": {}
+            }
+        },
+        "pairPerformance": {
+            "player 1": {
+                "player 1" : 0,
+                "player 2" : 1,
+            },
+            "player 2": {
+                "player 1" : 1,
+                "player 2" : 0,
+            }
+        }
+    }
+    document.getElementById("add_project").addEventListener("click", () => {
+        console.log("Clickety")
+        default_new_project["name"] = document.getElementById("add_project_name_input").value;
+        if (document.getElementById("add_project_autosave_option").classList.contains("checked")){
+            default_new_project["settings"]["auto-save"] = "True"
+        }
+        default_new_project["description"] = document.getElementById("add_project_description_input").value;
+        default_new_project["color"] = document.getElementById("project_color_input").value
+        selected_save_data = default_new_project
+        selected_save_data_preview = default_new_project
+
+        const name_property_save = document.getElementById("properties_name_input");
+        const number_players_property_save = document.getElementById("properties_player_count_input");
+        const description_property_save = document.getElementById("properties_notes_input");
+
+        name_property_save.value = selected_save_data["name"];
+        number_players_property_save.setAttribute("placeholder", selected_save_data["number of players"]);
+        description_property_save.value = selected_save_data["description"];
+
+        Object.keys(selected_save_data.players).forEach(player_name => {
+            build_player_preview(selected_save_data, player_name)
+    })
+
+        add_delete_option_for_players_in_preview();
+        AttendanceIndicatorPreviewEventListeners();
+        document.getElementById("add_project_window_dimming").classList.toggle("hide");
+        document.getElementById("add_project_window").classList.toggle("hide");
     })
 }

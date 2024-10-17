@@ -1,4 +1,4 @@
-const interface_url = "http://127.0.0.1:5500/frontend/UI/interface.html"
+const interface_url = "http://127.0.0.1:8000"
 const api_url = "http://127.0.0.1:8000"
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -72,8 +72,11 @@ async function login(username, password) {
         });
 
         if (api_response.ok) {
-            console.log("OK - Really")
             window.location.href = interface_url;
+        } else if (api_response.status === 401) {  // Check for 401 Unauthorized
+            const data = await api_response.json();
+            console.error("Login error:", data.detail);
+            show_message("❌ Login Error: Incorrect username or password.", "error")
         } else {
             const data = await api_response.json();
             console.error("Error during login:", data.detail || "Unknown error");

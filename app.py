@@ -12,6 +12,8 @@ from dotenv import load_dotenv
 import os
 from pymongo.errors import PyMongoError
 
+from backend.db.defaultproject import create_default_starter_project
+
 from backend.db.models import TokenData, Token, UserModel, LogInForm
 
 app = FastAPI()
@@ -45,7 +47,7 @@ async def HTMLUserInterface():
 
 @app.get("/login")
 async def serve_login():
-    return FileResponse("/frontend/SignUp/index.html")
+    return FileResponse("frontend/SignUp/index.html")
 
 async def log_error(error: str, error_type: str, line:int):
     try:
@@ -138,23 +140,27 @@ async def SignUp(username: str = Form(...), password: str = Form(...)):
             username=username,
             hashed_password=generate_password_hash(password),
             disabled=False)
-        await mongousers.insert_one(user_in_db.model_dump(by_alias=False, exclude=["_id"]))
+        user = await mongousers.insert_one(user_in_db.model_dump(by_alias=False, exclude=["_id"]))
+        default_starter_project = await create_default_starter_project()
+        starter_project = await default_starter_project.copy()
+        starter_project["owner"] = str(user.inserted_id)
+        await mongoprojects.insert_one(starter_project)
         return {"message": "User created successfully"}
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"An unexpected error occurred: {e}")
 
-@app.post("/savespreview")
+@app.post("/user-project-previews")
 async def get_users_project_previews(current_user: UserModel = Depends(get_current_active_user)):
     try:
         if current_user:
             mongouser = await mongousers.find_one({"username": current_user.username})
             if mongouser:
                 projects_previews = await mongoprojects.find(
-                     {"user_id": mongouser["_id"]}
+                     {"owner": str(mongouser["_id"])}
                 ).to_list(length=None)
                 return JSONResponse([project["preview_project"] for project in projects_previews])
             else:
-                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User does not exist")
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User Projects does not exist")
         else:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An unexpected error occurred.")
     except PyMongoError as e:
