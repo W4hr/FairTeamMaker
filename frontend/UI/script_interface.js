@@ -87,6 +87,12 @@ document.getElementById("add_column_window_add").addEventListener("click", () =>
             child_element.setAttribute("value", add_column_window_default_value);
             child_element.setAttribute("class", "table_input_number");
             child_element.setAttribute("type", "number");
+            
+            child_element.addEventListener("change", () => {
+                player_name = child_element.parentElement.parentElement.children[1].children[0].value
+                categorie_name = document.getElementById('edit_player_table_topbar').getElementsByTagName('th')[element.cellIndex].innerText;
+                selected_save_data_edit["players"][player_name]["scores"][categorie_name] = parseInt(child_element.value)
+            })
 
             element.appendChild(child_element);
             column_number_row.appendChild(element);
