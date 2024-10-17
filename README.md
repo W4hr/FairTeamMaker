@@ -1,65 +1,117 @@
-# FairTeamMaker ⚖️
-
 <img src="/frontend/UI/img/Logo.png" alt="Logo" width="150"/>
+# FairTeamMaker
 
-FairTeamMaker is a web app designed to create **balanced teams** using **player scores** and **relationships**. With algorithms like brute force and greedy, it ensures fairness by balancing both skill levels and interpersonal dynamics.
+**FairTeamMaker** is a web app designed to create **balanced teams** using player skill scores and their relationships with other players. The app is ideal for organizing teams in school or after-school sports activities, especially for children. It uses a brute force algorithm to find balanced teams, considering both individual player skills and interactions between players.
 
-## Features ✨
+This project serves as a learning experience and may contain some beginner-level coding practices. Contributions are welcome!
 
-- **Balanced Team Creation** using multiple algorithms.
-- **Player-to-Player Impact** adjustments.
-- **Score Normalization** via sigmoid function.
-- **Secure** JWT authentication and HTTPS.
+## Features
 
-## How It Works 🛠️
+- **Balanced Team Creation**: Generates fair teams based on player scores and relationships.
+- **Brute Force Algorithm**: Systematically evaluates combinations to ensure balanced teams.
+- **User Authentication**: Accounts are protected by hashed passwords and JWT tokens.
+- **Save & Load**: Projects (including players, scores, relationships, and team configurations) can be saved to a MongoDB database and reloaded later.
+- **Custom Inputs**: Users can set skill scores, relationship scores, number of courts (pitches), and allocate players or teams.
+- **Team Customization**: Options to set the max number of players sitting out, and balance player distribution across teams and courts.
+- **Normalization**: Scores are normalized using a sigmoid function.
 
-1. Input player scores and relationships.
-2. Choose an algorithm.
-3. Get balanced teams with score and interaction analysis.
+## Planned Features
 
-![Screenshot](#) <!-- Placeholder for interface screenshot -->
+- **Logs**: Keep track of past team matchups, including scores and team compositions.
+- **AI-Driven Adjustments**: Automatically adjust player skills and relationships based on past team performance.
+- **Category Balancing**: Balance teams based on specific player categories (e.g., attack, defense).
+- **Normalization Control**: Option to enable/disable score normalization from the frontend.
+- **Auto Save**: Automatically save projects at regular intervals.
+- **Additional Balancing Algorithms**: More algorithms, such as greedy and optimization-based approaches, are planned.
 
-## Technologies 🔧
+## Technologies Used
 
-- **Backend**: Node.js, Express
-- **Frontend**: React.js
-- **Database**: MongoDB
-- **Security**: JWT, HTTPS
+- **Frontend**: Plain HTML, JavaScript, CSS
+- **Backend**: FastAPI, Python (for formatting and brute force), C++ (for brute force algorithm), MongoDB (for storing user data and projects)
+- **Authentication**: JWT Tokens for securing routes, hashed passwords
 
-## Getting Started 🚀
+## Installation
 
-1. Clone the repo and install dependencies:
+1. Install [MongoDB](https://www.mongodb.com/try/download/community).
+2. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/fair-team-maker.git
-   cd fair-team-maker
-   npm install
-   npm start
+   git clone https://github.com/yourusername/FairTeamMaker.git
    ```
+3. Navigate to the project directory:
+   ```bash
+   cd FairTeamMaker
+   ```
+4. Set up environment variables:
+   - Add your MongoDB URL in `app.py`.
+   - Set `SECRET_KEY` in a `.env` file.
+5. Install the required Python packages:
+   ```bash
+   pip install -r requirements.txt
+   ```
+6. Run the application:
+   ```bash
+   uvicorn app:app --reload
+   ```
+7. Access the app via [http://localhost:8000](http://localhost:8000):
+   - Login: [http://localhost:8000/login](http://localhost:8000/login)
 
-2. Access the app at `http://localhost:3000`.
+### MongoDB Setup
 
-## Algorithms 🤖
+The database and collections need to be set up manually. You can find the relevant collection setup in the `app.py` file. Current collections:
+- `users`
+- `projects`
+- `logs`
 
-- **Brute Force**: Explores all team combos.
-- **Greedy**: Near-optimal local decisions.
-- **Randomized**: Generates random teams and compares.
+## Usage
 
-## Security 🔒
+1. **Create an Account**: Username and password only (no password recovery yet).
+2. **Input Data**: Add player scores and relationship values through the UI:
+   - Skill and relationship scores are entered into two separate tables.
+   - The user-defined scores are open-ended (categories may have a user-defined range).
+3. **Team Customization**: Use the "Analysis" tab to allocate players, set up pitches, and adjust other settings (e.g., max player differences).
+4. **Save and Load**: Save your projects to MongoDB or download them locally for later use.
 
-- **JWT Authentication** and **HTTPS** to secure your app.
+### Interface Overview
 
-## Future Roadmap 🛣️
+- **Introduction**: Basic overview of how to use the app.
+- **Import Data**: Import player and relationship data.
+- **Edit Data**: Manually edit player scores and relationships in the two tables.
+- **Analysis**: Allocate players, set pitches, and adjust balance-related settings.
+- **Logs**: (Currently empty, but will log matchups in future updates).
 
-- **Actual non AI README**
-- **Genetic algorithms** for scalable team balancing.
-- **Mobile App** and **real-time collaboration** features.
+## Scoring and Team Balancing
 
-## Contributing 🤝
+- **Player Scores**: Represent individual abilities (higher is better). Relationships represent how well players perform together (positive for good pairings, negative for bad).
+- **Normalization**: All scores are normalized through a sigmoid function for fairness.
+- **Algorithm**: The brute force algorithm starts from a random point and systematically generates team combinations, aiming to minimize the difference in total score between teams.
 
-We welcome contributions! Fork the repo, create a branch, and submit a pull request.
+## Contribution Guidelines
 
-## License 📄
+Contributions are welcome! However, since this is a learning project, the base may contain beginner-level practices. Pull requests will be reviewed carefully for security and correctness, which may take time. Please ensure that:
 
-Licensed under the MIT License.
+- Your code is secure and follows best practices.
+- You include tests or examples where relevant.
+- Pull requests are descriptive and linked to a specific issue (if applicable).
 
-![Team or Additional Screenshot](#) <!-- Placeholder for team or additional screenshot -->
+## Security
+
+- **JWT Authentication**: Secure routes with JSON Web Tokens (JWT) and hashed passwords.
+- **HTTPS**: While HTTPS is not included, users are encouraged to set it up themselves for deployment.
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for details.
+
+## Contact
+
+For questions or issues, feel free to reach out via:
+- **GitHub Issues**
+- **Email**: jakobutze@proton.me
+
+## Screenshots
+
+- **Login Page**
+<img src="./Screenshots/Login.png">
+- **Edit Data Tab** (Player and Relationship Tables)
+<img src="./Screenshots/Interface-Edit-Data-Tab.png">
+- **Analysis Results** (Team Balance Overview)
