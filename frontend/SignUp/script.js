@@ -1,5 +1,5 @@
 const interface_url = "http://127.0.0.1:5500/frontend/UI/interface.html"
-
+const api_url = "http://127.0.0.1:8000"
 
 document.addEventListener("DOMContentLoaded", () => {
 
@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const Site_Title = document.getElementById("Site_Title");
     input_username = document.getElementById("input_username");
     input_password = document.getElementById("input_password");
-    let action;
+    let action = "Sign In";
 
     tabs.forEach(tab => {
         tab.addEventListener("click", () => {
@@ -24,7 +24,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     const submit_button = document.getElementById("submit_button");
-    submit_button.addEventListener("submit", () => {
+    submit_button.addEventListener("click", () => {
+        console.log("Attempting Sign Up ...")
         let username = input_username.value;
         let password = input_password.value;
         if (action == "Sign In"){
@@ -48,10 +49,10 @@ function show_message(message, type_message){
         message_box.innerHTML = `<img src="./img/message/warning.svg" class="message_box_icon"> ${message}`;
         message_box.className = "warning_message show";
     } else if (type_message == "info"){
-        message_box.innerHTML = `<img src="./img/icon/info.svg" class="message_box_icon"> ${message}`;
+        message_box.innerHTML = `<img src="./img/message/info.svg" class="message_box_icon"> ${message}`;
         message_box.className = "show";
     } else if (type_message == "success"){
-        message_box.innerHTML = `<img src="./img/icon/check.svg" class="message_box_icon"> ${message}`;
+        message_box.innerHTML = `<img src="./img/message/check.svg" class="message_box_icon"> ${message}`;
         message_box.className = "success_message show";
     } else {
         console.error("Message type was not proper");
@@ -63,7 +64,7 @@ function show_message(message, type_message){
 
 async function login(username, password) {
     try {
-        const api_response = await fetch("/token", {
+        const api_response = await fetch(`${api_url}/token`, {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
             body: new URLSearchParams({ username, password }),
@@ -71,6 +72,7 @@ async function login(username, password) {
         });
 
         if (api_response.ok) {
+            console.log("OK - Really")
             window.location.href = interface_url;
         } else {
             const data = await api_response.json();
@@ -85,7 +87,7 @@ async function login(username, password) {
 
 async function sign_up(username, password) {
     try {
-        const api_response = await fetch("/SignUp", {
+        const api_response = await fetch(`${api_url}/SignUp`, {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
             body: new URLSearchParams({ username, password }),

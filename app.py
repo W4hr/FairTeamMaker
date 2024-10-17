@@ -1,5 +1,7 @@
 from fastapi import FastAPI, status, Body, Form, Response, Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.staticfiles import StaticFiles
+from starlette.responses import FileResponse
 from fastapi.responses import JSONResponse
 from typing import List, Optional
 from datetime import datetime, timedelta, timezone
@@ -33,6 +35,17 @@ mongologs = mongodb["logs"]
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oAuth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+# Frontend Setup
+app.mount("/frontend", StaticFiles(directory="frontend"), name="frontend")
+
+@app.get("/")
+async def HTMLUserInterface():
+    return FileResponse("frontend/UI/interface.html")
+
+@app.get("/login")
+async def serve_login():
+    return FileResponse("/frontend/SignUp/index.html")
 
 async def log_error(error: str, error_type: str, line:int):
     try:

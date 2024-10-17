@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Interface</title>
-    <link rel="stylesheet" href="styles_interface.css">
+    <link rel="stylesheet" href="/frontend/UI/styles_interface.css">
     <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <link rel="icon" type="image/svg+xml" href="./img/Logo.svg">
     <!-- Fallback to a PNG favicon for browsers that do not support SVG -->
-    <link rel="alternate icon" href="./img/Logo.png">
+    <link rel="alternate icon" href="frontend/UI/img/Logo.png">
 </head>
 <body>
     <div id="headder">
@@ -20,7 +20,7 @@
             <li data-tab-target="#log_tab" class="tab">Logs</li>
         </ul>
     </div>
-    <div id="message_box" class=""><img src="./img/icon/info.svg" class="message_box_icon"></div>
+    <div id="message_box" class=""><img src="frontend/UI/img/icon/info.svg" class="message_box_icon"></div>
     <div class="tab-content">
         <div id="introduction_tab" data-tab-content class="active_tab">
             <div class="introduction_container">
@@ -95,14 +95,14 @@
                     <ul id="list_saves">
                         <li>
                             <div id="add_new_save">
-                                <img src="./img/icon/add.svg">
+                                <img src="frontend/UI/img/icon/add.svg">
                                 <p id="add_new_save_text_field">Neues Projekt</p>
                             </div>
                         </li>
                     </ul>
                 </div>
                 <div id="json_import">
-                    <img src="./img/icon/upload.svg" id="upload_icon">
+                    <img src="frontend/UI/img/icon/upload.svg" id="upload_icon">
                     <p>Upload File with Playerdata</p>
                     <input type="file" accept=".json" id="json_import_input">
                     <button id="clear_input_button"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/></svg></button>
@@ -187,7 +187,7 @@
                 <div id="analyze_results_pitches">
                     <div id="analyze_configure_add_pitch_container">
                         <div id="analyze_configure_add_pitch_button">
-                            <img src="./img/icon/add.svg" alt="Add Pitch">
+                            <img src="frontend/UI/img/icon/add.svg" alt="Add Pitch">
                             <p>Spielfeld hinzufügen</p>
                         </div>
                     </div>
@@ -218,6 +218,6 @@
             <h2>Coming soon</h2>
         </div>
     </div>
-    <script src="script_interface.js"></script>
+    <script src="/frontend/UI/script_interface.js"></script>
 </body>
 </html>

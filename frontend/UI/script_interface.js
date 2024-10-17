@@ -381,7 +381,7 @@ function build_save_add(){
     save_li_add = `
         <li>
             <div id="add_new_save">
-                <img src="./img/icon/add.svg">
+                <img src="frontend/UI/img/icon/add.svg">
                 <p id="add_new_save_text_field">Neues Projekt</p>
             </div>
         </li>
@@ -465,7 +465,7 @@ function build_player_preview(data, i){
     properties_player_delete.classList.add("properties_list_player_item_delete")
 
     const properties_player_delete_symbol = document.createElement("img")
-    properties_player_delete_symbol.src = "./img/icon/close2.svg"
+    properties_player_delete_symbol.src = "frontend/UI/img/icon/close2.svg"
     properties_player_delete_symbol.classList.add("properties_list_player_item_delete_img")
 
     // Build Children
@@ -570,7 +570,7 @@ function build_team(number_to_devide_for_team_name){
     analyze_pitch_team_add_player.classList.add("analyze_results_pitch_team_add_player")
 
     const analyze_pitch_team_add_player_symbol = document.createElement("img")
-    analyze_pitch_team_add_player_symbol.setAttribute("src", "./img/icon/add.svg")
+    analyze_pitch_team_add_player_symbol.setAttribute("src", "frontend/UI/img/icon/add.svg")
     analyze_pitch_team_add_player_symbol.setAttribute("alt", "Add Player to Team")
     analyze_pitch_team_add_player_symbol.classList.add("analyze_results_pitch_team_add_player_symbol")
 
@@ -619,7 +619,7 @@ function add_player_to_team (add_button) {
     const analyze_pitch_team_player_delete_container = document.createElement("div")
     analyze_pitch_team_player_delete_container.classList.add("analyze_pitch_team_player_delete")
     const analyze_pitch_team_player_delete = document.createElement("img")
-    analyze_pitch_team_player_delete.setAttribute("src", "./img/icon/close2.svg")
+    analyze_pitch_team_player_delete.setAttribute("src", "frontend/UI/img/icon/close2.svg")
     analyze_pitch_team_player_delete.setAttribute("style", "height: 15px;")
     analyze_pitch_team_player_delete_container.addEventListener("click", () => {
         analyze_pitch_team_player.remove()
@@ -662,13 +662,13 @@ function add_player_to_team_eventlistener(){
 function show_message(message, type_message){
     const message_box = document.getElementById("message_box");
     if (type_message == "warning"){
-        message_box.innerHTML = `<img src="./img/icon/warning.svg" class="message_box_icon"> ${message}`;
+        message_box.innerHTML = `<img src="frontend/UI/img/icon/warning.svg" class="message_box_icon"> ${message}`;
         message_box.className = "warning_message show";
     } else if (type_message == "info"){
-        message_box.innerHTML = `<img src="./img/icon/info.svg" class="message_box_icon"> ${message}`;
+        message_box.innerHTML = `<img src="frontend/UI/img/icon/info.svg" class="message_box_icon"> ${message}`;
         message_box.className = "show";
     } else if (type_message == "success"){
-        message_box.innerHTML = `<img src="./img/icon/check.svg" class="message_box_icon"> ${message}`;
+        message_box.innerHTML = `<img src="frontend/UI/img/icon/check.svg" class="message_box_icon"> ${message}`;
         message_box.className = "success_message show";
     } else {
         console.error("Message type was not proper");
