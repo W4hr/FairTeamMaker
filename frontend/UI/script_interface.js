@@ -77,7 +77,6 @@ document.getElementById("add_column_window_add").addEventListener("click", () =>
         newColumnTop.innerText = add_column_window_name;
         edit_player_table_topbar.appendChild(newColumnTop);
         
-
         const column_number_rows = remove_from_array_with_tag(document.querySelectorAll('#edit_player_table tr'), ["edit_player_table_topbar"]);
         column_number_rows.forEach((column_number_row) => {
             const element = document.createElement("td");
@@ -630,7 +629,7 @@ function add_player_to_team (add_button) {
 
     const analyze_pitch_team_player_score = document.createElement("p")
     analyze_pitch_team_player_score.classList.add("analyze_pitch_team_player_score")
-    analyze_pitch_team_player_score.innerText = selected_save_data_edit.players.find(player => player.name === analyze_pitch_team_add_player_selection.value).primaryScore // Add Score Function Later
+    analyze_pitch_team_player_score.innerText = selected_save_data_edit.players[analyze_pitch_team_add_player_selection.value].primaryScore // Add Score Function Later
 
     const analyze_pitch_team_player_delete_container = document.createElement("div")
     analyze_pitch_team_player_delete_container.classList.add("analyze_pitch_team_player_delete")
@@ -1186,4 +1185,113 @@ function add_project_eventlistener(){
         document.getElementById("add_project_window_dimming").classList.toggle("hide");
         document.getElementById("add_project_window").classList.toggle("hide");
     })
+}
+
+function verify_project(project){
+    if (verify_project_players(project)){
+        if (verify_categories(project)){
+            if (verify_settings(project)){
+                
+            }
+        }
+    }
+}
+
+function verify_project_players(project){
+    players = project["players"]
+    const player_count = 0;
+    const players_invalid_primary_score = []
+    const player_count_invalid_primary_score = 0
+    Object.keys(players).forEach(player_name, () => {
+        if (typeof(players[player_name].primaryScore) == Int){
+            players_invalid_primary_score.push(player_name);
+            player_count_invalid_primary_score ++;
+        }
+        player_count ++;
+    })
+    if (player_count_invalid_primary_score > 1){
+        show_message(`The players ${players_invalid_primary_score} have invalid primary scores. Make sure that the primary score of those players is a number.`, "warning")
+        return false
+    } else if (player_count_invalid_primary_score == 1){
+        show_message(`The player ${players_invalid_primary_score} has an invalid primary score. Make sure that the primary score of ${players_invalid_primary_score} is a number.`, "warning")
+        return false
+    } else if (player_count_invalid_primary_score == 0){
+    } else {
+        show_message("There has been an unkown error during validation of you projects data. Please try again.", "warning")
+        return false
+    }
+    if (player_count != project["number of players"]){
+        show_message("The amount of players with data does not match the number of players. This will be fixed automatically", "info")
+    }
+    return true
+}
+
+function verify_categories(project){
+    categories = project["categories"]
+    players = project["players"]
+
+    const players_missing_categorie = {}
+    const player_count_missing_categories = 0
+    const players_too_small_or_too_large_categorie_scores = [] // Remove duplicates
+    const player_count_too_small_or_too_large_categorie_scores = 0
+
+    categories.forEach(categorie, () => {
+        Object.keys(players).forEach(player_name, () => {
+            if (!project.players[player_name].scores[categorie.name] || typeof(project.players[player_name].scores[categorie.name]) != int){
+                players_missing_categorie[categorie.name] += player_name // Push player to categorie if categorie exists in players_missing_categorie else create list and categorie name key
+                player_count_missing_categories ++;
+            } else if (typeof(categorie.minimumValue) == int) {
+                if (project.players[player_name].scores[categorie.name] < categorie.minimumValue){
+                    players_too_small_or_too_large_categorie_scores.push(player_name)
+                    player_count_too_small_or_too_large_categorie_scores ++;
+                } else if (typeof(categorie.maximumValue) == int){
+                    if (project.players[player_name].scores[categorie.name] < categorie.maximumValue){
+                        players_too_small_or_too_large_categorie_scores.push(player_name)
+                        player_count_too_small_or_too_large_categorie_scores ++;
+                    }
+                }
+            }
+        })
+    })
+    if (player_count_missing_categories > 0){
+        show_message("Values for some categories for some players are either missing or are not a number")
+        return false
+    }
+
+    if (player_count_too_small_or_too_large_categorie_scores > 0){
+        show_message(`The players ${players_too_small_or_too_large_categorie_scores} have either to high or to low scores in one or more categorie`, "warning")
+        return false
+    }
+    return true
+}
+
+function verify_settings(project){
+    settings = project["settings"]
+
+    if (typeof(settings.interachangableTeams) != Boolean){
+        show_message("The 'interchangable Teams' option is neither on nor off. Please tick this setting off or on to fit your needs.", "warning")
+        return false
+    }
+
+    if (typeof(settings.maxSittingOut) != int || settings.maxSittingOut < 0){
+        show_message("The input for the maximum amount of players sitting out is either not a number or is smaller then 0", "warning")
+        return false
+    }
+
+    if (typeof(settings.maxDifferenceTeams) != int || settings.maxDifferenceTeams < 0){
+        show_message("The input for the maximum difference in amount of players between teams option is either not a number or is smaller then 0", "warning")
+        return false
+    }
+
+    if (typeof(settings.maxDifferencePitches) != int || settings.maxDifferencePitches < 0){
+        show_message("The input for the maximum difference in amount of players between pitches option is either not a number or is smaller then 0", "warning")
+        return false
+    }
+
+    if (typeof(settings.auto-save) != Boolean){
+        show_message("The 'auto-save' option is neither on nor off. Please tick this setting off or on to fit your needs.", "warning")
+        return false
+    }
+
+    return  true
 }

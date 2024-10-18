@@ -74,7 +74,7 @@ The database and collections need to be set up manually. You can find the releva
 ### Interface Overview
 
 - **Introduction**: Basic overview of how to use the app.
-- **Import Data**: Import player and relationship data.
+- **Import Data**: Load project data either from the database or from a project file.
 - **Edit Data**: Manually edit player scores and relationships in the two tables.
 - **Analysis**: Allocate players, set pitches, and adjust balance-related settings.
 - **Logs**: (Currently empty, but will log matchups in future updates).
