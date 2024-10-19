@@ -1103,7 +1103,7 @@ import_data_input.addEventListener("change", () => {
     }
 });
 
-
+// Todo
 // Function to adjust the options for the numbers of Players selection per team so that if you choose a number of players for a team 
 function addjust_num_player_selection(){
     var sum_numbers_selection = 0
@@ -1188,10 +1188,15 @@ function add_project_eventlistener(){
 }
 
 function verify_project(project){
-    if (verify_project_players(project)){
+    const [players_valid, players_names] = verify_project_players(project)
+    if (players_valid){
         if (verify_categories(project)){
             if (verify_settings(project)){
-                
+                if (verify_player_to_player(project, players_names)){
+                    if (verify_teams_and_matches(project)){
+                        show_message("The project data is valid and will be processed", "success")
+                    }
+                }
             }
         }
     }
@@ -1202,49 +1207,54 @@ function verify_project_players(project){
     const player_count = 0;
     const players_invalid_primary_score = []
     const player_count_invalid_primary_score = 0
-    Object.keys(players).forEach(player_name, () => {
-        if (typeof(players[player_name].primaryScore) == Int){
+    const players_names = []
+    Object.keys(players).forEach(player_name => {
+        if (typeof(players[player_name].primaryScore) !== "number"){
             players_invalid_primary_score.push(player_name);
             player_count_invalid_primary_score ++;
         }
+        players_names.push(player_name)
         player_count ++;
     })
     if (player_count_invalid_primary_score > 1){
         show_message(`The players ${players_invalid_primary_score} have invalid primary scores. Make sure that the primary score of those players is a number.`, "warning")
+        console.error(`The players ${players_invalid_primary_score} have invalid primary scores. Make sure that the primary score of those players is a number.`)
         return false
     } else if (player_count_invalid_primary_score == 1){
         show_message(`The player ${players_invalid_primary_score} has an invalid primary score. Make sure that the primary score of ${players_invalid_primary_score} is a number.`, "warning")
+        console.error(`The player ${players_invalid_primary_score} has an invalid primary score. Make sure that the primary score of ${players_invalid_primary_score} is a number.`)
         return false
     } else if (player_count_invalid_primary_score == 0){
     } else {
         show_message("There has been an unkown error during validation of you projects data. Please try again.", "warning")
+        console.error("There has been an unkown error during validation of you projects data. Please try again.")
         return false
     }
     if (player_count != project["number of players"]){
         show_message("The amount of players with data does not match the number of players. This will be fixed automatically", "info")
+        console.log("The amount of players with data does not match the number of players. This will be fixed automatically")
+        return false
     }
-    return true
+    return [true, players_names]
 }
 
 function verify_categories(project){
     categories = project["categories"]
     players = project["players"]
 
-    const players_missing_categorie = {}
     const player_count_missing_categories = 0
     const players_too_small_or_too_large_categorie_scores = [] // Remove duplicates
     const player_count_too_small_or_too_large_categorie_scores = 0
 
-    categories.forEach(categorie, () => {
-        Object.keys(players).forEach(player_name, () => {
-            if (!project.players[player_name].scores[categorie.name] || typeof(project.players[player_name].scores[categorie.name]) != int){
-                players_missing_categorie[categorie.name] += player_name // Push player to categorie if categorie exists in players_missing_categorie else create list and categorie name key
+    categories.forEach(categorie => {
+        Object.keys(players).forEach(player_name => {
+            if (!project.players[player_name].scores[categorie.name] || typeof(project.players[player_name].scores[categorie.name]) != "number"){
                 player_count_missing_categories ++;
-            } else if (typeof(categorie.minimumValue) == int) {
+            } else if (typeof(categorie.minimumValue) == "number") {
                 if (project.players[player_name].scores[categorie.name] < categorie.minimumValue){
                     players_too_small_or_too_large_categorie_scores.push(player_name)
                     player_count_too_small_or_too_large_categorie_scores ++;
-                } else if (typeof(categorie.maximumValue) == int){
+                } else if (typeof(categorie.maximumValue) == "number"){
                     if (project.players[player_name].scores[categorie.name] < categorie.maximumValue){
                         players_too_small_or_too_large_categorie_scores.push(player_name)
                         player_count_too_small_or_too_large_categorie_scores ++;
@@ -1254,12 +1264,14 @@ function verify_categories(project){
         })
     })
     if (player_count_missing_categories > 0){
-        show_message("Values for some categories for some players are either missing or are not a number")
+        show_message("Values for some categories for some players are either missing or are not a number", "warning")
+        console.error("Values for some categories for some players are either missing or are not a number")
         return false
     }
 
     if (player_count_too_small_or_too_large_categorie_scores > 0){
-        show_message(`The players ${players_too_small_or_too_large_categorie_scores} have either to high or to low scores in one or more categorie`, "warning")
+        show_message(`The players ${players_too_small_or_too_large_categorie_scores} have either too large or too small scores in one or more categorie`, "warning")
+        console.error(`The players ${players_too_small_or_too_large_categorie_scores} have either too large or too small scores in one or more categorie`)
         return false
     }
     return true
@@ -1268,30 +1280,140 @@ function verify_categories(project){
 function verify_settings(project){
     settings = project["settings"]
 
-    if (typeof(settings.interachangableTeams) != Boolean){
+    if (typeof(settings.interachangableTeams) != "boolean"){
         show_message("The 'interchangable Teams' option is neither on nor off. Please tick this setting off or on to fit your needs.", "warning")
+        console.error("The 'interchangable Teams' option is neither on nor off. Please tick this setting off or on to fit your needs.")
         return false
     }
 
-    if (typeof(settings.maxSittingOut) != int || settings.maxSittingOut < 0){
+    if (typeof(settings.maxSittingOut) != "number" || settings.maxSittingOut < 0){
         show_message("The input for the maximum amount of players sitting out is either not a number or is smaller then 0", "warning")
+        console.error("The input for the maximum amount of players sitting out is either not a number or is smaller then 0")
         return false
     }
 
-    if (typeof(settings.maxDifferenceTeams) != int || settings.maxDifferenceTeams < 0){
+    if (typeof(settings.maxDifferenceTeams) != "number" || settings.maxDifferenceTeams < 0){
         show_message("The input for the maximum difference in amount of players between teams option is either not a number or is smaller then 0", "warning")
+        console.error("The input for the maximum difference in amount of players between teams option is either not a number or is smaller then 0")
         return false
     }
 
-    if (typeof(settings.maxDifferencePitches) != int || settings.maxDifferencePitches < 0){
+    if (typeof(settings.maxDifferencePitches) != "number" || settings.maxDifferencePitches < 0){
         show_message("The input for the maximum difference in amount of players between pitches option is either not a number or is smaller then 0", "warning")
+        console.error("The input for the maximum difference in amount of players between pitches option is either not a number or is smaller then 0")
         return false
     }
 
-    if (typeof(settings.auto-save) != Boolean){
+    if (typeof(settings.auto-save) != "boolean"){
         show_message("The 'auto-save' option is neither on nor off. Please tick this setting off or on to fit your needs.", "warning")
+        console.error("The 'auto-save' option is neither on nor off. Please tick this setting off or on to fit your needs.")
         return false
     }
 
     return  true
+}
+
+function verify_player_to_player(project, players_names){
+    pairPerformance = project["pairPerformance"]
+
+    const players_missing_in_pairPerformance = []
+    const count_players_missing_from_pairPerformance = 0;
+
+    const players_missing_in_players_pair_performance = []
+    const count_players_missing_in_players_pair_performance = 0
+
+    const players_invalid_pair_performance = []
+    const count_players_invalid_pair_performance = 0
+
+    players_names.forEach(player_name => {
+        if (!pairPerformance[player_name]){
+            players_missing_in_pairPerformance.push(players_names)
+            count_players_missing_from_pairPerformance ++;
+        }
+        players_names.forEach(pair_player_name => {
+            if (!pairPerformance[player_name][pair_player_name]){
+                players_missing_in_players_pair_performance.push(player_name)
+                players_missing_in_players_pair_performance.push(pair_player_name)
+                count_players_missing_in_players_pair_performance ++
+            } else if(typeof(pairPerformance[player_name][pair_player_name]) != "number"){
+                players_invalid_pair_performance.push(player_name)
+                players_invalid_pair_performance.push(pair_player_name)
+                count_players_invalid_pair_performance ++
+            }
+        })
+    })
+
+    if (count_players_missing_from_pairPerformance > 0){
+        show_message(`The players ${players_missing_in_pairPerformance} are missing from the pairPerformance. Assure that they have a relationship status.`, "warning")
+        console.error(`The players ${players_missing_in_pairPerformance} are missing from the pairPerformance. Assure that they have a relationship status.`)
+        return false
+    }
+    if (count_players_missing_in_players_pair_performance > 0){
+        players_missing_in_players_pair_performance = [...new Set(players_missing_in_players_pair_performance)];
+        show_message(`The players ${players_missing_in_players_pair_performance} do not have a value representing their relationship`, "warning")
+        console.error(`The players ${players_missing_in_players_pair_performance} do not have a value representing their relationship`)
+        return false
+    }
+    if (count_players_invalid_pair_performance > 0){
+        players_invalid_pair_performance = [...new Set(players_invalid_pair_performance)];
+        show_message(`The players ${players_missing_in_players_pair_performance} pair relationship value is invalid`, "warning")
+        console.error(`The players ${players_missing_in_players_pair_performance} pair relationship value is invalid`)
+        return false
+    }
+
+    return true
+}
+
+function verify_teams_and_matches(project){
+    const teams = project.teams
+    const matches = project.matches
+    const players = project.players
+
+    const teams_names = []
+    const teams_invalid_num_players = []
+    const count_teams_invalid_num_players = 0;
+
+    const teams_unkown_player_allocation = []
+    const count_teams_unkown_player_allocation = 0
+
+    Object.keys(teams).forEach(team_name => {
+        teams_names.push(team_name)
+        if (project.teams[team_name]["num_players"] != "None" && typeof(project.teams[team_name]["num_players"]) != "number"){
+            teams_invalid_num_players.push(team_name)
+            count_teams_invalid_num_players ++
+        }
+        project.teams[team_name]["players"].forEach(player_name =>{
+            if (!players[player_name]){
+                teams_unkown_player_allocation.push(player_name)
+                count_teams_unkown_player_allocation ++
+            }
+        })
+    })
+
+    const unkown_team_in_matches = []
+    const count_unkown_team_in_matches = 0
+
+    teams_names.forEach(team_name => {
+        if (!matches[team_name] || !teams[matches[team_name]]){
+            unkown_team_in_matches.push(team_name)
+            count_unkown_team_in_matches ++
+        }
+    })
+
+    if (count_teams_invalid_num_players > 0){
+        show_message(`The teams ${teams_invalid_num_players} have an invalid value for their team size. Make sure the team size is either not set or set to a number`, "warning")
+        console.error(`The teams ${teams_invalid_num_players} have an invalid value for their team size. Make sure the team size is either not set or set to a number`)
+        return false
+    }
+    if (count_teams_unkown_player_allocation > 0){
+        show_message(`To the teams ${teams_unkown_player_allocation} players not in the project were allocated. Make sure all players allocated to a team are also present in the project`, "warning")
+        console.error(`To the teams ${teams_unkown_player_allocation} players not in the project were allocated. Make sure all players allocated to a team are also present in the project`)
+        return false
+    }
+    if (count_unkown_team_in_matches > 0){
+        show_message(`The teams ${unkown_team_in_matches} either not exist or their opponent does not exist. Make sure the teams are named properly`, "warning")
+        console.error(`The teams ${unkown_team_in_matches} either not exist or their opponent does not exist. Make sure the teams are named properly`)
+        return false
+    }
+    return true
 }
