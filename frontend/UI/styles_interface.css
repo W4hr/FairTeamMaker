@@ -1076,6 +1076,7 @@ label {
     margin: 10px;
     border-radius: 20px;
     position: relative;
+    transition: 0.3s;
 }
 
 .analyze_pitch_title{
@@ -1230,4 +1231,19 @@ h1.analyze{
 .error_box {
     border: 2px solid #881308 !important;
     background: #550e08;
+}
+
+#analyze_project{
+    min-height: 40px !important;
+}
+
+.analyze_settings_button_container{
+    display: flex;
+    margin-top: 25px;
+    justify-content: space-around;
+    width: 100%;
+}
+
+#analyze_project{
+    width: 100px !important;
 }

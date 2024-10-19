@@ -502,16 +502,19 @@ function add_delete_option_for_players_in_preview() {
         player_to_deltete_delete.addEventListener("click", () => {
             delete_player(player_to_deltete_delete)
             const player_to_delete_name = player_to_deltete_delete.parentElement.children[1].innerText
-            if (save_preview_players_delete["players"][player_to_delete_name]){
-                delete save_preview_players_delete["players"][player_to_delete_name]
+            if (selected_save_data_preview["players"][player_to_delete_name]){
+                delete selected_save_data_preview["players"][player_to_delete_name]
                 delete selected_save_data_preview.pairPerformance[player_to_delete_name];
                 Object.keys(selected_save_data_preview.pairPerformance).forEach(pairPerformancePlayer => {
                     delete selected_save_data_preview.pairPerformance[pairPerformancePlayer][player_to_delete_name];
                 })
                 selected_save_data_preview["number of players"] -= 1;
+                document.getElementById("properties_player_count_input").setAttribute("placeholder", selected_save_data_preview["number of players"])
 
             }
-            document.getElementById("properties_player_count_input").setAttribute("placeholder", selected_save_data_preview["number of players"])
+            else{
+                console.error("Player to remove does not exist in the data")
+            }
         })
     })
 }
@@ -793,7 +796,7 @@ function clear_player_table(){
 document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("load_config").addEventListener("click", () => {
         if (selected_save_data == "") {
-            show_message("No save selected:Please either select a saved project or create one", "warning")
+            show_message("No save selected: Please either select a saved project or create one", "warning")
         } else {
             selected_save_data = selected_save_data_preview
             selected_save_data_edit = selected_save_data_preview
@@ -1057,13 +1060,12 @@ function apply_changes_to_players_in_teams(old_name, new_name){
         }
     })
 }
-
+ // HERE
 document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("save_and_download_button").addEventListener("click", () => {
-        selected_save_data = selected_save_data_edit
         let dl = document.createElement("a")
-        dl.download = `${selected_save_data.name}.json`
-        dl.href = `data:application/json;charset=utf-8,${JSON.stringify(selected_save_data)}`
+        dl.download = `${selected_save_data_edit.name}.json`
+        dl.href = `data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify(selected_save_data_edit))}`
         dl.click()
     })
     add_project_eventlistener()
@@ -1158,33 +1160,77 @@ function add_project_eventlistener(){
         }
     }
     document.getElementById("add_project").addEventListener("click", () => {
-        console.log("Clickety")
         default_new_project["name"] = document.getElementById("add_project_name_input").value;
         if (document.getElementById("add_project_autosave_option").classList.contains("checked")){
             default_new_project["settings"]["auto-save"] = "True"
         }
         default_new_project["description"] = document.getElementById("add_project_description_input").value;
         default_new_project["color"] = document.getElementById("project_color_input").value
+        console.log(default_new_project)
         selected_save_data = default_new_project
         selected_save_data_preview = default_new_project
+        console.log(selected_save_data_preview)
 
         const name_property_save = document.getElementById("properties_name_input");
         const number_players_property_save = document.getElementById("properties_player_count_input");
         const description_property_save = document.getElementById("properties_notes_input");
 
-        name_property_save.value = selected_save_data["name"];
-        number_players_property_save.setAttribute("placeholder", selected_save_data["number of players"]);
-        description_property_save.value = selected_save_data["description"];
+        name_property_save.value = selected_save_data_preview["name"];
+        number_players_property_save.setAttribute("placeholder", selected_save_data_preview["number of players"]);
+        description_property_save.value = selected_save_data_preview["description"];
 
-        Object.keys(selected_save_data.players).forEach(player_name => {
-            build_player_preview(selected_save_data, player_name)
+        Object.keys(selected_save_data_preview.players).forEach(player_name => {
+            build_player_preview(selected_save_data_preview, player_name)
     })
 
         add_delete_option_for_players_in_preview();
         AttendanceIndicatorPreviewEventListeners();
         document.getElementById("add_project_window_dimming").classList.toggle("hide");
         document.getElementById("add_project_window").classList.toggle("hide");
+        selected_save_data = selected_save_data_preview
     })
+}
+
+
+function analyze(project){
+    const analyze_project = gather_project_data_settings(project)
+    analyze_project = gather_project_data_teams_matches(analyze_project)
+}
+
+function gather_project_data_settings(project){
+    analyze_tab_settings = document.getElementById("analyze_settings_interchangeable_toggle_container")
+    project.settings.maxSittingOut = parseInt(analyze_tab_settings.getElementById("analyze_settings_max_sit_out_players").value)
+    project.settings.maxDifferenceTeams = parseInt(analyze_tab_settings.getElementById("analyze_settings_max_difference_teams").value)
+    project.settings.maxDifferencePitches = parseInt(analyze_tab_settings.getElementById("analyze_settings_max_difference_pitches").value)
+    if (document.getElementById("analyze_settings_interchangeable_toggle").classList.contains("checked")){
+        project.settings.interachangableTeams = "True"
+    } else {
+        project.settings.interachangableTeams = "False"
+    }
+    return project
+}
+
+function gather_project_data_teams_matches(project){
+
+    // extract which players are allocated to which team and set the set teams size
+    anaylze_tab = document.getElementById("analysis_tab")
+    analyze_tab.querySelectorAll(".analyze_pitch_team").forEach(team_box => {
+        project.teams[team_box.querySelector(".analyze_pitch_team_title_input").value] = {
+            "num_players": (() => {
+                const selectedValue = team_box.querySelector(".analyze_pitch_team_num_players").value;
+                return selectedValue === "a" ? "None" : selectedValue;
+            })(),
+            "players": Array.from(team_box.querySelectorAll(".analyze_pitch_team_player_name")).map(player_name => player_name.innerText)
+        }
+    })
+
+    const team_names = Array.from(anaylze_tab.querySelectorAll(".analyze_pitch_team_title_input"))
+
+    for (let i = 0; i < team_names.length; i += 2){
+        project.matches[team_names[i]] = team_names[i+1]
+    }
+    return project
+    
 }
 
 function verify_project(project){
@@ -1417,3 +1463,10 @@ function verify_teams_and_matches(project){
     }
     return true
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("edit_data_tab_analyze_tab").addEventListener("click", () => {
+        document.getElementById("edit_data_tab").classList.remove("active_tab")
+        document.getElementById("analysis_tab").classList.add("active_tab")
+    })
+})
