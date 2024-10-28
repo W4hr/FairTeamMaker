@@ -18,7 +18,7 @@ def create_default_starter_project():
             "matches": {},
             "teams": {},
             "settings": {
-                "interachangableTeams": "True",
+                "interachangableTeams": True,
                 "maxSittingOut": 2,
                 "maxDifferenceTeams": 2,
                 "maxDifferencePitches": 2,
@@ -27,11 +27,11 @@ def create_default_starter_project():
             "categories": [],
             "players": {
                 "player 1": {
-                    "attendanceState": "True",
+                    "attendanceState": True,
                     "primaryScore": 0
                 },
                 "player 2": {
-                    "attendanceState": "True",
+                    "attendanceState": True,
                     "primaryScore": 0
                 }
             },

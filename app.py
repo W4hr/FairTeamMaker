@@ -1,4 +1,4 @@
-from fastapi import FastAPI, status, Body, Form, Response, Depends, HTTPException
+from fastapi import FastAPI, status, Body, Form, Request, Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.staticfiles import StaticFiles
 from starlette.responses import FileResponse
@@ -22,11 +22,17 @@ load_dotenv()
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRES = timedelta(minutes=30)
+ACCESS_TOKEN_EXPIRES = timedelta(hours=24)
 
 # Env check
 if not SECRET_KEY:
     raise ValueError("SECRET_KEY environment variable not set.")
+
+# Logging
+import logging
+
+logging.basicConfig(level=logging.DEBUG, filename="log.log", filemode="w",
+                    format="%(asctime)s - %(levelname)s - %(message)s")
 
 # MongoDB
 mongoclient = AsyncIOMotorClient("mongodb://localhost:27017")
@@ -49,18 +55,6 @@ async def HTMLUserInterface():
 async def serve_login():
     return FileResponse("frontend/SignUp/index.html")
 
-async def log_error(error: str, error_type: str, line:int):
-    try:
-        time = datetime.now(tz=timezone.utc).isoformat()
-        log_entry = {
-            "time": time,
-            "type": error_type,
-            "error": error,
-            "line": line
-        }
-        await mongologs.insert_one(log_entry)
-    except Exception as e:
-        print(f"failed to log {e}")
 
 def verify_password(password:str, hashed_password:str):
     return pwd_context.verify(password, hashed_password)
@@ -68,10 +62,18 @@ def verify_password(password:str, hashed_password:str):
 def generate_password_hash(password: str):
     return pwd_context.hash(password)
 
+async def get_token_from_cookie(request: Request) -> str:
+    token = request.cookies.get("access_token")
+    if not token:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials", headers={"WWW-Authenticate" : "Bearer"})
+    return token
+
 async def get_user(username:str) -> UserModel | None:
-    user = await mongousers.find_one({"username": username}, {"_id": 0, "username": 1,"hashed_password": 1, "disabled": 1})
+    user = await mongousers.find_one({"username": username}, {"_id": 1, "username": 1,"hashed_password": 1, "disabled": 1})
     if user:
-        return UserModel(**user)
+        user["_id"] = str(user["_id"])
+        user_in_UserModel = UserModel(**user)
+        return user_in_UserModel
     return None
 
 async def authenticate_user(username:str , password: str) -> bool:
@@ -87,18 +89,26 @@ def create_jwt_access_token(data: dict, expires_delta: timedelta = ACCESS_TOKEN_
     encoded_jwt_token = jwt.encode(encode_data, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt_token
 
-async def get_current_user(token: str = Depends(oAuth2_scheme)):
+async def get_current_user(token: str = Depends(get_token_from_cookie)):
     credential_exception = HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials", headers={"WWW-Authenticate" : "Bearer"})
+    logging.debug(f"Authentication started: {token}")
     try:
+        logging.debug("started authentification decoding")
         jwt_payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM], options={"verify_exp": True})
+        logging.debug(f"Decoded = {jwt_payload}")
         username : str = jwt_payload.get("sub")
         if username == None:
             raise credential_exception
         token_data = TokenData(sub=username, exp=jwt_payload.get("exp"))
     except jwt.ExpiredSignatureError:
+        logging.debug(f"Expired Signature: {jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM], options={'verify_exp': False}).get('exp')}")
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token expired")
-    except jwt.InvalidTokenError:
+    except JWTError:
+        logging.debug("Invalid Token")
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
     
     user = await get_user(username=token_data.sub)
     if user is None:
@@ -141,26 +151,26 @@ async def SignUp(username: str = Form(...), password: str = Form(...)):
             hashed_password=generate_password_hash(password),
             disabled=False)
         user = await mongousers.insert_one(user_in_db.model_dump(by_alias=False, exclude=["_id"]))
-        default_starter_project = await create_default_starter_project()
-        starter_project = await default_starter_project.copy()
-        starter_project["owner"] = str(user.inserted_id)
-        await mongoprojects.insert_one(starter_project)
+        default_starter_project = create_default_starter_project()
+        default_starter_project["owner"] = str(user.inserted_id)
+        await mongoprojects.insert_one(default_starter_project)
         return {"message": "User created successfully"}
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"An unexpected error occurred: {e}")
 
-@app.post("/user-project-previews")
+@app.get("/user-project-previews")
 async def get_users_project_previews(current_user: UserModel = Depends(get_current_active_user)):
+    logging.debug("Getting Users Previews")
     try:
         if current_user:
             mongouser = await mongousers.find_one({"username": current_user.username})
             if mongouser:
                 projects_previews = await mongoprojects.find(
-                     {"owner": str(mongouser["_id"])}
+                    {"owner": str(current_user.id)}
                 ).to_list(length=None)
                 return JSONResponse([project["preview_project"] for project in projects_previews])
             else:
-                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User Projects does not exist")
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User Projects does not exist or the user has no saves")
         else:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An unexpected error occurred.")
     except PyMongoError as e:

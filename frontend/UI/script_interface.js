@@ -88,7 +88,9 @@ document.getElementById("add_column_window_add").addEventListener("click", () =>
             child_element.setAttribute("type", "number");
             
             child_element.addEventListener("change", () => {
+                console.log("HELLO");
                 player_name = child_element.parentElement.parentElement.children[1].children[0].value
+                console.log(player_name);
                 categorie_name = document.getElementById('edit_player_table_topbar').getElementsByTagName('th')[element.cellIndex].innerText;
                 selected_save_data_edit["players"][player_name]["scores"][categorie_name] = parseInt(child_element.value)
             })
@@ -151,7 +153,10 @@ document.addEventListener("DOMContentLoaded", () => {
         const NewNameCell_textarea = document.createElement("textarea");
         NewNameCell_textarea.setAttribute("class", "table_input_text");
         NewNameCell_textarea.classList.add("table_input_name");
-        NewNameCell_textarea.value = new_player_name
+        NewNameCell_textarea.value = new_player_name;
+        NewNameCell_textarea.addEventListener("change", function() {
+            update_player_to_player_upon_name_change(NewNameCell_textarea, NewNameCell)
+        })
         NewNameCell.appendChild(NewNameCell_textarea)
         NewRow.appendChild(NewNameCell)
 
@@ -191,8 +196,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         edit_player_table.appendChild(NewRow)
         selected_save_data_edit.players[new_player_name] = new_player[new_player_name];
-        console.log(selected_save_data_edit)
-        console.log(`NEW_PLAYER = ${new_player_name}`)
 
         const PlayerPairPerformance = {}
         PlayerPairPerformance[new_player_name] = {};
@@ -207,9 +210,8 @@ document.addEventListener("DOMContentLoaded", () => {
             NewAttendanceCell_div.classList.toggle("red_deactivated");
         });
         build_player_to_player_table(selected_save_data_edit);
-        apply_changes_to_data_name();
         apply_changes_to_skills_single_player(NewRow);
-        update_list_players()
+        update_list_players() //HERE
     });
 });
 
@@ -251,12 +253,13 @@ async function load_save_preview(selected_save) {
     const number_players_property_save = document.getElementById("properties_player_count_input")
     const description_property_save = document.getElementById("properties_notes_input")
     try {
-        const response_user_save = await fetch(`${api_address}/user-project-previews`, { //REWORK
+        console.log("Wrong Function")
+        const response_user_save = await fetch(`${api_address}user-project-previews/${selected_save.id}`, { //REWORK
             method: "GET",
             credentials: "include",
         })
         if(!response_user_save.ok){
-            throw new Error("Selected Save API request returned not ok: " + response_user_save.statusText)
+            throw new Error("Selected Save API request returned not ok: " + response_user_save.detail)
         }
         selected_save_data = await response_user_save.json();
         Object.keys(selected_save_data.players).forEach(player_name => {
@@ -325,12 +328,13 @@ let list_saves_json = [];
 const list_saves = document.getElementById("list_saves")
 document.addEventListener("DOMContentLoaded", async () => {
     try {
-        const response_user_saves = await fetch(`${api_address}/user-project-previews`, {
-            method: "POST",
+        const response_user_saves = await fetch(`${api_address}user-project-previews`, {
+            method: "GET",
             credentials: "include"
         });
         if (!response_user_saves.ok) {
             // window.location.href = login_url
+            const errorData = await response_user_saves.json();
             throw new Error("Saves API request returned not ok: " + response_user_saves.statusText);
         }
         list_saves_json = await response_user_saves.json();
@@ -759,6 +763,9 @@ function build_player_table_body(selected_save_data){
         edit_player_table_player_name_input.classList.add("table_input_text")
         edit_player_table_player_name_input.classList.add("table_input_name")
         edit_player_table_player_name_input.value = player
+        edit_player_table_player_name_input.addEventListener("change", () => {
+            update_player_to_player_upon_name_change(edit_player_table_player_name_input, edit_player_table_player_name)
+        })
 
         edit_player_table_player_name.appendChild(edit_player_table_player_name_input)
 
@@ -907,13 +914,13 @@ function apply_changes_to_data_name() {
         input.addEventListener("change", () => {
             if (!list_player_names.includes(input.value)){
                 const changed_name_index = input.parentElement.parentElement.rowIndex -1;
-                const changed_name_previous_name = selected_save_data_edit.players[changed_name_index].name;
+                const changed_name_previous_name = Object.keys(selected_save_data_edit.players)[changed_name_index];
                 const changed_name_new_name = input.value;
 
                 // Apply changes in the analyze Tab
                 apply_changes_to_players_in_teams(changed_name_previous_name, changed_name_new_name)
 
-                selected_save_data_edit.players[changed_name_index].name = changed_name_new_name;
+                selected_save_data_edit.players[changed_name_previous_name].name = changed_name_new_name;
 
                 selected_save_data_edit.pairPerformance[changed_name_new_name] = selected_save_data_edit.pairPerformance[changed_name_previous_name];
                 delete selected_save_data_edit.pairPerformance[changed_name_previous_name];
@@ -924,8 +931,8 @@ function apply_changes_to_data_name() {
                         delete selected_save_data_edit.pairPerformance[player][changed_name_previous_name]
                     }
                 }
-                const table_player_to_player_thead_cell_changed_player = document.getElementById("table_player_to_player_thead").rows[0].cells[changed_name_index+1]
-                if (table_player_to_player_thead_cell_changed_player.innerText == changed_name_previous_name){
+                const table_player_to_player_thead_cell_changed_player = document.getElementById("table_player_to_player").rows[0].cells[changed_name_index+1]
+                if (table_player_to_player_thead_cell_changed_player.innerText === changed_name_previous_name){
                     table_player_to_player_thead_cell_changed_player.innerText = changed_name_new_name
                 } else {
                     console.error("The name of the Player could not be found in the player-to-player table")
@@ -1063,9 +1070,10 @@ function apply_changes_to_players_in_teams(old_name, new_name){
  // HERE
 document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("save_and_download_button").addEventListener("click", () => {
+        const project = get_project_json(selected_save_data_edit)
         let dl = document.createElement("a")
-        dl.download = `${selected_save_data_edit.name}.json`
-        dl.href = `data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify(selected_save_data_edit))}`
+        dl.download = `${project.name}.json`
+        dl.href = `data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify(project))}`
         dl.click()
     })
     add_project_eventlistener()
@@ -1192,14 +1200,15 @@ function add_project_eventlistener(){
 }
 
 
-function analyze(project){
+function get_project_json(project){
     const analyze_project = gather_project_data_settings(project)
     analyze_project = gather_project_data_teams_matches(analyze_project)
+    return analyze_project
 }
 
 function gather_project_data_settings(project){
-    analyze_tab_settings = document.getElementById("analyze_settings_interchangeable_toggle_container")
-    project.settings.maxSittingOut = parseInt(analyze_tab_settings.getElementById("analyze_settings_max_sit_out_players").value)
+    analyze_tab_settings = document.getElementById("analyze_settings")
+    project.settings.maxSittingOut = parseInt(analyze_tab_settings.getElementById("analyze_settings_max_sit_out_players").value) //This line is 1204
     project.settings.maxDifferenceTeams = parseInt(analyze_tab_settings.getElementById("analyze_settings_max_difference_teams").value)
     project.settings.maxDifferencePitches = parseInt(analyze_tab_settings.getElementById("analyze_settings_max_difference_pitches").value)
     if (document.getElementById("analyze_settings_interchangeable_toggle").classList.contains("checked")){
@@ -1223,7 +1232,7 @@ function gather_project_data_teams_matches(project){
             "players": Array.from(team_box.querySelectorAll(".analyze_pitch_team_player_name")).map(player_name => player_name.innerText)
         }
     })
-
+    // Make team matchup
     const team_names = Array.from(anaylze_tab.querySelectorAll(".analyze_pitch_team_title_input"))
 
     for (let i = 0; i < team_names.length; i += 2){
@@ -1470,3 +1479,50 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("analysis_tab").classList.add("active_tab")
     })
 })
+
+document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("analyze_project").addEventListener("click", () => {
+        const project = get_project_json(selected_save_data_edit)
+    })
+})
+
+function update_player_to_player_upon_name_change(textarea_name, cell_textarea){
+    const list_player_names = Array.from(document.querySelectorAll(".table_input_name")).map(name_input => name_input.value)
+    if (!list_player_names.includes(textarea_name.value)){
+        const changed_name_index = cell_textarea.rowIndex -1;
+        const changed_name_previous_name = Object.keys(selected_save_data_edit.players)[changed_name_index];
+        const changed_name_new_name = textarea_name.value;
+
+        // Apply changes in the analyze Tab
+        apply_changes_to_players_in_teams(changed_name_previous_name, changed_name_new_name)
+
+        selected_save_data_edit.players[changed_name_new_name] = selected_save_data_edit.players[changed_name_previous_name]
+        delete selected_save_data_edit.players[changed_name_previous_name]
+
+        selected_save_data_edit.pairPerformance[changed_name_new_name] = selected_save_data_edit.pairPerformance[changed_name_previous_name];
+        delete selected_save_data_edit.pairPerformance[changed_name_previous_name];
+
+        for (let player in selected_save_data_edit.pairPerformance){
+            if (player !== changed_name_new_name && selected_save_data_edit.pairPerformance[player][changed_name_previous_name] !== undefined){
+                selected_save_data_edit.pairPerformance[player][changed_name_new_name] = selected_save_data_edit.pairPerformance[player][changed_name_previous_name]
+                delete selected_save_data_edit.pairPerformance[player][changed_name_previous_name]
+            }
+        }
+        const table_player_to_player_thead_cell_changed_player = document.getElementById("table_player_to_player").rows[0].cells[changed_name_index+1]
+        if (table_player_to_player_thead_cell_changed_player.innerText === changed_name_previous_name){
+            table_player_to_player_thead_cell_changed_player.innerText = changed_name_new_name
+        } else {
+            console.error("The name of the Player could not be found in the player-to-player table")
+        }
+        const table_player_to_player_tbody_cell_changed_player = document.getElementById("table_player_to_player_tbody").rows[changed_name_index].cells[0]
+        if (table_player_to_player_tbody_cell_changed_player.innerText == changed_name_previous_name){
+            table_player_to_player_tbody_cell_changed_player.innerText = changed_name_new_name
+        } else {
+            console.error("The name of the Player could not be found in the player-to-player table")
+        }
+    } else {
+        show_message("Another Player already has that name. Please choose a different name", "warning")
+        console.log(list_player_names)
+    }
+    update_list_players()
+}

@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field, ConfigDict
 from datetime import datetime
 from typing import Optional
+from bson import ObjectId
 
 class UserModel(BaseModel):
     id: Optional[str] = Field(None, alias="_id")
