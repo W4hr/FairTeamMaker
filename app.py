@@ -12,9 +12,9 @@ from dotenv import load_dotenv
 import os
 from pymongo.errors import PyMongoError
 
-from backend.db.defaultproject import create_default_starter_project
+from backend.db.defaultproject import create_default_starter_project, get_preview
 
-from backend.db.models import TokenData, Token, UserModel, LogInForm
+from backend.db.models import TokenData, Token, UserModel, Project
 
 app = FastAPI()
 
@@ -160,20 +160,36 @@ async def SignUp(username: str = Form(...), password: str = Form(...)):
 
 @app.get("/user-project-previews")
 async def get_users_project_previews(current_user: UserModel = Depends(get_current_active_user)):
-    logging.debug("Getting Users Previews")
     try:
         if current_user:
-            mongouser = await mongousers.find_one({"username": current_user.username})
-            if mongouser:
-                projects_previews = await mongoprojects.find(
-                    {"owner": str(current_user.id)}
-                ).to_list(length=None)
-                return JSONResponse([project["preview_project"] for project in projects_previews])
-            else:
-                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User Projects does not exist or the user has no saves")
+            projects_previews = await mongoprojects.find(
+                {"owner": str(current_user.id)}
+            ).to_list(length=None)
+            return JSONResponse([get_preview(project) for project in projects_previews])
         else:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An unexpected error occurred.")
     except PyMongoError as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Database error: {str(e)}")
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"An unexpected error occurred: {str(e)}")
+    
+@app.get("/user-project-preview/{uuid}")
+async def get_users_project(uuid:str, current_user: UserModel = Depends(get_current_active_user)):
+    try:
+        selected_project = await mongoprojects.find_one({"uuid": uuid})
+        logging.debug(f"Found Project: {selected_project}")
+        if selected_project:
+            return JSONResponse(selected_project["project"])
+        else:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="The Project was not Found")
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="There was an error finding your project")
+    
+@app.post("/user-save-project/save")
+async def save_project(project: Project, current_user: UserModel = Depends(get_current_active_user)):
+    try:
+        mongoprojects.insert_one(project)
+    except PyMongoError as me:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Something went wrong when saving the project")
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Some internal error accured")
