@@ -1,0 +1,3 @@
+from backend.db.defaultproject import create_default_starter_project
+
+print(create_default_starter_project())

@@ -1,8 +1,15 @@
 from datetime import datetime
+import uuid
+
+def get_preview(project: dict):
+    preview = project["preview_project"]
+    preview["uuid"] = project["uuid"]
+    return preview
 
 def create_default_starter_project():
     return {
         "owner" : "id",
+        "uuid": str(uuid.uuid4()),
         "preview_project": {
             "name": "Project Name",
             "color": "#529955",
@@ -14,7 +21,7 @@ def create_default_starter_project():
             "name": "Project Name",
             "description": "Project Description",
             "color": "#529955",
-            "number of players": 0,
+            "number of players": 2,
             "matches": {},
             "teams": {},
             "settings": {
@@ -28,11 +35,13 @@ def create_default_starter_project():
             "players": {
                 "player 1": {
                     "attendanceState": True,
-                    "primaryScore": 0
+                    "primaryScore": 0,
+                    "scores": []
                 },
                 "player 2": {
                     "attendanceState": True,
-                    "primaryScore": 0
+                    "primaryScore": 0,
+                    "scores": []
                 }
             },
             "pairPerformance": {

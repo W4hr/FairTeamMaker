@@ -46,13 +46,13 @@ document.addEventListener("DOMContentLoaded", () => {
 function show_message(message, type_message){
     const message_box = document.getElementById("message_box");
     if (type_message == "warning"){
-        message_box.innerHTML = `<img src="./img/message/warning.svg" class="message_box_icon"> ${message}`;
+        message_box.innerHTML = `<img src="/frontend/SignUp/img/message/warning.svg" class="message_box_icon"> ${message}`;
         message_box.className = "warning_message show";
     } else if (type_message == "info"){
-        message_box.innerHTML = `<img src="./img/message/info.svg" class="message_box_icon"> ${message}`;
+        message_box.innerHTML = `<img src="/frontend/SignUp/img/message/info.svg" class="message_box_icon"> ${message}`;
         message_box.className = "show";
     } else if (type_message == "success"){
-        message_box.innerHTML = `<img src="./img/message/check.svg" class="message_box_icon"> ${message}`;
+        message_box.innerHTML = `<img src="/frontend/SignUp/img/message/check.svg" class="message_box_icon"> ${message}`;
         message_box.className = "success_message show";
     } else {
         console.error("Message type was not proper");

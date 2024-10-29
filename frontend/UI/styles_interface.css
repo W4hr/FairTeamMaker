@@ -873,6 +873,7 @@ label {
     justify-content: space-between;
     text-align: center;
     overflow-y: scroll;
+    max-width: 550px;
 }
 
 /* Introduction Tab */
