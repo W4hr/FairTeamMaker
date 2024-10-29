@@ -138,12 +138,18 @@ document.addEventListener("DOMContentLoaded", () => {
         new_player_name = `Player${counter_player_added}`
         const NewRow = document.createElement("tr");
         NewRow.setAttribute("class", "player_data_row");
+        NewRow.id = new_player_name
 
         /*  Attendance Cell  */
         const NewAttendanceCell = document.createElement("td");
         NewAttendanceCell.setAttribute("class", "edit_attendance");
         const NewAttendanceCell_div = document.createElement("div");
         NewAttendanceCell_div.setAttribute("class", "button_activation_attendance");
+        NewAttendanceCell_div.addEventListener("click", () => {
+            button_activation_attendance.classList.toggle("red_deactivated")
+            const player_name = attendance_button.closest("tr").id
+            selected_save_data_edit.players[player_name].attendanceState = !selected_save_data_edit.players[player_name].attendanceState
+        })
         NewAttendanceCell.appendChild(NewAttendanceCell_div)
         NewRow.appendChild(NewAttendanceCell)
 
@@ -155,7 +161,7 @@ document.addEventListener("DOMContentLoaded", () => {
         NewNameCell_textarea.classList.add("table_input_name");
         NewNameCell_textarea.value = new_player_name;
         NewNameCell_textarea.addEventListener("change", function() {
-            update_player_to_player_upon_name_change(NewNameCell_textarea, NewNameCell)
+            update_player_to_player_upon_name_change(NewNameCell_textarea, NewRow)
         })
         NewNameCell.appendChild(NewNameCell_textarea)
         NewRow.appendChild(NewNameCell)
@@ -172,7 +178,7 @@ document.addEventListener("DOMContentLoaded", () => {
         /*  Number Cells  */ 
         const new_player = {
             [new_player_name]: {
-                "attendanceState": "True",
+                "attendanceState": true,
                 "primaryScore": 0,
                 "scores": {}
             }
@@ -209,39 +215,12 @@ document.addEventListener("DOMContentLoaded", () => {
         NewAttendanceCell_div.addEventListener("click", () => {
             NewAttendanceCell_div.classList.toggle("red_deactivated");
         });
+        selected_save_data_edit["number of players"] += 1
         build_player_to_player_table(selected_save_data_edit);
         apply_changes_to_skills_single_player(NewRow);
         update_list_players() //HERE
     });
 });
-
-document.addEventListener("DOMContentLoaded", () => {
-    AttendanceIndicatorPlayerTableEventListeners()
-    AttendanceIndicatorPreviewEventListeners()
-})
-
-/* Activation and deactivation */
-// Edit Table - Needs to be changed: EventListeners needs to be adjusted each add_row click
-function AttendanceIndicatorPlayerTableEventListeners(){
-    const edit_player_table_activation_buttons = document.querySelectorAll(".button_activation_attendance");
-
-    edit_player_table_activation_buttons.forEach((button) => {
-        button.addEventListener("click", () => {
-            button.classList.toggle("red_deactivated");
-        });
-    });
-};
-
-// import Player List
-
-function AttendanceIndicatorPreviewEventListeners(){
-    const import_player_list_status = Array.from(document.getElementsByClassName("properties_list_player_item_indicator"))
-    import_player_list_status.forEach((button) => {
-        button.addEventListener("click", () => {
-            button.classList.toggle("red_deactivated")
-        })
-    })
-}
 
 // Preview selected save
 
@@ -253,15 +232,20 @@ async function load_save_preview(selected_save) {
     const number_players_property_save = document.getElementById("properties_player_count_input")
     const description_property_save = document.getElementById("properties_notes_input")
     try {
-        console.log("Wrong Function")
-        const response_user_save = await fetch(`${api_address}user-project-previews/${selected_save.id}`, { //REWORK
+        const response_user_save = await fetch(`${api_address}user-project-preview/${selected_save.id}`, {
             method: "GET",
             credentials: "include",
         })
         if(!response_user_save.ok){
             throw new Error("Selected Save API request returned not ok: " + response_user_save.detail)
         }
+
         selected_save_data = await response_user_save.json();
+        
+        selected_save_data_preview = selected_save_data
+        selected_save_data_edit = selected_save_data
+
+        document.getElementById("properties_list_players_list").innerHTML = ""
         Object.keys(selected_save_data.players).forEach(player_name => {
             build_player_preview(selected_save_data, player_name)
         })
@@ -270,11 +254,6 @@ async function load_save_preview(selected_save) {
         number_players_property_save.setAttribute("placeholder", selected_save_data["number of players"])
         description_property_save.value = selected_save_data["description"]
         
-        add_delete_option_for_players_in_preview()
-        AttendanceIndicatorPreviewEventListeners()
-
-        selected_save_data_preview = selected_save_data
-        selected_save_data_edit = selected_save_data
     } catch (error) {
         console.error("Error in load_save_preview:", error)
     }
@@ -333,12 +312,13 @@ document.addEventListener("DOMContentLoaded", async () => {
             credentials: "include"
         });
         if (!response_user_saves.ok) {
-            // window.location.href = login_url
+            window.location.href = login_url
             const errorData = await response_user_saves.json();
             throw new Error("Saves API request returned not ok: " + response_user_saves.statusText);
         }
         list_saves_json = await response_user_saves.json();
         build_save_items()
+        console.log(list_saves_json)
     } catch (error) {
         console.error('There was a problem with the fetch operation:', error);
     }
@@ -466,6 +446,13 @@ function build_player_preview(data, player_name){
 
     const properties_player_indicator = document.createElement("div")
     properties_player_indicator.classList.add("properties_list_player_item_indicator")
+    if (!data.players[player_name].attendanceState){
+        properties_player_indicator.classList.add("red_deactivated")
+    }
+    properties_player_indicator.addEventListener("click", () => {
+        properties_player_indicator.classList.toggle("red_deactivated")
+        selected_save_data_preview.players[player_name].attendanceState = selected_save_data_preview.players[player_name].attendanceState
+    })
 
     const properties_player_name = document.createElement("div")
     properties_player_name.classList.add("properties_list_player_item_identifier")
@@ -483,6 +470,23 @@ function build_player_preview(data, player_name){
     const properties_player_delete_symbol = document.createElement("img")
     properties_player_delete_symbol.src = "frontend/UI/img/icon/close2.svg"
     properties_player_delete_symbol.classList.add("properties_list_player_item_delete_img")
+    properties_player_delete_symbol.addEventListener("click", () => {
+        delete_player(properties_player_container)
+        const player_to_delete_name = properties_player_name.innerText
+        if (selected_save_data_preview["players"][player_to_delete_name]){
+            delete selected_save_data_preview["players"][player_to_delete_name]
+            delete selected_save_data_preview.pairPerformance[player_to_delete_name];
+            Object.keys(selected_save_data_preview.pairPerformance).forEach(pairPerformancePlayer => {
+                delete selected_save_data_preview.pairPerformance[pairPerformancePlayer][player_to_delete_name];
+            })
+            selected_save_data_preview["number of players"] -= 1;
+            document.getElementById("properties_player_count_input").setAttribute("placeholder", selected_save_data_preview["number of players"])
+
+        }
+        else{
+            console.error("Player to remove does not exist in the data")
+        }
+    })
 
     // Build Children
 
@@ -499,28 +503,6 @@ function build_player_preview(data, player_name){
 function delete_player(player_to_deltete_delete) {
     const player_to_delete = player_to_deltete_delete.closest("li")
     player_to_delete.remove();
-}
-function add_delete_option_for_players_in_preview() {
-    save_preview_players_delete = document.querySelectorAll(".properties_list_player_item_delete")
-    save_preview_players_delete.forEach(player_to_deltete_delete => {
-        player_to_deltete_delete.addEventListener("click", () => {
-            delete_player(player_to_deltete_delete)
-            const player_to_delete_name = player_to_deltete_delete.parentElement.children[1].innerText
-            if (selected_save_data_preview["players"][player_to_delete_name]){
-                delete selected_save_data_preview["players"][player_to_delete_name]
-                delete selected_save_data_preview.pairPerformance[player_to_delete_name];
-                Object.keys(selected_save_data_preview.pairPerformance).forEach(pairPerformancePlayer => {
-                    delete selected_save_data_preview.pairPerformance[pairPerformancePlayer][player_to_delete_name];
-                })
-                selected_save_data_preview["number of players"] -= 1;
-                document.getElementById("properties_player_count_input").setAttribute("placeholder", selected_save_data_preview["number of players"])
-
-            }
-            else{
-                console.error("Player to remove does not exist in the data")
-            }
-        })
-    })
 }
 
 // Build new Pitch
@@ -744,6 +726,7 @@ function build_player_table_body(selected_save_data){
     Object.keys(selected_save_data["players"]).forEach(player => {
         const edit_player_table_row = document.createElement("tr")
         edit_player_table_row.classList.add("player_data_row")
+        edit_player_table_row.id = player
 
         const edit_player_table_player_attendance = document.createElement("td")
         edit_player_table_player_attendance.classList.add("edit_attendance")
@@ -753,6 +736,10 @@ function build_player_table_body(selected_save_data){
         if (!selected_save_data["players"][player].attendanceState){
             edit_player_table_player_attendance_button.classList.add("red_deactivated")
         }
+        edit_player_table_player_attendance_button.addEventListener("click", () => {
+            const player_name = edit_player_table_player_attendance_button.closest("tr").id
+            selected_save_data_edit.players[player_name].attendanceState = !selected_save_data_edit.players[player_name].attendanceState
+        })
 
         edit_player_table_player_attendance.appendChild(edit_player_table_player_attendance_button)
 
@@ -764,7 +751,7 @@ function build_player_table_body(selected_save_data){
         edit_player_table_player_name_input.classList.add("table_input_name")
         edit_player_table_player_name_input.value = player
         edit_player_table_player_name_input.addEventListener("change", () => {
-            update_player_to_player_upon_name_change(edit_player_table_player_name_input, edit_player_table_player_name)
+            update_player_to_player_upon_name_change(edit_player_table_player_name_input, edit_player_table_row)
         })
 
         edit_player_table_player_name.appendChild(edit_player_table_player_name_input)
@@ -772,7 +759,7 @@ function build_player_table_body(selected_save_data){
         const edit_player_table_player_skill = document.createElement("td")
         const edit_player_table_player_skill_input = document.createElement("input")
         edit_player_table_player_skill_input.setAttribute("type", "number")
-        edit_player_table_player_skill_input.setAttribute("value", player.primaryScore)
+        edit_player_table_player_skill_input.setAttribute("value", selected_save_data["players"][player].primaryScore)
         edit_player_table_player_skill_input.classList.add("table_input_number")
         edit_player_table_player_skill.appendChild(edit_player_table_player_skill_input)
 
@@ -812,9 +799,7 @@ document.addEventListener("DOMContentLoaded", () => {
             build_player_to_player_table(selected_save_data)
             document.getElementById("import_data_tab").classList.remove("active_tab")
             document.getElementById("edit_data_tab").classList.add("active_tab")
-            AttendanceIndicatorPlayerTableEventListeners()
             
-            apply_changes_to_data_name();
             apply_changes_to_attendance();
             apply_changes_to_skills();
             update_list_players();
@@ -908,55 +893,11 @@ function update_player_to_player_upon_change(){
     })
 }
 
-function apply_changes_to_data_name() {
-    const list_player_names = Array.from(document.querySelectorAll(".table_input_name")).map(name_input => name_input.value)
-    document.querySelectorAll(".table_input_name").forEach((input, index) => {
-        input.addEventListener("change", () => {
-            if (!list_player_names.includes(input.value)){
-                const changed_name_index = input.parentElement.parentElement.rowIndex -1;
-                const changed_name_previous_name = Object.keys(selected_save_data_edit.players)[changed_name_index];
-                const changed_name_new_name = input.value;
-
-                // Apply changes in the analyze Tab
-                apply_changes_to_players_in_teams(changed_name_previous_name, changed_name_new_name)
-
-                selected_save_data_edit.players[changed_name_previous_name].name = changed_name_new_name;
-
-                selected_save_data_edit.pairPerformance[changed_name_new_name] = selected_save_data_edit.pairPerformance[changed_name_previous_name];
-                delete selected_save_data_edit.pairPerformance[changed_name_previous_name];
-
-                for (let player in selected_save_data_edit.pairPerformance){
-                    if (player !== changed_name_new_name && selected_save_data_edit.pairPerformance[player][changed_name_previous_name] !== undefined){
-                        selected_save_data_edit.pairPerformance[player][changed_name_new_name] = selected_save_data_edit.pairPerformance[player][changed_name_previous_name]
-                        delete selected_save_data_edit.pairPerformance[player][changed_name_previous_name]
-                    }
-                }
-                const table_player_to_player_thead_cell_changed_player = document.getElementById("table_player_to_player").rows[0].cells[changed_name_index+1]
-                if (table_player_to_player_thead_cell_changed_player.innerText === changed_name_previous_name){
-                    table_player_to_player_thead_cell_changed_player.innerText = changed_name_new_name
-                } else {
-                    console.error("The name of the Player could not be found in the player-to-player table")
-                }
-                const table_player_to_player_tbody_cell_changed_player = document.getElementById("table_player_to_player_tbody").rows[changed_name_index].cells[0]
-                if (table_player_to_player_tbody_cell_changed_player.innerText == changed_name_previous_name){
-                    table_player_to_player_tbody_cell_changed_player.innerText = changed_name_new_name
-                } else {
-                    console.error("The name of the Player could not be found in the player-to-player table")
-                }
-            } else {
-                show_message("Another Player already has that name. Please choose a different name", "warning")
-            }
-            
-            list_player_names[index] = input.value
-            update_list_players()
-        });
-    });
-};
-
 function apply_changes_to_attendance(){
     document.querySelectorAll(".button_activation_attendance").forEach((attendance_button, index) => {
         attendance_button.addEventListener("click", () => {
-            selected_save_data_edit.players[index].attendanceState = !selected_save_data_edit.players[index].attendanceState
+            const player_name = attendance_button.closest("tr").id
+            selected_save_data_edit.players[player_name].attendanceState = !selected_save_data_edit.players[player_name].attendanceState
         })
     })
 }
@@ -1100,9 +1041,6 @@ import_data_input.addEventListener("change", () => {
                     build_player_preview(selected_save_data, player_name)
                 })
 
-                add_delete_option_for_players_in_preview();
-                AttendanceIndicatorPreviewEventListeners();
-
                 selected_save_data_preview = selected_save_data;
                 selected_save_data_edit = selected_save_data;
             } catch (e) {
@@ -1174,10 +1112,8 @@ function add_project_eventlistener(){
         }
         default_new_project["description"] = document.getElementById("add_project_description_input").value;
         default_new_project["color"] = document.getElementById("project_color_input").value
-        console.log(default_new_project)
         selected_save_data = default_new_project
         selected_save_data_preview = default_new_project
-        console.log(selected_save_data_preview)
 
         const name_property_save = document.getElementById("properties_name_input");
         const number_players_property_save = document.getElementById("properties_player_count_input");
@@ -1187,12 +1123,11 @@ function add_project_eventlistener(){
         number_players_property_save.setAttribute("placeholder", selected_save_data_preview["number of players"]);
         description_property_save.value = selected_save_data_preview["description"];
 
+        document.getElementById("properties_list_players_list").innerHTML = ""
         Object.keys(selected_save_data_preview.players).forEach(player_name => {
             build_player_preview(selected_save_data_preview, player_name)
     })
 
-        add_delete_option_for_players_in_preview();
-        AttendanceIndicatorPreviewEventListeners();
         document.getElementById("add_project_window_dimming").classList.toggle("hide");
         document.getElementById("add_project_window").classList.toggle("hide");
         selected_save_data = selected_save_data_preview
@@ -1208,7 +1143,7 @@ function get_project_json(project){
 
 function gather_project_data_settings(project){
     analyze_tab_settings = document.getElementById("analyze_settings")
-    project.settings.maxSittingOut = parseInt(analyze_tab_settings.getElementById("analyze_settings_max_sit_out_players").value) //This line is 1204
+    project.settings.maxSittingOut = parseInt(analyze_tab_settings.getElementById("analyze_settings_max_sit_out_players").value)
     project.settings.maxDifferenceTeams = parseInt(analyze_tab_settings.getElementById("analyze_settings_max_difference_teams").value)
     project.settings.maxDifferencePitches = parseInt(analyze_tab_settings.getElementById("analyze_settings_max_difference_pitches").value)
     if (document.getElementById("analyze_settings_interchangeable_toggle").classList.contains("checked")){
@@ -1487,10 +1422,9 @@ document.addEventListener("DOMContentLoaded", () => {
 })
 
 function update_player_to_player_upon_name_change(textarea_name, cell_textarea){
-    const list_player_names = Array.from(document.querySelectorAll(".table_input_name")).map(name_input => name_input.value)
-    if (!list_player_names.includes(textarea_name.value)){
+    if (!selected_save_data_edit["players"].hasOwnProperty(textarea_name.value)){
         const changed_name_index = cell_textarea.rowIndex -1;
-        const changed_name_previous_name = Object.keys(selected_save_data_edit.players)[changed_name_index];
+        const changed_name_previous_name = cell_textarea.closest("tr").id
         const changed_name_new_name = textarea_name.value;
 
         // Apply changes in the analyze Tab
@@ -1520,9 +1454,11 @@ function update_player_to_player_upon_name_change(textarea_name, cell_textarea){
         } else {
             console.error("The name of the Player could not be found in the player-to-player table")
         }
+        cell_textarea.closest("tr").id = changed_name_new_name
     } else {
+        console.error("Another Player already has that name. Please choose a different name")
         show_message("Another Player already has that name. Please choose a different name", "warning")
-        console.log(list_player_names)
     }
     update_list_players()
+    console.log(selected_save_data_edit)
 }
