@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field, ConfigDict
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Dict, List
 from bson import ObjectId
 
 class UserModel(BaseModel):
@@ -29,6 +29,36 @@ class Token(BaseModel):
     access_token: str
     token_type: str
 
-class LogInForm(BaseModel):
-    username: str
-    password: str
+
+class Player(BaseModel):
+    attendanceState: bool
+    primaryScore: float
+    scores: Dict[str, float]
+
+class Team(BaseModel):
+    num_players: Optional[int] = None
+    players: List[str]
+
+class Category(BaseModel):
+    name: str
+    minimumValue: Optional[float] = None
+    maximumValue: Optional[float] = None
+
+class Settings(BaseModel):
+    interachangableTeams: bool
+    maxSittingOut: int
+    maxDifferenceTeams: int
+    maxDifferencePitches: int
+    auto_save: bool
+
+class Project(BaseModel):
+    name: str
+    description: str
+    color: str
+    number_of_players: int
+    matches: Dict[str, str]
+    teams: Dict[str, Team]
+    settings: Settings
+    categories: List[Category]
+    players: Dict[str, Player]
+    pairPerformance: Dict[str, Dict[str, int]]
