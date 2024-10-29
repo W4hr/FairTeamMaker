@@ -93,6 +93,10 @@ Contributions are welcome! However, since this is a learning project, the base m
 - You include tests or examples where relevant.
 - Pull requests are descriptive and linked to a specific issue (if applicable).
 
+## To do
+
+- Improve Logging
+
 ## Security
 
 - **JWT Authentication**: Secure routes with JSON Web Tokens (JWT) and hashed passwords.
