@@ -1,5 +1,5 @@
 // API URL
-const api_address = "http://127.0.0.1:8000/";
+const api_address = "http://127.0.0.1:8000";
 const login_url = "http://127.0.0.1:8000/login"
 /*Tab Management*/
 
@@ -226,13 +226,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
 var selected_save_data = "";
 var selected_save_data_preview = ""
+var selected_save_data_edit = ""
 
 async function load_save_preview(selected_save) {
     const name_property_save = document.getElementById("properties_name_input")
     const number_players_property_save = document.getElementById("properties_player_count_input")
     const description_property_save = document.getElementById("properties_notes_input")
     try {
-        const response_user_save = await fetch(`${api_address}user-project-preview/${selected_save.id}`, {
+        const response_user_save = await fetch(`${api_address}/user-project-preview/${selected_save.id}`, {
             method: "GET",
             credentials: "include",
         })
@@ -307,7 +308,7 @@ let list_saves_json = [];
 const list_saves = document.getElementById("list_saves")
 document.addEventListener("DOMContentLoaded", async () => {
     try {
-        const response_user_saves = await fetch(`${api_address}user-project-previews`, {
+        const response_user_saves = await fetch(`${api_address}/user-project-previews`, {
             method: "GET",
             credentials: "include"
         });
@@ -1010,12 +1011,16 @@ function apply_changes_to_players_in_teams(old_name, new_name){
 }
  // HERE
 document.addEventListener("DOMContentLoaded", () => {
-    document.getElementById("save_and_download_button").addEventListener("click", () => {
-        const project = get_project_json(selected_save_data_edit)
-        let dl = document.createElement("a")
-        dl.download = `${project.name}.json`
-        dl.href = `data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify(project))}`
-        dl.click()
+    document.getElementById("download_button").addEventListener("click", () => {
+        if (selected_save_data_edit == ""){
+            show_message("Project is empty. Please load a project first.","warning")
+        } else{
+            const project = get_project_json(selected_save_data_edit)
+            let dl = document.createElement("a")
+            dl.download = `${project.name}.json`
+            dl.href = `data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify(project))}`
+            dl.click()
+        }
     })
     add_project_eventlistener()
 })
@@ -1136,16 +1141,15 @@ function add_project_eventlistener(){
 
 
 function get_project_json(project){
-    const analyze_project = gather_project_data_settings(project)
-    analyze_project = gather_project_data_teams_matches(analyze_project)
+    const analyze_project_settings = gather_project_data_settings(project)
+    const analyze_project = gather_project_data_teams_matches(analyze_project_settings)
     return analyze_project
 }
 
 function gather_project_data_settings(project){
-    analyze_tab_settings = document.getElementById("analyze_settings")
-    project.settings.maxSittingOut = parseInt(analyze_tab_settings.getElementById("analyze_settings_max_sit_out_players").value)
-    project.settings.maxDifferenceTeams = parseInt(analyze_tab_settings.getElementById("analyze_settings_max_difference_teams").value)
-    project.settings.maxDifferencePitches = parseInt(analyze_tab_settings.getElementById("analyze_settings_max_difference_pitches").value)
+    project.settings.maxSittingOut = parseInt(document.getElementById("analyze_settings_max_sit_out_players").value)
+    project.settings.maxDifferenceTeams = parseInt(document.getElementById("analyze_settings_max_difference_teams").value)
+    project.settings.maxDifferencePitches = parseInt(document.getElementById("analyze_settings_max_difference_pitches").value)
     if (document.getElementById("analyze_settings_interchangeable_toggle").classList.contains("checked")){
         project.settings.interachangableTeams = "True"
     } else {
@@ -1157,7 +1161,7 @@ function gather_project_data_settings(project){
 function gather_project_data_teams_matches(project){
 
     // extract which players are allocated to which team and set the set teams size
-    anaylze_tab = document.getElementById("analysis_tab")
+    const analyze_tab = document.getElementById("analysis_tab")
     analyze_tab.querySelectorAll(".analyze_pitch_team").forEach(team_box => {
         project.teams[team_box.querySelector(".analyze_pitch_team_title_input").value] = {
             "num_players": (() => {
@@ -1168,8 +1172,8 @@ function gather_project_data_teams_matches(project){
         }
     })
     // Make team matchup
-    const team_names = Array.from(anaylze_tab.querySelectorAll(".analyze_pitch_team_title_input"))
-
+    const team_names = Array.from(analyze_tab.querySelectorAll(".analyze_pitch_team_title_input")).map(team_box => team_box.value)
+    console.log(`team_names: ${team_names}`)
     for (let i = 0; i < team_names.length; i += 2){
         project.matches[team_names[i]] = team_names[i+1]
     }
