@@ -1,11 +1,6 @@
 from datetime import datetime
 import uuid
 
-def get_preview(project: dict):
-    preview = project["preview_project"]
-    preview["uuid"] = project["uuid"]
-    return preview
-
 def create_default_starter_project():
     return {
         "owner" : "id",
@@ -36,12 +31,12 @@ def create_default_starter_project():
                 "player 1": {
                     "attendanceState": True,
                     "primaryScore": 0,
-                    "scores": []
+                    "scores": {}
                 },
                 "player 2": {
                     "attendanceState": True,
                     "primaryScore": 0,
-                    "scores": []
+                    "scores": {}
                 }
             },
             "pairPerformance": {
