@@ -16,7 +16,7 @@ def create_default_starter_project():
             "name": "Project Name",
             "description": "Project Description",
             "color": "#529955",
-            "number of players": 2,
+            "number_of_players": 2,
             "matches": {},
             "teams": {},
             "settings": {

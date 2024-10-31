@@ -1,8 +1,10 @@
 from fastapi import FastAPI, status, Body, Form, Request, Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.staticfiles import StaticFiles
-from starlette.responses import FileResponse
 from fastapi.responses import JSONResponse
+from fastapi.encoders import jsonable_encoder
+
+from starlette.responses import FileResponse
 from typing import List, Optional
 from datetime import datetime, timedelta, timezone
 from jose import JWTError, jwt
@@ -12,7 +14,8 @@ from dotenv import load_dotenv
 import os
 from pymongo.errors import PyMongoError
 
-from backend.db.defaultproject import create_default_starter_project, get_preview
+from backend.db.defaultproject import create_default_starter_project
+from backend.scripts.data_preprocessing import get_preview, create_project_data
 
 from backend.db.models import TokenData, Token, UserModel, Project
 
@@ -185,11 +188,14 @@ async def get_users_project(uuid:str, current_user: UserModel = Depends(get_curr
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="There was an error finding your project")
     
-@app.post("/user-save-project/save")
+@app.post("/user-save-project")
 async def save_project(project: Project, current_user: UserModel = Depends(get_current_active_user)):
     try:
-        mongoprojects.insert_one(project)
+        full_project = create_project_data(project, str(current_user.id))
+        full_project = jsonable_encoder(full_project)
+        await mongoprojects.insert_one(full_project)
     except PyMongoError as me:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Something went wrong when saving the project")
     except Exception as e:
+        logging.error(f"INTERNAL ERROR - {e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Some internal error accured")

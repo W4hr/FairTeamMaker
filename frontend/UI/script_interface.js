@@ -215,7 +215,7 @@ document.addEventListener("DOMContentLoaded", () => {
         NewAttendanceCell_div.addEventListener("click", () => {
             NewAttendanceCell_div.classList.toggle("red_deactivated");
         });
-        selected_save_data_edit["number of players"] += 1
+        selected_save_data_edit["number_of_players"] += 1
         build_player_to_player_table(selected_save_data_edit);
         apply_changes_to_skills_single_player(NewRow);
         update_list_players() //HERE
@@ -252,7 +252,7 @@ async function load_save_preview(selected_save) {
         })
 
         name_property_save.value = selected_save_data["name"]
-        number_players_property_save.setAttribute("placeholder", selected_save_data["number of players"])
+        number_players_property_save.setAttribute("placeholder", selected_save_data["number_of_players"])
         description_property_save.value = selected_save_data["description"]
         
     } catch (error) {
@@ -480,8 +480,8 @@ function build_player_preview(data, player_name){
             Object.keys(selected_save_data_preview.pairPerformance).forEach(pairPerformancePlayer => {
                 delete selected_save_data_preview.pairPerformance[pairPerformancePlayer][player_to_delete_name];
             })
-            selected_save_data_preview["number of players"] -= 1;
-            document.getElementById("properties_player_count_input").setAttribute("placeholder", selected_save_data_preview["number of players"])
+            selected_save_data_preview["number_of_players"] -= 1;
+            document.getElementById("properties_player_count_input").setAttribute("placeholder", selected_save_data_preview["number_of_players"])
 
         }
         else{
@@ -798,6 +798,7 @@ document.addEventListener("DOMContentLoaded", () => {
             clear_player_table()
             build_player_table(selected_save_data)
             build_player_to_player_table(selected_save_data)
+            apply_settings_analysis(selected_save_data)
             document.getElementById("import_data_tab").classList.remove("active_tab")
             document.getElementById("edit_data_tab").classList.add("active_tab")
             
@@ -1039,9 +1040,10 @@ import_data_input.addEventListener("change", () => {
                 const description_property_save = document.getElementById("properties_notes_input");
 
                 name_property_save.value = selected_save_data["name"];
-                number_players_property_save.setAttribute("placeholder", selected_save_data["number of players"]);
+                number_players_property_save.setAttribute("placeholder", selected_save_data["number_of_players"]);
                 description_property_save.value = selected_save_data["description"];
 
+                document.getElementById("properties_list_players_list").innerHTML = ""
                 Object.keys(selected_save_data.players).forEach(player_name => {
                     build_player_preview(selected_save_data, player_name)
                 })
@@ -1076,15 +1078,15 @@ function add_project_eventlistener(){
         "name": "Project Name",
         "description": "Project Description",
         "color": "#ffffff",
-        "number of players": 2,
+        "number_of_players": 2,
         "matches":{},
         "teams":{},
         "settings":{
-            "interachangableTeams": "True",
+            "interchangeableTeams": "True",
             "maxSittingOut": 2,
             "maxDifferenceTeams": 2,
             "maxDifferencePitches": 2,
-            "auto-save": "False"
+            "auto_save": "False"
         },
         "categories":[],
         "players": {
@@ -1113,7 +1115,7 @@ function add_project_eventlistener(){
     document.getElementById("add_project").addEventListener("click", () => {
         default_new_project["name"] = document.getElementById("add_project_name_input").value;
         if (document.getElementById("add_project_autosave_option").classList.contains("checked")){
-            default_new_project["settings"]["auto-save"] = "True"
+            default_new_project["settings"]["auto_save"] = "True"
         }
         default_new_project["description"] = document.getElementById("add_project_description_input").value;
         default_new_project["color"] = document.getElementById("project_color_input").value
@@ -1125,7 +1127,7 @@ function add_project_eventlistener(){
         const description_property_save = document.getElementById("properties_notes_input");
 
         name_property_save.value = selected_save_data_preview["name"];
-        number_players_property_save.setAttribute("placeholder", selected_save_data_preview["number of players"]);
+        number_players_property_save.setAttribute("placeholder", selected_save_data_preview["number_of_players"]);
         description_property_save.value = selected_save_data_preview["description"];
 
         document.getElementById("properties_list_players_list").innerHTML = ""
@@ -1151,9 +1153,9 @@ function gather_project_data_settings(project){
     project.settings.maxDifferenceTeams = parseInt(document.getElementById("analyze_settings_max_difference_teams").value)
     project.settings.maxDifferencePitches = parseInt(document.getElementById("analyze_settings_max_difference_pitches").value)
     if (document.getElementById("analyze_settings_interchangeable_toggle").classList.contains("checked")){
-        project.settings.interachangableTeams = "True"
+        project.settings.interchangeableTeams = true
     } else {
-        project.settings.interachangableTeams = "False"
+        project.settings.interchangeableTeams = false
     }
     return project
 }
@@ -1166,7 +1168,7 @@ function gather_project_data_teams_matches(project){
         project.teams[team_box.querySelector(".analyze_pitch_team_title_input").value] = {
             "num_players": (() => {
                 const selectedValue = team_box.querySelector(".analyze_pitch_team_num_players").value;
-                return selectedValue === "a" ? "None" : selectedValue;
+                return selectedValue === "a" ? null : selectedValue;
             })(),
             "players": Array.from(team_box.querySelectorAll(".analyze_pitch_team_player_name")).map(player_name => player_name.innerText)
         }
@@ -1186,21 +1188,23 @@ function verify_project(project){
     if (players_valid){
         if (verify_categories(project)){
             if (verify_settings(project)){
-                if (verify_player_to_player(project, players_names)){
+                if (verifyPlayerRelationships(project, players_names)){
                     if (verify_teams_and_matches(project)){
                         show_message("The project data is valid and will be processed", "success")
+                        return true
                     }
                 }
             }
         }
     }
+    return false
 }
 
 function verify_project_players(project){
-    players = project["players"]
-    const player_count = 0;
+    const players = project["players"]
+    let player_counter = 0;
     const players_invalid_primary_score = []
-    const player_count_invalid_primary_score = 0
+    let player_count_invalid_primary_score = 0
     const players_names = []
     Object.keys(players).forEach(player_name => {
         if (typeof(players[player_name].primaryScore) !== "number"){
@@ -1208,7 +1212,7 @@ function verify_project_players(project){
             player_count_invalid_primary_score ++;
         }
         players_names.push(player_name)
-        player_count ++;
+        player_counter += 1;
     })
     if (player_count_invalid_primary_score > 1){
         show_message(`The players ${players_invalid_primary_score} have invalid primary scores. Make sure that the primary score of those players is a number.`, "warning")
@@ -1220,38 +1224,38 @@ function verify_project_players(project){
         return false
     } else if (player_count_invalid_primary_score == 0){
     } else {
-        show_message("There has been an unkown error during validation of you projects data. Please try again.", "warning")
-        console.error("There has been an unkown error during validation of you projects data. Please try again.")
+        show_message("There has been an unknown error during validation of your project's data. Please try again.", "warning")
+        console.error("There has been an unknown error during validation of your project's data. Please try again.")
         return false
     }
-    if (player_count != project["number of players"]){
+    if (player_counter != project["number_of_players"]){
         show_message("The amount of players with data does not match the number of players. This will be fixed automatically", "info")
-        console.log("The amount of players with data does not match the number of players. This will be fixed automatically")
+        console.log(`The amount of players with data does not match the number of players. This will be fixed automatically. number_of_players: ${project["number_of_players"]} - player in players: ${player_counter}`)
         return false
     }
     return [true, players_names]
 }
 
 function verify_categories(project){
-    categories = project["categories"]
-    players = project["players"]
+    const categories = project["categories"]
+    const players = project["players"]
 
-    const player_count_missing_categories = 0
-    const players_too_small_or_too_large_categorie_scores = [] // Remove duplicates
-    const player_count_too_small_or_too_large_categorie_scores = 0
+    let player_count_missing_categories = 0
+    let players_too_small_or_too_large_category_scores = [] // Remove duplicates
+    let player_count_too_small_or_too_large_category_scores = 0
 
-    categories.forEach(categorie => {
+    categories.forEach(category => {
         Object.keys(players).forEach(player_name => {
-            if (!project.players[player_name].scores[categorie.name] || typeof(project.players[player_name].scores[categorie.name]) != "number"){
+            if (!project.players[player_name].scores[category.name] || typeof(project.players[player_name].scores[category.name]) != "number"){
                 player_count_missing_categories ++;
-            } else if (typeof(categorie.minimumValue) == "number") {
-                if (project.players[player_name].scores[categorie.name] < categorie.minimumValue){
-                    players_too_small_or_too_large_categorie_scores.push(player_name)
-                    player_count_too_small_or_too_large_categorie_scores ++;
-                } else if (typeof(categorie.maximumValue) == "number"){
-                    if (project.players[player_name].scores[categorie.name] < categorie.maximumValue){
-                        players_too_small_or_too_large_categorie_scores.push(player_name)
-                        player_count_too_small_or_too_large_categorie_scores ++;
+            } else if (typeof(category.minimumValue) == "number") {
+                if (project.players[player_name].scores[category.name] < category.minimumValue){
+                    players_too_small_or_too_large_category_scores.push(player_name)
+                    player_count_too_small_or_too_large_category_scores ++;
+                } else if (typeof(category.maximumValue) == "number"){
+                    if (project.players[player_name].scores[category.name] > category.maximumValue){
+                        players_too_small_or_too_large_category_scores.push(player_name)
+                        player_count_too_small_or_too_large_category_scores ++;
                     }
                 }
             }
@@ -1263,100 +1267,103 @@ function verify_categories(project){
         return false
     }
 
-    if (player_count_too_small_or_too_large_categorie_scores > 0){
-        show_message(`The players ${players_too_small_or_too_large_categorie_scores} have either too large or too small scores in one or more categorie`, "warning")
-        console.error(`The players ${players_too_small_or_too_large_categorie_scores} have either too large or too small scores in one or more categorie`)
+    if (player_count_too_small_or_too_large_category_scores > 0){
+        show_message(`The players ${players_too_small_or_too_large_category_scores} have either too large or too small scores in one or more categories`, "warning")
+        console.error(`The players ${players_too_small_or_too_large_category_scores} have either too large or too small scores in one or more categories`)
         return false
     }
     return true
 }
 
 function verify_settings(project){
-    settings = project["settings"]
+    const settings = project["settings"]
 
-    if (typeof(settings.interachangableTeams) != "boolean"){
-        show_message("The 'interchangable Teams' option is neither on nor off. Please tick this setting off or on to fit your needs.", "warning")
-        console.error("The 'interchangable Teams' option is neither on nor off. Please tick this setting off or on to fit your needs.")
+    if (typeof(settings.interchangeableTeams) != "boolean"){
+        show_message("The 'interchangeable Teams' option is neither on nor off. Please tick this setting off or on to fit your needs.", "warning")
+        console.error("The 'interchangeable Teams' option is neither on nor off. Please tick this setting off or on to fit your needs.")
         return false
     }
 
     if (typeof(settings.maxSittingOut) != "number" || settings.maxSittingOut < 0){
-        show_message("The input for the maximum amount of players sitting out is either not a number or is smaller then 0", "warning")
-        console.error("The input for the maximum amount of players sitting out is either not a number or is smaller then 0")
+        show_message("The input for the maximum amount of players sitting out is either not a number or is smaller than 0", "warning")
+        console.error("The input for the maximum amount of players sitting out is either not a number or is smaller than 0")
         return false
     }
 
     if (typeof(settings.maxDifferenceTeams) != "number" || settings.maxDifferenceTeams < 0){
-        show_message("The input for the maximum difference in amount of players between teams option is either not a number or is smaller then 0", "warning")
-        console.error("The input for the maximum difference in amount of players between teams option is either not a number or is smaller then 0")
+        show_message("The input for the maximum difference in amount of players between teams option is either not a number or is smaller than 0", "warning")
+        console.error("The input for the maximum difference in amount of players between teams option is either not a number or is smaller than 0")
         return false
     }
 
     if (typeof(settings.maxDifferencePitches) != "number" || settings.maxDifferencePitches < 0){
-        show_message("The input for the maximum difference in amount of players between pitches option is either not a number or is smaller then 0", "warning")
-        console.error("The input for the maximum difference in amount of players between pitches option is either not a number or is smaller then 0")
+        show_message("The input for the maximum difference in amount of players between pitches option is either not a number or is smaller than 0", "warning")
+        console.error("The input for the maximum difference in amount of players between pitches option is either not a number or is smaller than 0")
         return false
     }
 
-    if (typeof(settings.auto-save) != "boolean"){
-        show_message("The 'auto-save' option is neither on nor off. Please tick this setting off or on to fit your needs.", "warning")
-        console.error("The 'auto-save' option is neither on nor off. Please tick this setting off or on to fit your needs.")
+    if (typeof(settings.auto_save) != "boolean"){
+        show_message("The 'auto_save' option is neither on nor off. Please tick this setting off or on to fit your needs.", "warning")
+        console.error("The 'auto_save' option is neither on nor off. Please tick this setting off or on to fit your needs.")
         return false
     }
 
     return  true
 }
 
-function verify_player_to_player(project, players_names){
-    pairPerformance = project["pairPerformance"]
+function verifyPlayerRelationships(project, playerNames) {
+    const pairPerformanceData = project["pairPerformance"];
+    console.log(pairPerformanceData)
 
-    const players_missing_in_pairPerformance = []
-    const count_players_missing_from_pairPerformance = 0;
+    const missingPlayersInPairPerformance = [];
+    let missingPlayersCountInPairPerformance = 0;
 
-    const players_missing_in_players_pair_performance = []
-    const count_players_missing_in_players_pair_performance = 0
+    let missingPairsInPlayerPerformance = [];
+    let missingPairsCountInPlayerPerformance = 0;
 
-    const players_invalid_pair_performance = []
-    const count_players_invalid_pair_performance = 0
+    const invalidPairsInPlayerPerformance = [];
+    let invalidPairsCountInPlayerPerformance = 0;
 
-    players_names.forEach(player_name => {
-        if (!pairPerformance[player_name]){
-            players_missing_in_pairPerformance.push(players_names)
-            count_players_missing_from_pairPerformance ++;
+    playerNames.forEach(playerName => {
+        if (!pairPerformanceData[playerName]) {
+            missingPlayersInPairPerformance.push(playerName);
+            missingPlayersCountInPairPerformance++;
+        } else {
+            playerNames.forEach(pairPlayerName => {
+                if (pairPerformanceData[playerName][pairPlayerName] === undefined || pairPerformanceData[playerName][pairPlayerName] === null) {
+                    console.log(`Missing pair relationship: ${playerName} - ${pairPlayerName}: ${pairPerformanceData[playerName][pairPlayerName]}`);
+                    missingPairsInPlayerPerformance.push(playerName);
+                    missingPairsInPlayerPerformance.push(pairPlayerName);
+                    missingPairsCountInPlayerPerformance++;
+                } else if (typeof(pairPerformanceData[playerName][pairPlayerName]) != "number") {
+                    console.log(`Invalid pair relationship value: ${playerName} - ${pairPlayerName}`);
+                    invalidPairsInPlayerPerformance.push(playerName);
+                    invalidPairsInPlayerPerformance.push(pairPlayerName);
+                    invalidPairsCountInPlayerPerformance++;
+                }
+            });
         }
-        players_names.forEach(pair_player_name => {
-            if (!pairPerformance[player_name][pair_player_name]){
-                players_missing_in_players_pair_performance.push(player_name)
-                players_missing_in_players_pair_performance.push(pair_player_name)
-                count_players_missing_in_players_pair_performance ++
-            } else if(typeof(pairPerformance[player_name][pair_player_name]) != "number"){
-                players_invalid_pair_performance.push(player_name)
-                players_invalid_pair_performance.push(pair_player_name)
-                count_players_invalid_pair_performance ++
-            }
-        })
-    })
+    });
 
-    if (count_players_missing_from_pairPerformance > 0){
-        show_message(`The players ${players_missing_in_pairPerformance} are missing from the pairPerformance. Assure that they have a relationship status.`, "warning")
-        console.error(`The players ${players_missing_in_pairPerformance} are missing from the pairPerformance. Assure that they have a relationship status.`)
-        return false
+    if (missingPlayersInPairPerformance.length > 0) {
+        show_message(`The players ${missingPlayersInPairPerformance} are missing from the pairPerformanceData. Assure that they have a relationship status.`, "warning");
+        console.error(`The players ${missingPlayersInPairPerformance} are missing from the pairPerformanceData. Assure that they have a relationship status.`);
+        return false;
     }
-    if (count_players_missing_in_players_pair_performance > 0){
-        players_missing_in_players_pair_performance = [...new Set(players_missing_in_players_pair_performance)];
-        show_message(`The players ${players_missing_in_players_pair_performance} do not have a value representing their relationship`, "warning")
-        console.error(`The players ${players_missing_in_players_pair_performance} do not have a value representing their relationship`)
-        return false
+    if (missingPairsInPlayerPerformance.length > 0) {
+        show_message(`The players ${[...missingPairsInPlayerPerformance]} do not have a value representing their relationship`, "warning");
+        console.error(`The players ${[...missingPairsInPlayerPerformance]} do not have a value representing their relationship`);
+        return false;
     }
-    if (count_players_invalid_pair_performance > 0){
-        players_invalid_pair_performance = [...new Set(players_invalid_pair_performance)];
-        show_message(`The players ${players_missing_in_players_pair_performance} pair relationship value is invalid`, "warning")
-        console.error(`The players ${players_missing_in_players_pair_performance} pair relationship value is invalid`)
-        return false
+    if (invalidPairsInPlayerPerformance.length > 0) {
+        show_message(`The players ${[...invalidPairsInPlayerPerformance]} have an invalid pair relationship value`, "warning");
+        console.error(`The players ${[...invalidPairsInPlayerPerformance]} have an invalid pair relationship value`);
+        return false;
     }
 
-    return true
+    return true;
 }
+
 
 function verify_teams_and_matches(project){
     const teams = project.teams
@@ -1365,32 +1372,32 @@ function verify_teams_and_matches(project){
 
     const teams_names = []
     const teams_invalid_num_players = []
-    const count_teams_invalid_num_players = 0;
+    let count_teams_invalid_num_players = 0;
 
-    const teams_unkown_player_allocation = []
-    const count_teams_unkown_player_allocation = 0
+    const teams_unknown_player_allocation = []
+    let count_teams_unknown_player_allocation = 0
 
     Object.keys(teams).forEach(team_name => {
         teams_names.push(team_name)
-        if (project.teams[team_name]["num_players"] != "None" && typeof(project.teams[team_name]["num_players"]) != "number"){
+        if (project.teams[team_name]["num_players"] != null && typeof(project.teams[team_name]["num_players"]) != "number"){
             teams_invalid_num_players.push(team_name)
             count_teams_invalid_num_players ++
         }
         project.teams[team_name]["players"].forEach(player_name =>{
             if (!players[player_name]){
-                teams_unkown_player_allocation.push(player_name)
-                count_teams_unkown_player_allocation ++
+                teams_unknown_player_allocation.push(player_name)
+                count_teams_unknown_player_allocation ++
             }
         })
     })
 
-    const unkown_team_in_matches = []
-    const count_unkown_team_in_matches = 0
+    let unknown_team_in_matches = []
+    let count_unknown_team_in_matches = 0
 
     teams_names.forEach(team_name => {
         if (!matches[team_name] || !teams[matches[team_name]]){
-            unkown_team_in_matches.push(team_name)
-            count_unkown_team_in_matches ++
+            unknown_team_in_matches.push(team_name)
+            count_unknown_team_in_matches ++
         }
     })
 
@@ -1399,18 +1406,19 @@ function verify_teams_and_matches(project){
         console.error(`The teams ${teams_invalid_num_players} have an invalid value for their team size. Make sure the team size is either not set or set to a number`)
         return false
     }
-    if (count_teams_unkown_player_allocation > 0){
-        show_message(`To the teams ${teams_unkown_player_allocation} players not in the project were allocated. Make sure all players allocated to a team are also present in the project`, "warning")
-        console.error(`To the teams ${teams_unkown_player_allocation} players not in the project were allocated. Make sure all players allocated to a team are also present in the project`)
+    if (count_teams_unknown_player_allocation > 0){
+        show_message(`To the teams ${teams_unknown_player_allocation} players not in the project were allocated. Make sure all players allocated to a team are also present in the project`, "warning")
+        console.error(`To the teams ${teams_unknown_player_allocation} players not in the project were allocated. Make sure all players allocated to a team are also present in the project`)
         return false
     }
-    if (count_unkown_team_in_matches > 0){
-        show_message(`The teams ${unkown_team_in_matches} either not exist or their opponent does not exist. Make sure the teams are named properly`, "warning")
-        console.error(`The teams ${unkown_team_in_matches} either not exist or their opponent does not exist. Make sure the teams are named properly`)
+    if (count_unknown_team_in_matches > 0){
+        show_message(`The teams ${unknown_team_in_matches} either do not exist or their opponent does not exist. Make sure the teams are named properly`, "warning")
+        console.error(`The teams ${unknown_team_in_matches} either do not exist or their opponent does not exist. Make sure the teams are named properly`)
         return false
     }
     return true
 }
+
 
 document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("edit_data_tab_analyze_tab").addEventListener("click", () => {
@@ -1465,4 +1473,44 @@ function update_player_to_player_upon_name_change(textarea_name, cell_textarea){
     }
     update_list_players()
     console.log(selected_save_data_edit)
+}
+
+
+document.addEventListener("DOMContentLoaded", () => {
+    const save_button = document.getElementById("save_button")
+    save_button.addEventListener("click", async () => {
+        console.log(selected_save_data_edit)
+        try{
+            if (verify_project(selected_save_data_edit)){
+                const response = await fetch(`${api_address}/user-save-project`, {
+                    method: "POST",
+                    credentials: "include",
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(selected_save_data_edit)
+                })
+                
+                if (!response.ok){
+                    throw new Error(`Request failed with status ${response.status}`)
+                }
+                show_message("Saving Project was successful", "success")
+                const data = await response.json();
+                console.log("Saving successfull: ", data)
+            }
+        } 
+        catch (error){
+            console.error("Error: ", error)
+        }
+    })
+})
+
+function apply_settings_analysis(selected_save_data){
+    const settings = selected_save_data["settings"]
+    if (settings["interchangeableTeams"]){
+        document.getElementById("analyze_settings_interchangeable_toggle").classList.add("checked")
+    }
+    document.getElementById("analyze_settings_max_sit_out_players").value = settings["maxSittingOut"]
+    document.getElementById("analyze_settings_max_difference_teams").value = settings["maxDifferenceTeams"]
+    document.getElementById("analyze_settings_max_difference_pitches").value = settings["maxDifferencePitches"]
 }

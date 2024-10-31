@@ -39,12 +39,12 @@ class Token(BaseModel):
 
 class Player(BaseModel):
     attendanceState: bool
-    primaryScore: float
-    scores: Dict[str, float]
+    primaryScore: float | int
+    scores: Dict[str, float | int]
     @validator("primaryScore")
     def primaryScore_non_negative_validator(cls, v):
         if v < 0:
-            model_logger.error("Primary score must be non-negative. Given: {v}")
+            model_logger.error(f"Primary score must be non-negative. Given: {v}")
             raise ValueError(f"Primary score must be non-negative. Given: {v}")
         return v
 
@@ -58,7 +58,7 @@ class Category(BaseModel):
     maximumValue: Optional[float] = None
 
 class Settings(BaseModel):
-    interachangableTeams: bool
+    interchangeableTeams: bool
     maxSittingOut: int
     maxDifferenceTeams: int
     maxDifferencePitches: int
@@ -74,22 +74,22 @@ class Project(BaseModel):
     settings: Settings
     categories: List[Category]
     players: Dict[str, Player]
-    pairPerformance: Dict[str, Dict[str, int]]
+    pairPerformance: Dict[str, Dict[str, int | float]]
 
     @model_validator(mode="after")
     def number_of_players_consistency_validator(cls, values):
-        if len(values.get("players")) != len(values.get("pairPerformance")):
+        if len(values.players) != len(values.pairPerformance):
             model_logger.error("The number of players must match the pairPerformance dictionary keys.")
             raise ValueError("The number of players must match the pairPerformance dictionary keys.")
-        if values.get("number_of_players") != len(values.get("players")):
+        if values.number_of_players != len(values.players):
             model_logger.error("The 'number_of_players' field must match the number of players in the project.")
             raise ValueError("The 'number_of_players' field must match the number of players in the project.")
         return values
     
     @model_validator(mode="after")
     def pairPerformance_validator(cls, values):
-        pairPerformance_dict = values.get("pairPerformance")
-        list_player_names = list(values.get("players").keys())
+        pairPerformance_dict = values.pairPerformance
+        list_player_names = list(values.players.keys())
 
         for player_name in list_player_names:
             if player_name not in pairPerformance_dict:
@@ -104,12 +104,12 @@ class Project(BaseModel):
     
     @model_validator(mode="after")
     def categorie_validator(cls, values):
-        categories_list = values.get("categories")
-        player_dict = values.get("players")
+        categories_list = values.categories
+        player_dict = values.players
 
         for category in categories_list:
             for player_name, player in player_dict.items():
-                score = player.scores.get(category.name)
+                score = player.scores.category.name
             if score is None:
                 model_logger.error(f"Player '{player_name}' missing score for category '{category.name}'.")
                 raise ValueError(f"Player '{player_name}' missing score for category '{category.name}'.")
@@ -123,10 +123,11 @@ class Project(BaseModel):
     
     @model_validator(mode="after")
     def team_validator(cls, values):
-        teams_dict = values.get("teams")
+        teams_dict = values.teams
         for team_name, team  in teams_dict.items():
-            if team.num_players != None or len(team.players) > team.num_players:
-                model_logger.error(f"Team '{team_name}' has {len(team.players)} players, exceeding the specified limit of {team.num_players}.")
-                raise ValueError(f"Team '{team_name}' has {len(team.players)} players, exceeding the specified limit of {team.num_players}.")
-                
+            if team.num_players != None:
+                if len(team.players) > team.num_players:
+                    model_logger.error(f"Team '{team_name}' has {len(team.players)} players, exceeding the specified limit of {team.num_players}.")
+                    raise ValueError(f"Team '{team_name}' has {len(team.players)} players, exceeding the specified limit of {team.num_players}.")
+                    
         return values
