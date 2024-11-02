@@ -20,6 +20,7 @@ __pycache__/
 # Build Files
 backend/algorithms/Makefile
 backend/algorithms/__pycache__/
+backend/algorithms/CMakeLists.txt
 
 # IDE/Editor Configurations
 .vscode/
@@ -33,7 +34,6 @@ CMakeFiles/
 cmake_install.cmake
 Makefile
 build/
-backend/algorithms/CMakeLists.txt
 
 # OS-specific Files
 .DS_Store

@@ -34,7 +34,9 @@ if not SECRET_KEY:
 # Logging
 import logging
 
-logging.basicConfig(level=logging.DEBUG, filename="log.log", filemode="w",
+logging.basicConfig(level=logging.DEBUG,
+                    filename="./backend/log.log",
+                    filemode="w",
                     format="%(asctime)s - %(levelname)s - %(message)s")
 
 # MongoDB
@@ -110,6 +112,7 @@ async def get_current_user(token: str = Depends(get_token_from_cookie)):
         logging.debug("Invalid Token")
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
     except Exception as e:
+        logging.error(f"500 - INTERNAL ERROR - {e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     
@@ -159,7 +162,8 @@ async def SignUp(username: str = Form(...), password: str = Form(...)):
         await mongoprojects.insert_one(default_starter_project)
         return {"message": "User created successfully"}
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"An unexpected error occurred: {e}")
+        logging.error(f"500 - INTERNAL ERROR - {e}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"An unexpected error occurred. Please try again later.")
 
 @app.get("/user-project-previews")
 async def get_users_project_previews(current_user: UserModel = Depends(get_current_active_user)):
@@ -174,19 +178,20 @@ async def get_users_project_previews(current_user: UserModel = Depends(get_curre
     except PyMongoError as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Database error: {str(e)}")
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"An unexpected error occurred: {str(e)}")
+        logging.error(f"500 - INTERNAL ERROR - {e}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"An unexpected error occurred. Please try again later.")
     
 @app.get("/user-project-preview/{uuid}")
 async def get_users_project(uuid:str, current_user: UserModel = Depends(get_current_active_user)):
     try:
         selected_project = await mongoprojects.find_one({"uuid": uuid})
-        logging.debug(f"Found Project: {selected_project}")
         if selected_project:
             return JSONResponse(selected_project["project"])
         else:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="The Project was not Found")
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="There was an error finding your project")
+        logging.error(f"500 - INTERNAL ERROR - {e}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An unexpected error occurred. Please try again later.")
     
 @app.post("/user-save-project")
 async def save_project(project: Project, current_user: UserModel = Depends(get_current_active_user)):
@@ -197,5 +202,5 @@ async def save_project(project: Project, current_user: UserModel = Depends(get_c
     except PyMongoError as me:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Something went wrong when saving the project")
     except Exception as e:
-        logging.error(f"INTERNAL ERROR - {e}")
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Some internal error accured")
+        logging.error(f"500 - INTERNAL ERROR - {e}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An unexpected error occurred. Please try again later.")
