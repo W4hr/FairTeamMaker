@@ -48,11 +48,21 @@ This project serves as a learning experience and may contain some beginner-level
    ```bash
    pip install -r requirements.txt
    ```
-6. Run the application:
+6. Compile the cpp:
+   ```bash
+   cd ./backend/algorithms
+   python setup.py build_ext --inplace
+   ```
+   Rename .pyd file to `game_calculator`.
+   ```
+   cd ..
+   cd ..
+   ```
+7. Run the application:
    ```bash
    uvicorn app:app --reload
    ```
-7. Access the app via [http://localhost:8000](http://localhost:8000):
+8. Access the app via [http://localhost:8000](http://localhost:8000):
    - Login: [http://localhost:8000/login](http://localhost:8000/login)
 
 ### MongoDB Setup
