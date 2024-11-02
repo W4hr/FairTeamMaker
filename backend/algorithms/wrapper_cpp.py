@@ -47,32 +47,29 @@ def get_teams(teams : Dict[str, dict],
     index_unallocated_players : List[int]= get_index_unallocated_players(unallocated_players, player_index_dict)
     matrix_pairPerformance : List[List[float]]= get_matrix_pairPerformance(pairPerformance, index_player_dict)
     matches_indexes_dict : Dict[int, int]= get_index_matches(matches)
-
+    print(f"amount_of_tries_for_each_team_size = {amount_of_tries_for_each_team_size}")
     best_games_player_indexes = []
     if algorithm_choice == "brute_force":
-        best_games_player_indexes.append(brute_force(teams_sizes,
-                                                     amount_of_tries_for_each_team_size,
-                                                     index_allocated_players,
-                                                     index_skill_dict,
-                                                     index_unallocated_players,
-                                                     amount_best_games,
-                                                     matrix_pairPerformance,
-                                                     matches_indexes_dict
-                                                     ))
+        best_games_player_indexes = brute_force(teams_sizes,
+                                                amount_of_tries_for_each_team_size,
+                                                index_allocated_players,
+                                                index_skill_dict,
+                                                index_unallocated_players,
+                                                amount_best_games,
+                                                matrix_pairPerformance,
+                                                matches_indexes_dict
+                                                )
     elif algorithm_choice == "random":
-        best_games_player_indexes.append(random(teams_sizes,
-                                                     amount_of_tries_for_each_team_size,
-                                                     index_allocated_players,
-                                                     index_skill_dict,
-                                                     index_unallocated_players,
-                                                     amount_best_games,
-                                                     matrix_pairPerformance,
-                                                     matches_indexes_dict
-                                                     ))
-    print(f"Input : {best_games_player_indexes}")
-    print(f"teams: {teams}")
-    print(f"index_player_dict: {index_player_dict}")
-    results_formated = convert_brute_force_output_into_json(best_games_player_indexes, teams, index_player_dict)
+        best_games_player_indexes = random(teams_sizes,
+                                           amount_of_tries_for_each_team_size,
+                                           index_allocated_players,
+                                           index_skill_dict,
+                                           index_unallocated_players,
+                                           amount_best_games,
+                                           matrix_pairPerformance,
+                                           matches_indexes_dict
+                                           )
+    results_formated = format_cpp_output(amount_of_tries_for_each_team_size, best_games_player_indexes, teams_sizes, index_player_dict, teams, pitchNames)
     return results_formated
 
 if __name__ == "__main__":

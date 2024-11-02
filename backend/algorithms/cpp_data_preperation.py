@@ -24,12 +24,14 @@ def get_index_matches(matches: Dict[str, str]) -> Dict[int, int]:
 def get_index_unallocated_players(unallocated_players, player_index_dict):
     return [player_index_dict[player_name] for player_name in list(unallocated_players.keys())]
 
-def convert_brute_force_output_into_json(input_data: List[List[List[Tuple[float, List[List[int]]]]]], teams, index_player_dict: Dict[int, str]):
+def convert_brute_force_output_into_json(input_data: List[List[List[Tuple[float, List[List[int]]]]]], 
+                                         teams, 
+                                         index_player_dict: Dict[int, str]):
     teams_names = list(teams.keys())
     structured_data = []
     for game in input_data:
         games = []
-        for game_data in game:
+        for gd_i, game_data in enumerate(game):
             for score, teams in game_data:
                 structured_teams = [{teams_names[i]: [index_player_dict[index_player] for index_player in team]} for i, team in enumerate(teams)]
                 structured_game = {
@@ -39,3 +41,25 @@ def convert_brute_force_output_into_json(input_data: List[List[List[Tuple[float,
                 games.append(structured_game)
             structured_data.append({"games": games})
     return structured_data
+
+def format_cpp_output(amount_of_tries, cpp_output, teams_sizes, index_player_dict, teams, pitch_names):
+    teams_names = list(teams.keys())
+    formated = []
+    for i, _ in enumerate(amount_of_tries):
+        output = {
+            "teams_size": teams_sizes[i],
+            "possible_games": []
+        }
+        for game in cpp_output[i]:
+            difference, teams_indexes = game
+            teams_dict = {}
+            for pitch_index, pitch_name in enumerate(pitch_names):
+                team1 = teams_indexes[pitch_index * 2]
+                team2 = teams_indexes[pitch_index * 2 + 1]
+                teams_dict[pitch_name] = {
+                    teams_names[pitch_index*2]: [index_player_dict[index_player] for index_player in team1],
+                    teams_names[pitch_index*2+1]: [index_player_dict[index_player] for index_player in team2]
+                }
+            output["possible_games"].append({float(difference): teams_dict})
+        formated.append(output)
+    return formated
