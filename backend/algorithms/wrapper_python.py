@@ -4,7 +4,7 @@ from team_size_processing import teams_sizes as get_teams_sizes
 from calculations import distribute_amount_of_combinations_to_calculate
 from preprocessing import compress_players_dictionary, normalize_primary_score
 from filtering import get_attending_players, get_unallocated_allocated_players
-from allocation_algorythms import get_possible_games
+from brute_force import get_possible_games
 
 ### THIS IS THE SLOWER PURE PYTHON BRUTE FORCE IMPLEMENTATION
 

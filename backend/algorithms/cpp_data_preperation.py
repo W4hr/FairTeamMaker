@@ -1,6 +1,4 @@
-from typing import Dict, List
-
-from typing import Dict
+from typing import Dict, List, Tuple
 
 def get_player_index_dict(Players: Dict[str, Dict[str, any]]) -> Dict[int, str]:
     index_dict = {player_name: index for index, player_name in enumerate(Players.keys())}
@@ -25,3 +23,19 @@ def get_index_matches(matches: Dict[str, str]) -> Dict[int, int]:
 
 def get_index_unallocated_players(unallocated_players, player_index_dict):
     return [player_index_dict[player_name] for player_name in list(unallocated_players.keys())]
+
+def convert_brute_force_output_into_json(input_data: List[List[List[Tuple[float, List[List[int]]]]]], teams, index_player_dict: Dict[int, str]):
+    teams_names = list(teams.keys())
+    structured_data = []
+    for game in input_data:
+        games = []
+        for game_data in game:
+            for score, teams in game_data:
+                structured_teams = [{teams_names[i]: [index_player_dict[index_player] for index_player in team]} for i, team in enumerate(teams)]
+                structured_game = {
+                    "difference": score,
+                    "teams": structured_teams
+                }
+                games.append(structured_game)
+            structured_data.append({"games": games})
+    return structured_data

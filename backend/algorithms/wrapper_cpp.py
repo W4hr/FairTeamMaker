@@ -1,4 +1,4 @@
-from game_calculator import get_possible_games
+from game_calculator import brute_force, random
 
 from typing import Dict, List, Optional
 
@@ -22,9 +22,14 @@ def get_teams(teams : Dict[str, dict],
               dispersion_tries: int,
               players: Dict[str, Dict[str, int]],
               pairPerformance: Dict[str, Dict[str, int]],
-              amount_best_games: int
+              amount_best_games: int,
+              pitchNames: List[str],
+              algorithm_choice: str
               ):
-    teams_sizes: List[List[int]] = get_teams_sizes(teams, matches, maxDifferenceTeams, maxDifferencePitch, player_count, maximum_number_players_sitting_out)
+    temporary_matches = {key: value for key, value in matches.items()}
+    temporary_matches.update({value: key for key, value in matches.items()})
+
+    teams_sizes: List[List[int]] = get_teams_sizes(teams, temporary_matches, maxDifferenceTeams, maxDifferencePitch, player_count, maximum_number_players_sitting_out)
     amount_of_tries_for_each_team_size: List[int] = distribute_amount_of_combinations_to_calculate(desired_amount_of_combinations, round(len(teams_sizes)* dispersion_tries))
     
     attending_players = get_attending_players(players)
@@ -35,31 +40,40 @@ def get_teams(teams : Dict[str, dict],
     
     # CPP data preperation
     player_index_dict : Dict[str, int]= get_player_index_dict(normalized_players)
-    print(f"player_index_dict = {player_index_dict}")
     index_player_dict : Dict[int, str]= get_index_player_dict(normalized_players)
     # CPP ready conversion
     index_skill_dict : List[float]= get_index_skill_dict(normalized_players, player_index_dict)
-    print(f"index_skill_dict = {index_skill_dict}")
     index_allocated_players : List[List[Optional[int]]]= get_index_allocated_players(player_index_dict, allocated_players)
-    print(f"index_allocated_players = {index_allocated_players}")
     index_unallocated_players : List[int]= get_index_unallocated_players(unallocated_players, player_index_dict)
-    print(f"index_unallocated_players = {index_unallocated_players}")
     matrix_pairPerformance : List[List[float]]= get_matrix_pairPerformance(pairPerformance, index_player_dict)
-    print(f"matrix_pairPerformance = {matrix_pairPerformance}")
     matches_indexes_dict : Dict[int, int]= get_index_matches(matches)
-    print(f"matches_indexes_dict = {matches_indexes_dict}")
 
     best_games_player_indexes = []
-    best_games_player_indexes.append(get_possible_games(teams_sizes,
-                                                        amount_of_tries_for_each_team_size,
-                                                        index_allocated_players, # Check
-                                                        index_skill_dict,
-                                                        index_unallocated_players,
-                                                        amount_best_games,
-                                                        matrix_pairPerformance,
-                                                        matches_indexes_dict
-                                                        ))
-    return best_games_player_indexes
+    if algorithm_choice == "brute_force":
+        best_games_player_indexes.append(brute_force(teams_sizes,
+                                                     amount_of_tries_for_each_team_size,
+                                                     index_allocated_players,
+                                                     index_skill_dict,
+                                                     index_unallocated_players,
+                                                     amount_best_games,
+                                                     matrix_pairPerformance,
+                                                     matches_indexes_dict
+                                                     ))
+    elif algorithm_choice == "random":
+        best_games_player_indexes.append(random(teams_sizes,
+                                                     amount_of_tries_for_each_team_size,
+                                                     index_allocated_players,
+                                                     index_skill_dict,
+                                                     index_unallocated_players,
+                                                     amount_best_games,
+                                                     matrix_pairPerformance,
+                                                     matches_indexes_dict
+                                                     ))
+    print(f"Input : {best_games_player_indexes}")
+    print(f"teams: {teams}")
+    print(f"index_player_dict: {index_player_dict}")
+    results_formated = convert_brute_force_output_into_json(best_games_player_indexes, teams, index_player_dict)
+    return results_formated
 
 if __name__ == "__main__":
     data = {
@@ -68,10 +82,9 @@ if __name__ == "__main__":
         "number_of_players": 27,
         "matches": {
             "team 1": "team 2",
-            "team 2": "team 1",
             "team 3": "team 4",
-            "team 4": "team 3"
         },
+        "pitchNames": ["Pitchname1", "Pitchname2"],
         "teams": {
             "team 1": {
                 "num_players": None,
@@ -994,4 +1007,5 @@ if __name__ == "__main__":
         }
     }
     
-    print("ergebnis: ", get_teams(data["teams"], data["matches"], data["settings"]["maxDifferenceTeams"], data["settings"]["maxDifferencePitches"], data["number_of_players"], data["settings"]["maxSittingOut"], 7000000, 0.25, data["players"], data["pairPerformance"], 10))
+    results_formated =  get_teams(data["teams"], data["matches"], data["settings"]["maxDifferenceTeams"], data["settings"]["maxDifferencePitches"], data["number_of_players"], data["settings"]["maxSittingOut"], 700000, 0.25, data["players"], data["pairPerformance"], 10, data["pitchNames"], "random")
+    print(f"Output : {results_formated}")

@@ -6,6 +6,7 @@
 #include <cstdlib>
 #include <queue>
 #include <utility>
+#include <random>
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -97,7 +98,9 @@ double calculate_score_difference(std::vector<std::vector<int>> game, std::vecto
     return difference_scores;
 };
 
-std::vector<std::vector<game_score_combo>> get_possible_games(
+// Brute Force Algorythm
+
+std::vector<std::vector<game_score_combo>> brute_force(
     const std::vector<std::vector<int>>& team_sizes,
     const std::vector<int>& amount_of_tries,
     const std::vector<std::vector<int>>& players_allocated_teams,
@@ -179,10 +182,110 @@ std::vector<std::vector<game_score_combo>> get_possible_games(
     return best_games;
 }
 
+// random
+std::vector<std::vector<game_score_combo>> random(
+    const std::vector<std::vector<int>>& team_sizes,
+    const std::vector<int>& amount_of_tries,
+    const std::vector<std::vector<int>>& players_allocated_teams,
+    const std::vector<double>& player_data,
+    std::vector<int>& indexes_players_unallocated,
+    int len_leaderboard,
+    const std::vector<std::vector<double>>& player_to_player,
+    const std::map<int, int>& matches
+) {
+    std::vector<std::vector<game_score_combo>> best_games;
+    
+    std::random_device rd;
+    std::default_random_engine rng(rd());
+
+    for (size_t i = 0; i < amount_of_tries.size(); ++i) {
+        std::vector<int> current_teams_sizes = team_sizes[i];
+        std::vector<std::vector<int>> teams;
+        int tries = 0;
+        std::sort(indexes_players_unallocated.begin(), indexes_players_unallocated.end());
+
+        std::priority_queue<game_score_combo, std::vector<game_score_combo>, compare> top_vector;
+        std::vector<game_score_combo> best_games_each_size;
+        int players_needed = std::accumulate(current_teams_sizes.begin(), current_teams_sizes.end(), 0);
+
+        if (players_needed == indexes_players_unallocated.size()) {
+            do {
+                std::shuffle(indexes_players_unallocated.begin(), indexes_players_unallocated.end(), rng);
+                teams.clear();
+                int start = 0;
+                for (auto team_size = current_teams_sizes.begin(); team_size != current_teams_sizes.end(); ++team_size) {
+                    std::vector<int> team(indexes_players_unallocated.begin() + start, indexes_players_unallocated.begin() + start + *team_size);
+                    teams.push_back(team);
+                    start += *team_size;
+                };
+                double game_difference = calculate_score_difference(teams, players_allocated_teams, player_data, player_to_player);
+
+                if (top_vector.size() < len_leaderboard) {
+                    top_vector.push({game_difference, teams});
+                } else if (game_difference < top_vector.top().first) {
+                    top_vector.pop();
+                    top_vector.push({game_difference, teams});
+                }
+                tries++;
+            } while (tries < amount_of_tries[i]);
+            while (!top_vector.empty()) {
+                best_games_each_size.push_back(top_vector.top());
+                top_vector.pop();
+            }
+            best_games.push_back(best_games_each_size);
+            best_games_each_size.clear();
+        } else if (players_needed < indexes_players_unallocated.size()) {
+            GenerateCombination combination_generator(indexes_players_unallocated, players_needed);
+            std::vector<int> combination;
+
+            while (tries < amount_of_tries[i] && combination_generator.next_combination(combination)) {
+                while (tries < amount_of_tries[i]) {
+                    std::shuffle(indexes_players_unallocated.begin(), indexes_players_unallocated.end(), rng);
+                    int start = 0;
+                    teams.clear();
+                    for (auto team_size = current_teams_sizes.begin(); team_size != current_teams_sizes.end(); ++team_size) {
+                        std::vector<int> team(combination.begin() + start, combination.begin() + start + *team_size);
+                        teams.push_back(team);
+                        start += *team_size;
+                    }
+                    double game_difference = calculate_score_difference(teams, players_allocated_teams, player_data, player_to_player);
+
+                    if (top_vector.size() < len_leaderboard) {
+                        top_vector.push({game_difference, teams});
+                    } else if (game_difference < top_vector.top().first) {
+                        top_vector.pop();
+                        top_vector.push({game_difference, teams});
+                    }
+                    tries++;
+                }
+            }
+            while (!top_vector.empty()) {
+                best_games_each_size.push_back(top_vector.top());
+                top_vector.pop();
+            }
+            best_games.push_back(best_games_each_size);
+            best_games_each_size.clear();
+        }
+    };
+    return best_games;
+}
+
+
 PYBIND11_MODULE(game_calculator, m) {
     m.doc() = "Game Calculator Module";
 
-    m.def("get_possible_games", &get_possible_games, "Generate possible games",
+    m.def("brute_force", &brute_force, "Generate possible games using brute force",
+        py::arg("team_sizes"),
+        py::arg("amount_of_tries"),
+        py::arg("players_allocated_teams"),
+        py::arg("player_data"),
+        py::arg("indexes_players_unallocated"),
+        py::arg("len_leaderboard"),
+        py::arg("player_to_player"),
+        py::arg("matches")
+    );
+
+    m.def("random", &random, "Generate possible games using random shuffling",
         py::arg("team_sizes"),
         py::arg("amount_of_tries"),
         py::arg("players_allocated_teams"),
