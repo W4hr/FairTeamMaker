@@ -218,7 +218,6 @@ document.addEventListener("DOMContentLoaded", () => {
         selected_save_data_edit["number_of_players"] += 1
         build_player_to_player_table(selected_save_data_edit);
         apply_changes_to_skills_single_player(NewRow);
-        update_list_players() //HERE
     });
 });
 
@@ -505,122 +504,17 @@ function delete_player(player_to_deltete_delete) {
     player_to_delete.remove();
 }
 
-// Build new Pitch
-
-function build_pitch(){
-    const analyze_pitch_container = document.createElement("div")
-    analyze_pitch_container.classList.add("analyze_results_pitch")
-
-    const analyze_pitch_title = document.createElement("div")
-    analyze_pitch_title.classList.add("analyze_pitch_title")
-
-    const analyze_pitch_title_input = document.createElement("input")
-    analyze_pitch_title_input.setAttribute("type", "text");
-    analyze_pitch_title_input.classList.add("analyze_pitch_title_input")
-    analyze_pitch_title_input.value = `Spielfeld ${document.querySelectorAll(".analyze_results_pitch").length + 1}`
-
-    const analyze_pitch_delete = document.createElement("button")
-    analyze_pitch_delete.classList.add("red_button")
-    analyze_pitch_delete.classList.add("analyze_pitch_delete")
-    analyze_pitch_delete.innerText = "Delete"
-    analyze_pitch_delete.addEventListener("click", () => {
-        analyze_pitch_container.remove()
-        update_list_allocated_player()
-        update_list_players()
-        console.log(list_players)
-        console.log(list_players_allocated)
-
-    })
-
-    const analyze_pitch_teams_container = document.createElement("div")
-    analyze_pitch_teams_container.classList.add("analyze_pitch_teams")
-
-    const analyze_pitch_teams_seperater = document.createElement("div")
-    analyze_pitch_teams_seperater.classList.add("spacer_vertical_20px")
-
-    // Build Pitch
-    analyze_pitch_title.appendChild(analyze_pitch_title_input)
-    analyze_pitch_title.appendChild(analyze_pitch_delete)
-    
-    analyze_pitch_teams_container.appendChild(build_team(1))
-    analyze_pitch_teams_container.appendChild(analyze_pitch_teams_seperater)
-    analyze_pitch_teams_container.appendChild(build_team(0))
-
-
-    analyze_pitch_container.appendChild(analyze_pitch_title)
-    analyze_pitch_container.appendChild(analyze_pitch_teams_container)
-    return analyze_pitch_container
-}
-
-
-
-function build_team(number_to_devide_for_team_name){
-    const analyze_pitch_team = document.createElement("div")
-    analyze_pitch_team.classList.add("analyze_pitch_team")
-
-    const analyze_pitch_team_title = document.createElement("div")
-    analyze_pitch_team_title.classList.add("analyze_pitch_team_title")
-
-    const analyze_pitch_team_title_input = document.createElement("input")
-    analyze_pitch_team_title_input.setAttribute("type", "text")
-    analyze_pitch_team_title_input.value = `Team ${(document.querySelectorAll(".analyze_results_pitch").length + 1)*2 - number_to_devide_for_team_name}`
-    analyze_pitch_team_title_input.classList.add("analyze_pitch_team_title_input")
-
-    const analyze_pitch_team_num_players = document.createElement("select")
-    analyze_pitch_team_num_players.classList.add("analyze_pitch_team_num_players")
-
-    const analyze_pitch_team_players = document.createElement("ul")
-    analyze_pitch_team_players.classList.add("analyze_pitch_team_players")
-
-    const analyze_pitch_team_add_player = document.createElement("div")
-    analyze_pitch_team_add_player.classList.add("analyze_results_pitch_team_add_player")
-
-    const analyze_pitch_team_add_player_symbol = document.createElement("img")
-    analyze_pitch_team_add_player_symbol.setAttribute("src", "frontend/UI/img/icon/add.svg")
-    analyze_pitch_team_add_player_symbol.setAttribute("alt", "Add Player to Team")
-    analyze_pitch_team_add_player_symbol.classList.add("analyze_results_pitch_team_add_player_symbol")
-
-    
-    const analyze_pitch_team_add_player_selection = document.createElement("select")
-    analyze_pitch_team_add_player_selection.classList.add("analyze_results_pitch_team_add_player_selection")
-
-    // Build Team
-    analyze_pitch_team_add_player.appendChild(analyze_pitch_team_add_player_symbol)
-    analyze_pitch_team_add_player.appendChild(analyze_pitch_team_add_player_selection)
-
-    analyze_pitch_team_title.appendChild(analyze_pitch_team_title_input)
-    analyze_pitch_team_title.appendChild(analyze_pitch_team_num_players)
-
-    analyze_pitch_team.appendChild(analyze_pitch_team_title)
-    analyze_pitch_team.appendChild(analyze_pitch_team_players)
-    analyze_pitch_team.appendChild(analyze_pitch_team_add_player)
-    return analyze_pitch_team
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-    const analyze_pitches = document.getElementById("analyze_results_pitches")
-    document.getElementById("analyze_configure_add_pitch_button").addEventListener("click", () => {
-        analyze_pitches.appendChild(build_pitch())
-        update_pitches_selectors()
-        add_player_to_team_eventlistener()
-    })
-})
-
-
-function add_player_to_team (add_button) {
-    const analyze_pitch_team_players_list = add_button.parentElement.parentElement.children[1]
-    const analyze_pitch_team_add_player_selection = add_button.parentElement.children[1]
-
+function add_player_to_team(player_name, player_data, team_players_container, team_name){
     const analyze_pitch_team_player = document.createElement("li")
     analyze_pitch_team_player.classList.add("analyze_pitch_team_player")
 
     const analyze_pitch_team_player_name = document.createElement("p")
     analyze_pitch_team_player_name.classList.add("analyze_pitch_team_player_name")
-    analyze_pitch_team_player_name.innerText = analyze_pitch_team_add_player_selection.value
+    analyze_pitch_team_player_name.innerText = player_name
 
     const analyze_pitch_team_player_score = document.createElement("p")
     analyze_pitch_team_player_score.classList.add("analyze_pitch_team_player_score")
-    analyze_pitch_team_player_score.innerText = selected_save_data_edit.players[analyze_pitch_team_add_player_selection.value].primaryScore // Add Score Function Later
+    analyze_pitch_team_player_score.innerText = player_data.primaryScore
 
     const analyze_pitch_team_player_delete_container = document.createElement("div")
     analyze_pitch_team_player_delete_container.classList.add("analyze_pitch_team_player_delete")
@@ -629,8 +523,13 @@ function add_player_to_team (add_button) {
     analyze_pitch_team_player_delete.setAttribute("style", "height: 15px;")
     analyze_pitch_team_player_delete_container.addEventListener("click", () => {
         analyze_pitch_team_player.remove()
-        update_list_allocated_player()
-        update_list_players()
+        document.querySelectorAll(".analyze_results_pitch_team_add_player_selection").forEach(selector => {
+            const player_select = document.createElement("option")
+            player_select.value = player_name
+            player_select.classList.add(`add_player_to_team_${player_name}`)
+            player_select.innerText = player_name
+            selector.appendChild(player_select)
+        })
     })
 
     analyze_pitch_team_player_delete_container.appendChild(analyze_pitch_team_player_delete)
@@ -639,25 +538,12 @@ function add_player_to_team (add_button) {
     analyze_pitch_team_player.appendChild(analyze_pitch_team_player_score)
     analyze_pitch_team_player.appendChild(analyze_pitch_team_player_delete_container)
 
-    analyze_pitch_team_players_list.appendChild(analyze_pitch_team_player)
-    update_list_allocated_player()
-    update_list_players()
-};
-
-function add_player_to_team_eventlistener(){
-    add_buttons = document.querySelectorAll(".analyze_results_pitch_team_add_player_symbol")
-    add_buttons.forEach(add_button => {
-        if (add_button.dataset.EventListener !== "true"){
-            add_button.addEventListener("click", () => {
-                if (add_button.parentElement.children[1].value !== ""){
-                    add_player_to_team (add_button)
-                }
-            })
-            add_button.dataset.EventListener = "true"
-        }
+    team_players_container.appendChild(analyze_pitch_team_player)
+    const player_selectors = document.querySelectorAll(`.add_player_to_team_${player_name}`)
+    player_selectors.forEach(selector => {
+        selector.remove()
     })
 }
-
 
 // Message 
 
@@ -806,7 +692,6 @@ document.addEventListener("DOMContentLoaded", () => {
             
             apply_changes_to_attendance();
             apply_changes_to_skills();
-            update_list_players();
         }
     })
 })
@@ -961,10 +846,6 @@ function update_list_players(){
     update_pitches_selectors();
 }
 
-function update_list_allocated_player(){
-    list_players_allocated = Array.from(document.querySelectorAll(".analyze_pitch_team_player_name")).map(name => name.innerText);
-}
-
 function update_team_size_selector(){
     const analyze_pitch_team_num_players_selectors = document.querySelectorAll(".analyze_pitch_team_num_players")
     analyze_pitch_team_num_players_selectors.forEach(selector => {
@@ -979,7 +860,7 @@ function update_team_size_selector(){
         }
     })
 }
-
+//HERE
 function update_team_add_players_selector(){
     document.querySelectorAll(".analyze_results_pitch_team_add_player_selection").forEach(selector => {
         selector.innerHTML = ""
@@ -1059,20 +940,6 @@ import_data_input.addEventListener("change", () => {
         reader.readAsText(file);
     }
 });
-
-// Todo
-// Function to adjust the options for the numbers of Players selection per team so that if you choose a number of players for a team 
-function addjust_num_player_selection(){
-    var sum_numbers_selection = 0
-    document.querySelectorAll(".analyze_pitch_team_num_players").forEach(selection => {
-        selection.addEventListener("change", () => {
-            sum_numbers_selection += selection.value
-        })
-        selection.querySelectorAll("option").forEach(option => {
-        })
-    })
-}
-
 
 // New Project Button
 function add_project_eventlistener(){
@@ -1478,8 +1345,6 @@ function update_player_to_player_upon_name_change(textarea_name, cell_textarea){
         console.error("Another Player already has that name. Please choose a different name")
         show_message("Another Player already has that name. Please choose a different name", "warning")
     }
-    update_list_players()
-    console.log(selected_save_data_edit)
 }
 
 
@@ -1560,21 +1425,31 @@ async function analyze_project(project){
 }
 
 function build_pitches(project_data){
-    console.log(project_data)
     const teams_names_list = Object.keys(project_data["teams"])
-    project_data["pitches"].forEach(pitch_name => {
-        const pitch = build_pitch()
-        const pitch_title = pitch.querySelector(".analyze_pitch_title_input")
-        pitch_title.value = pitch_name
-        Array.from(pitch.querySelectorAll(".analyze_pitch_team")).forEach(team_container => {
+    const teams_data = project_data.teams
+    const allocated_players = []
+    console.log(teams_data)
+    teams_names_list.forEach(team_name => {
+        allocated_players.push(...teams_data[team_name].players)
+    })
+    const players = Object.keys(project_data.players)
+    const unallocated_players = players.filter(player => !allocated_players.includes(player))
+    const pitches_container = document.getElementById("analyze_results_pitches")
+    project_data["pitches"].forEach((pitch_name, pitch_index) => {
+        const team1 = teams_names_list[pitch_index*2]
+        const team2 = teams_names_list[pitch_index*2+1]
 
-        })
+        const num_players_team1 = project_data.teams[team1].num_players
+        const num_players_team2 = project_data.teams[team2].num_players
+        const players_team1 = project_data.teams[team1].players
+        const players_team2 = project_data.teams[team2].players
 
-
+        const pitch = build_pitch(pitch_name, team1, num_players_team1, players_team1, team2, num_players_team2, players_team2, unallocated_players)
+        pitches_container.appendChild(pitch)
     })
 }
 
-function build_pitch2(pitch_name, team_1, team_2){
+function build_pitch(pitch_name, team_1, num_players_team1, players_team1, team_2, num_players_team2, players_team2, unallocated_players){
     const analyze_pitch_container = document.createElement("div")
     analyze_pitch_container.classList.add("analyze_results_pitch")
 
@@ -1592,11 +1467,16 @@ function build_pitch2(pitch_name, team_1, team_2){
     analyze_pitch_delete.innerText = "Delete"
     analyze_pitch_delete.addEventListener("click", () => {
         analyze_pitch_container.remove()
-        update_list_allocated_player()
-        update_list_players()
-        console.log(list_players)
-        console.log(list_players_allocated)
-
+        const freed_players = Array.from(analyze_pitch_container.querySelectorAll(".analyze_pitch_team_player_name")).map(p => p.innerText)
+        document.querySelectorAll(".analyze_results_pitch_team_add_player_selection").forEach(selector => {
+            freed_players.forEach(freed_player => {
+                const player_option = document.createElement("option")
+                player_option.value = freed_player
+                player_option.innerText = freed_player
+                player_option.classList.add(`add_player_to_team_${freed_player}`)
+                selector.appendChild(player_option)
+            })
+        })
     })
 
     const analyze_pitch_teams_container = document.createElement("div")
@@ -1609,9 +1489,10 @@ function build_pitch2(pitch_name, team_1, team_2){
     analyze_pitch_title.appendChild(analyze_pitch_title_input)
     analyze_pitch_title.appendChild(analyze_pitch_delete)
     
-    analyze_pitch_teams_container.appendChild(build_team2(team))
+    analyze_pitch_teams_container.appendChild(build_team(team_1, unallocated_players, num_players_team1, players_team1))
     analyze_pitch_teams_container.appendChild(analyze_pitch_teams_seperater)
-    analyze_pitch_teams_container.appendChild(build_team(0))
+    analyze_pitch_teams_container.appendChild(build_team(team_2, unallocated_players, num_players_team2, players_team2))
+
 
 
     analyze_pitch_container.appendChild(analyze_pitch_title)
@@ -1619,7 +1500,7 @@ function build_pitch2(pitch_name, team_1, team_2){
     return analyze_pitch_container
 }
 
-function build_team2(team_name, team_data, num_unallocated_players, players){
+function build_team(team_name, unallocated_players, num_players_team, players_team){
     const analyze_pitch_team = document.createElement("div")
     analyze_pitch_team.classList.add("analyze_pitch_team")
 
@@ -1634,24 +1515,28 @@ function build_team2(team_name, team_data, num_unallocated_players, players){
     const analyze_pitch_team_num_players = document.createElement("select")
     analyze_pitch_team_num_players.classList.add("analyze_pitch_team_num_players")
 
-    analyze_pitch_team_num_players.innerHTML = `<option value="null">automatic</option>`
+    analyze_pitch_team_num_players.innerHTML = `<option value="a">automatic</option>`
 
     let counter_options_num_players = 0
-    while (counter_options_num_players < num_unallocated_players){
+    while (counter_options_num_players < unallocated_players.length){
         counter_options_num_players ++
         const option = document.createElement("option")
-        option.classList.setAttribute("value", counter_options_num_players)
+        option.setAttribute("value", counter_options_num_players)
         option.innerText = counter_options_num_players
         analyze_pitch_team_num_players.appendChild(option)
     }
-    analyze_pitch_team_num_players.value = team_data["num_players"]
+    if (analyze_pitch_team_num_players.value == "a" || analyze_pitch_team_num_players.value == null){
+        analyze_pitch_team_num_players.value = "a"
+    } else {
+        analyze_pitch_team_num_players.value = num_players_team
+    }
 
 
     const analyze_pitch_team_players = document.createElement("ul")
     analyze_pitch_team_players.classList.add("analyze_pitch_team_players")
 
 
-    team_data["players"].forEach(player_name, () => {
+    players_team.forEach((player_name) => {
         const analyze_pitch_team_selection_option = document.createElement("li")
         analyze_pitch_team_selection_option.classList.add("analyze_pitch_team_player")
     
@@ -1678,9 +1563,22 @@ function build_team2(team_name, team_data, num_unallocated_players, players){
     analyze_pitch_team_add_player_symbol.setAttribute("alt", "Add Player to Team")
     analyze_pitch_team_add_player_symbol.classList.add("analyze_results_pitch_team_add_player_symbol")
 
-    
     const analyze_pitch_team_add_player_selection = document.createElement("select")
     analyze_pitch_team_add_player_selection.classList.add("analyze_results_pitch_team_add_player_selection")
+    unallocated_players.forEach(player_name => {
+        const player_option = document.createElement("option")
+        player_option.value = player_name
+        player_option.innerText = player_name
+        player_option.classList.add(`add_player_to_team_${player_name}`)
+        analyze_pitch_team_add_player_selection.appendChild(player_option)
+    })
+
+    analyze_pitch_team_add_player_symbol.addEventListener("click", () => {
+        if (analyze_pitch_team_add_player_selection.value != undefined || analyze_pitch_team_add_player_selection.value != ""){
+            add_player_to_team(analyze_pitch_team_add_player_selection.value, selected_save_data_edit.players[analyze_pitch_team_add_player_selection.value], analyze_pitch_team_players, analyze_pitch_team_title_input.value)
+
+        }
+    })
 
     // Build Team
     analyze_pitch_team_add_player.appendChild(analyze_pitch_team_add_player_symbol)
@@ -1694,3 +1592,14 @@ function build_team2(team_name, team_data, num_unallocated_players, players){
     analyze_pitch_team.appendChild(analyze_pitch_team_add_player)
     return analyze_pitch_team
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("analyze_configure_add_pitch_button").addEventListener("click", () => {
+        const pitches_count = document.querySelectorAll(".analyze_results_pitch").length
+        const allocated_players = Array.from(document.querySelectorAll(".analyze_pitch_team_player_name")).map(p => p.innerText)
+        
+        const players = Object.keys(selected_save_data_edit.players)
+        const unallocated_players = players.filter(player => !allocated_players.includes(player))
+        document.getElementById("analyze_results_pitches").appendChild(build_pitch(`Pitch ${pitches_count}`, `Team ${pitches_count*2+1}`, "a", [], `Team ${pitches_count*2+2}`, "a", [], unallocated_players))
+    })
+})

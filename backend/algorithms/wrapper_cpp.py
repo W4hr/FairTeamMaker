@@ -41,8 +41,7 @@ def get_teams(teams : Dict[str, dict],
         algorithm_logger.debug(f"teams = {teams}")
 
         teams_sizes: List[List[int]] = get_teams_sizes(teams, temporary_matches, maxDifferenceTeams, maxDifferencePitch, player_count, maximum_number_players_sitting_out)
-        algorithm_logger.debug("team size calculation succeeded")
-        algorithm_logger.debug(f"desired_amount_of_combinations = {desired_amount_of_combinations}; round(len(teams_sizes)* dispersion_tries) = {round(len(teams_sizes)* dispersion_tries)}")
+        algorithm_logger.debug(f"team size calculation succeeded: {teams_sizes}")
         if len(teams_sizes) < 1:
             raise ValueError("There are no possible Teamsizes with your configuration")
         desired_amount_team_sizes = round(len(teams_sizes)* dispersion_tries)
