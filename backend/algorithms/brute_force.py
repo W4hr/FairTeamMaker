@@ -1,7 +1,7 @@
 import itertools
 import random
 from typing import List, Dict
-from calculations import calculate_team_score_difference, calculate_team_scores
+from .calculations import calculate_team_score_difference, calculate_team_scores
 
 def get_possible_games(team_size_allocate: List[int],
 					   team_size_original: List[int],

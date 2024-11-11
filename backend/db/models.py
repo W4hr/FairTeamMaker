@@ -70,6 +70,7 @@ class Project(BaseModel):
     color: str
     number_of_players: int
     matches: Dict[str, str]
+    pitches: List[str]
     teams: Dict[str, Team]
     settings: Settings
     categories: List[Category]
@@ -78,6 +79,7 @@ class Project(BaseModel):
 
     @model_validator(mode="after")
     def number_of_players_consistency_validator(cls, values):
+        model_logger.debug("Project validation started")
         if len(values.players) != len(values.pairPerformance):
             model_logger.error("The number of players must match the pairPerformance dictionary keys.")
             raise ValueError("The number of players must match the pairPerformance dictionary keys.")

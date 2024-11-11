@@ -1,6 +1,6 @@
 import math
 from typing import List, Dict
-from normalization import normalize_lin, normalize_norm
+from .normalization import normalize_lin, normalize_norm
 
 def calculate_team_scores(game: Dict[str, List[dict]],
 						  pairPerformance: Dict[str, Dict[str, int]],

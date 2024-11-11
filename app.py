@@ -3,9 +3,11 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
+from fastapi.exceptions import RequestValidationError
+from pydantic import ValidationError
 
 from starlette.responses import FileResponse
-from typing import List, Optional
+from typing import Union
 from datetime import datetime, timedelta, timezone
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -16,6 +18,7 @@ from pymongo.errors import PyMongoError
 
 from backend.db.defaultproject import create_default_starter_project
 from backend.scripts.data_preprocessing import get_preview, create_project_data
+from backend.algorithms.wrapper_cpp import get_teams
 
 from backend.db.models import TokenData, Token, UserModel, Project
 
@@ -35,9 +38,26 @@ if not SECRET_KEY:
 import logging
 
 logging.basicConfig(level=logging.DEBUG,
-                    filename="./backend/log.log",
+                    filename="./log.log",
                     filemode="w",
                     format="%(asctime)s - %(levelname)s - %(message)s")
+
+model_logger = logging.getLogger("models")
+file_handler = logging.FileHandler("models.log", mode="w")
+file_handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
+model_logger.addHandler(file_handler)
+model_logger.setLevel(logging.DEBUG)
+
+async def http422_error_handler(
+    _: Request, exc: Union[RequestValidationError, ValidationError]) -> JSONResponse:
+    error_details = exc.errors()
+    model_logger.debug(f"Validation failed: {error_details}")
+    return JSONResponse(
+        {"errors": exc.errors()}, status_code=status.HTTP_422_UNPROCESSABLE_ENTITY
+    )
+
+app.add_exception_handler(ValidationError, http422_error_handler)
+app.add_exception_handler(RequestValidationError, http422_error_handler)
 
 # MongoDB
 mongoclient = AsyncIOMotorClient("mongodb://localhost:27017")
@@ -201,6 +221,17 @@ async def save_project(project: Project, current_user: UserModel = Depends(get_c
         await mongoprojects.insert_one(full_project)
     except PyMongoError as me:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Something went wrong when saving the project")
+    except Exception as e:
+        logging.error(f"500 - INTERNAL ERROR - {e}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An unexpected error occurred. Please try again later.")
+
+@app.post("/analyze")
+async def analyze(project: Project, current_user: UserModel = Depends(get_current_active_user)):
+    try:
+         project_dict = project.dict()
+         logging.debug(f"project_dict = {project_dict}")
+         result = get_teams(project_dict["teams"], project_dict["matches"], project_dict["settings"]["maxDifferenceTeams"], project_dict["settings"]["maxDifferencePitches"], project_dict["number_of_players"], project_dict["settings"]["maxSittingOut"], 700000, 0.25, project_dict["players"], project_dict["pairPerformance"], 3, project_dict["pitches"], "random")
+         return JSONResponse(result)
     except Exception as e:
         logging.error(f"500 - INTERNAL ERROR - {e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An unexpected error occurred. Please try again later.")

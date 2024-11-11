@@ -1,6 +1,6 @@
 from typing import Dict, List
 import copy
-from normalization import normalize_lin, normalize_sig
+from .normalization import normalize_lin, normalize_sig
 
 def compress_players_dictionary(players: Dict[str, dict]
                                 ) -> Dict[str, Dict[str, int]]:

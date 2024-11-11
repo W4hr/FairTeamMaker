@@ -1,13 +1,21 @@
-from game_calculator import brute_force, random
+from .game_calculator import brute_force, random
 
 from typing import Dict, List, Optional
 
-from team_size_processing import teams_sizes as get_teams_sizes
-from calculations import distribute_amount_of_combinations_to_calculate
-from preprocessing import compress_players_dictionary, normalize_primary_score
-from filtering import get_attending_players, get_unallocated_allocated_players, get_allocated_player_in_teams
+from .team_size_processing import teams_sizes as get_teams_sizes
+from .calculations import distribute_amount_of_combinations_to_calculate
+from .preprocessing import compress_players_dictionary, normalize_primary_score
+from .filtering import get_attending_players, get_unallocated_allocated_players, get_allocated_player_in_teams
 
-from cpp_data_preperation import *
+from .cpp_data_preperation import *
+
+# Logging
+import logging
+algorithm_logger = logging.getLogger("algorithm")
+file_handler = logging.FileHandler("./algorithm.log", mode="w")
+file_handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
+algorithm_logger.addHandler(file_handler)
+algorithm_logger.setLevel(logging.DEBUG)
 
 
 ### THIS IS THE FASTER CPP/PYTHON BRUTE FORCE IMPLEMENTATION
@@ -26,50 +34,68 @@ def get_teams(teams : Dict[str, dict],
               pitchNames: List[str],
               algorithm_choice: str
               ):
-    temporary_matches = {key: value for key, value in matches.items()}
-    temporary_matches.update({value: key for key, value in matches.items()})
+    try:
+        temporary_matches = {key: value for key, value in matches.items()}
+        temporary_matches.update({value: key for key, value in matches.items()})
+        algorithm_logger.debug("initializing temporary matches succeeded")
+        algorithm_logger.debug(f"teams = {teams}")
 
-    teams_sizes: List[List[int]] = get_teams_sizes(teams, temporary_matches, maxDifferenceTeams, maxDifferencePitch, player_count, maximum_number_players_sitting_out)
-    amount_of_tries_for_each_team_size: List[int] = distribute_amount_of_combinations_to_calculate(desired_amount_of_combinations, round(len(teams_sizes)* dispersion_tries))
-    
-    attending_players = get_attending_players(players)
-    compressed_players = compress_players_dictionary(attending_players)
-    normalized_players = normalize_primary_score(compressed_players, 4, 1, 1, 8)
-    unallocated_players, _ = get_unallocated_allocated_players(normalized_players, teams)
-    allocated_players = get_allocated_player_in_teams(teams)
-    
-    # CPP data preperation
-    player_index_dict : Dict[str, int]= get_player_index_dict(normalized_players)
-    index_player_dict : Dict[int, str]= get_index_player_dict(normalized_players)
-    # CPP ready conversion
-    index_skill_dict : List[float]= get_index_skill_dict(normalized_players, player_index_dict)
-    index_allocated_players : List[List[Optional[int]]]= get_index_allocated_players(player_index_dict, allocated_players)
-    index_unallocated_players : List[int]= get_index_unallocated_players(unallocated_players, player_index_dict)
-    matrix_pairPerformance : List[List[float]]= get_matrix_pairPerformance(pairPerformance, index_player_dict)
-    matches_indexes_dict : Dict[int, int]= get_index_matches(matches)
-    print(f"amount_of_tries_for_each_team_size = {amount_of_tries_for_each_team_size}")
-    best_games_player_indexes = []
-    if algorithm_choice == "brute_force":
-        best_games_player_indexes = brute_force(teams_sizes,
-                                                amount_of_tries_for_each_team_size,
-                                                index_allocated_players,
-                                                index_skill_dict,
-                                                index_unallocated_players,
-                                                amount_best_games,
-                                                matrix_pairPerformance,
-                                                matches_indexes_dict
-                                                )
-    elif algorithm_choice == "random":
-        best_games_player_indexes = random(teams_sizes,
-                                           amount_of_tries_for_each_team_size,
-                                           index_allocated_players,
-                                           index_skill_dict,
-                                           index_unallocated_players,
-                                           amount_best_games,
-                                           matrix_pairPerformance,
-                                           matches_indexes_dict
-                                           )
-    results_formated = format_cpp_output(amount_of_tries_for_each_team_size, best_games_player_indexes, teams_sizes, index_player_dict, teams, pitchNames)
+        teams_sizes: List[List[int]] = get_teams_sizes(teams, temporary_matches, maxDifferenceTeams, maxDifferencePitch, player_count, maximum_number_players_sitting_out)
+        algorithm_logger.debug("team size calculation succeeded")
+        algorithm_logger.debug(f"desired_amount_of_combinations = {desired_amount_of_combinations}; round(len(teams_sizes)* dispersion_tries) = {round(len(teams_sizes)* dispersion_tries)}")
+        if len(teams_sizes) < 1:
+            raise ValueError("There are no possible Teamsizes with your configuration")
+        desired_amount_team_sizes = round(len(teams_sizes)* dispersion_tries)
+        if desired_amount_team_sizes < 1:
+            desired_amount_team_sizes = 1
+        amount_of_tries_for_each_team_size: List[int] = distribute_amount_of_combinations_to_calculate(desired_amount_of_combinations, desired_amount_team_sizes)
+        algorithm_logger.debug("calculation distribution succeeded")
+        
+        attending_players = get_attending_players(players)
+        algorithm_logger.debug("getting attending players succeeded")
+        compressed_players = compress_players_dictionary(attending_players)
+        algorithm_logger.debug("compressing players succeeded")
+        normalized_players = normalize_primary_score(compressed_players, 4, 1, 1, 8)
+        algorithm_logger.debug("normalizing player data succeeded")
+        unallocated_players, _ = get_unallocated_allocated_players(normalized_players, teams)
+        algorithm_logger.debug("getting unallocated players succeeded")
+        allocated_players = get_allocated_player_in_teams(teams)
+        algorithm_logger.debug("getting allocated players succeeded")
+
+        # CPP data preperation
+        player_index_dict : Dict[str, int]= get_player_index_dict(normalized_players)
+        index_player_dict : Dict[int, str]= get_index_player_dict(normalized_players)
+        # CPP ready conversion
+        index_skill_dict : List[float]= get_index_skill_dict(normalized_players, player_index_dict)
+        index_allocated_players : List[List[Optional[int]]]= get_index_allocated_players(player_index_dict, allocated_players)
+        index_unallocated_players : List[int]= get_index_unallocated_players(unallocated_players, player_index_dict)
+        matrix_pairPerformance : List[List[float]]= get_matrix_pairPerformance(pairPerformance, index_player_dict)
+        matches_indexes_dict : Dict[int, int]= get_index_matches(matches)
+        print(f"amount_of_tries_for_each_team_size = {amount_of_tries_for_each_team_size}")
+        best_games_player_indexes = []
+        if algorithm_choice == "brute_force":
+            best_games_player_indexes = brute_force(teams_sizes,
+                                                    amount_of_tries_for_each_team_size,
+                                                    index_allocated_players,
+                                                    index_skill_dict,
+                                                    index_unallocated_players,
+                                                    amount_best_games,
+                                                    matrix_pairPerformance,
+                                                    matches_indexes_dict
+                                                    )
+        elif algorithm_choice == "random":
+            best_games_player_indexes = random(teams_sizes,
+                                            amount_of_tries_for_each_team_size,
+                                            index_allocated_players,
+                                            index_skill_dict,
+                                            index_unallocated_players,
+                                            amount_best_games,
+                                            matrix_pairPerformance,
+                                            matches_indexes_dict
+                                            )
+        results_formated = format_cpp_output(amount_of_tries_for_each_team_size, best_games_player_indexes, teams_sizes, index_player_dict, teams, pitchNames)
+    except Exception as e:
+        algorithm_logger.error(f"Calculation failed: {e}")
     return results_formated
 
 if __name__ == "__main__":
