@@ -1013,9 +1013,17 @@ function add_project_eventlistener(){
 
 
 function get_project_json(project){
-    const analyze_project_settings = gather_project_data_settings(project)
+    const cleaned_project = clean_project_teams_matches_pitches(project)
+    const analyze_project_settings = gather_project_data_settings(cleaned_project)
     const analyze_project = gather_project_data_teams_matches(analyze_project_settings)
     return analyze_project
+}
+
+function clean_project_teams_matches_pitches(project){
+    project.teams = {}
+    project.matches = {}
+    project.pitches = {}
+    return project
 }
 
 function gather_project_data_settings(project){
@@ -1600,6 +1608,6 @@ document.addEventListener("DOMContentLoaded", () => {
         
         const players = Object.keys(selected_save_data_edit.players)
         const unallocated_players = players.filter(player => !allocated_players.includes(player))
-        document.getElementById("analyze_results_pitches").appendChild(build_pitch(`Pitch ${pitches_count}`, `Team ${pitches_count*2+1}`, "a", [], `Team ${pitches_count*2+2}`, "a", [], unallocated_players))
+        document.getElementById("analyze_results_pitches").appendChild(build_pitch(`Pitch ${pitches_count+1}`, `Team ${pitches_count*2+1}`, "a", [], `Team ${pitches_count*2+2}`, "a", [], unallocated_players))
     })
 })

@@ -92,7 +92,8 @@ def get_teams(teams : Dict[str, dict],
                                             matrix_pairPerformance,
                                             matches_indexes_dict
                                             )
-        results_formated = format_cpp_output(amount_of_tries_for_each_team_size, best_games_player_indexes, teams_sizes, index_player_dict, teams, pitchNames)
+        algorithm_logger.debug("calculating possibilities succeeded")
+        results_formated = format_cpp_output(amount_of_tries_for_each_team_size, best_games_player_indexes, teams_sizes, index_player_dict, teams, pitchNames, player_index_dict)
     except Exception as e:
         algorithm_logger.error(f"Calculation failed: {e}")
     return results_formated

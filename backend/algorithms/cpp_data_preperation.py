@@ -42,7 +42,7 @@ def convert_brute_force_output_into_json(input_data: List[List[List[Tuple[float,
             structured_data.append({"games": games})
     return structured_data
 
-def format_cpp_output(amount_of_tries, cpp_output, teams_sizes, index_player_dict, teams, pitch_names):
+def format_cpp_output(amount_of_tries, cpp_output, teams_sizes, index_player_dict, teams, pitch_names, player_index_dict):
     teams_names = list(teams.keys())
     formated = []
     for i, _ in enumerate(amount_of_tries):
@@ -55,10 +55,14 @@ def format_cpp_output(amount_of_tries, cpp_output, teams_sizes, index_player_dic
             teams_dict = {}
             for pitch_index, pitch_name in enumerate(pitch_names):
                 team1 = teams_indexes[pitch_index * 2]
+                team1_allocated_players_indexes = [int(player_index_dict[player]) for player in teams[list(teams.keys())[pitch_index*2]]["players"]]
+                team1_complete = team1 + team1_allocated_players_indexes
                 team2 = teams_indexes[pitch_index * 2 + 1]
+                team2_allocated_players_indexes = [int(player_index_dict[player]) for player in teams[list(teams.keys())[pitch_index*2+1]]["players"]]
+                team2_complete = team2 + team2_allocated_players_indexes
                 teams_dict[pitch_name] = {
-                    teams_names[pitch_index*2]: [index_player_dict[index_player] for index_player in team1],
-                    teams_names[pitch_index*2+1]: [index_player_dict[index_player] for index_player in team2]
+                    teams_names[pitch_index*2]: [index_player_dict[index_player] for index_player in team1_complete],
+                    teams_names[pitch_index*2+1]: [index_player_dict[index_player] for index_player in team2_complete]
                 }
             output["possible_games"].append({float(difference): teams_dict})
         formated.append(output)
