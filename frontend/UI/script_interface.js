@@ -158,9 +158,10 @@ document.addEventListener("DOMContentLoaded", () => {
         NewNameCell.setAttribute("class", "edit_name");
         const NewNameCell_textarea = document.createElement("textarea");
         NewNameCell_textarea.setAttribute("class", "table_input_text");
+        NewNameCell_textarea.setAttribute("onclick", "this.select();");
         NewNameCell_textarea.classList.add("table_input_name");
         NewNameCell_textarea.value = new_player_name;
-        NewNameCell_textarea.addEventListener("change", function() {
+        NewNameCell_textarea.addEventListener("change", () => {
             update_player_to_player_upon_name_change(NewNameCell_textarea, NewRow)
         })
         NewNameCell.appendChild(NewNameCell_textarea)
@@ -204,7 +205,7 @@ document.addEventListener("DOMContentLoaded", () => {
         selected_save_data_edit.players[new_player_name] = new_player[new_player_name];
 
         const PlayerPairPerformance = {}
-        PlayerPairPerformance[new_player_name] = {};
+        PlayerPairPerformance[new_player_name] = {[new_player_name]:0};
 
         Object.keys(selected_save_data_edit.pairPerformance).forEach(player => {
             PlayerPairPerformance[new_player_name][player] = 0
@@ -638,6 +639,7 @@ function build_player_table_body(selected_save_data){
         edit_player_table_player_name_input.classList.add("table_input_text")
         edit_player_table_player_name_input.classList.add("table_input_name")
         edit_player_table_player_name_input.value = player
+        edit_player_table_player_name_input.setAttribute("onclick","this.select();")
         edit_player_table_player_name_input.addEventListener("change", () => {
             update_player_to_player_upon_name_change(edit_player_table_player_name_input, edit_player_table_row)
         })
@@ -956,7 +958,7 @@ function add_project_eventlistener(){
             "maxSittingOut": 2,
             "maxDifferenceTeams": 2,
             "maxDifferencePitches": 2,
-            "auto_save": "False"
+            "auto_save": false
         },
         "categories":[],
         "players": {
@@ -1076,6 +1078,7 @@ function verify_project(project){
             }
         }
     }
+    console.log(`Failed data: ${JSON.stringify(project)}`)
     return false
 }
 
@@ -1329,9 +1332,10 @@ function update_player_to_player_upon_name_change(textarea_name, cell_textarea){
 
         selected_save_data_edit.pairPerformance[changed_name_new_name] = selected_save_data_edit.pairPerformance[changed_name_previous_name];
         delete selected_save_data_edit.pairPerformance[changed_name_previous_name];
+        console.log
 
         for (let player in selected_save_data_edit.pairPerformance){
-            if (player !== changed_name_new_name && selected_save_data_edit.pairPerformance[player][changed_name_previous_name] !== undefined){
+            if (selected_save_data_edit.pairPerformance[player][changed_name_previous_name] !== undefined){
                 selected_save_data_edit.pairPerformance[player][changed_name_new_name] = selected_save_data_edit.pairPerformance[player][changed_name_previous_name]
                 delete selected_save_data_edit.pairPerformance[player][changed_name_previous_name]
             }
