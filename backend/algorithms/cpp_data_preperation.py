@@ -42,17 +42,19 @@ def convert_brute_force_output_into_json(input_data: List[List[List[Tuple[float,
             structured_data.append({"games": games})
     return structured_data
 
-def format_cpp_output(amount_of_tries, cpp_output, teams_sizes, index_player_dict, teams, pitch_names, player_index_dict):
+def format_cpp_output(amount_of_tries, cpp_output, teams_sizes, index_player_dict, teams, pitch_names, player_index_dict, num_active_players, players):
     teams_names = list(teams.keys())
     formated = []
     for i, _ in enumerate(amount_of_tries):
         output = {
+            "pitches": {},
             "teams_size": teams_sizes[i],
-            "possible_games": []
+            "difference": 0,
+            "sitting_out": 0
         }
         for game in cpp_output[i]:
             difference, teams_indexes = game
-            teams_dict = {}
+            output["difference"] = difference
             for pitch_index, pitch_name in enumerate(pitch_names):
                 team1 = teams_indexes[pitch_index * 2]
                 team1_allocated_players_indexes = [int(player_index_dict[player]) for player in teams[list(teams.keys())[pitch_index*2]]["players"]]
@@ -60,10 +62,13 @@ def format_cpp_output(amount_of_tries, cpp_output, teams_sizes, index_player_dic
                 team2 = teams_indexes[pitch_index * 2 + 1]
                 team2_allocated_players_indexes = [int(player_index_dict[player]) for player in teams[list(teams.keys())[pitch_index*2+1]]["players"]]
                 team2_complete = team2 + team2_allocated_players_indexes
-                teams_dict[pitch_name] = {
-                    teams_names[pitch_index*2]: [index_player_dict[index_player] for index_player in team1_complete],
-                    teams_names[pitch_index*2+1]: [index_player_dict[index_player] for index_player in team2_complete]
+                output["pitches"][pitch_name] = {
+                    teams_names[pitch_index*2]: [{index_player_dict[index_player]: players[index_player_dict[index_player]]["primaryScore"]} for index_player in team1_complete],
+                    teams_names[pitch_index*2+1]: [{index_player_dict[index_player]: players[index_player_dict[index_player]]["primaryScore"]} for index_player in team2_complete]
                 }
-            output["possible_games"].append({float(difference): teams_dict})
-        formated.append(output)
+            sum_players_playing = 0
+            for team_player_indexes in teams_indexes:
+                sum_players_playing += len(team_player_indexes)
+            output["sitting_out"] = num_active_players - sum_players_playing
+            formated.append(output)
     return formated
