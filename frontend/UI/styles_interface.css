@@ -3,6 +3,7 @@
     padding: 0;
     box-sizing: border-box;
     font-family: 'Poppins', sans-serif;
+    border: none;
 }
 
 body {
@@ -175,8 +176,12 @@ body {
     list-style-type: none;
 }
 
-.tab:hover {
+.tab:hover,
+.tab.active {
+    transition: 250ms;
     cursor: pointer;
+    color: #5688d8;
+    border-bottom: 2px solid #5688d8;
 }
 
 .active_tab[data-tab-content]{
@@ -1247,4 +1252,199 @@ h1.analyze{
 
 #analyze_project{
     width: 100px !important;
+}
+
+#results_container{
+    position: absolute;
+    left: 3%;
+    right: 3%;
+    top: 175px;
+    bottom: 70px;
+    display: flex;
+    overflow: scroll;
+}
+
+.results_possibilities_list_container{
+    min-height: 60%;
+    width: fit-content;
+    border-radius: 2%;
+    padding-left: 30px;
+    padding-right: 30px;
+    padding-bottom: 30px;
+    overflow: scroll;
+    min-width: fit-content;
+}
+
+.result_possibilities_list_option {
+    background-color: #161b22;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    gap: 50px;
+    transition: background-color 0.3s ease;
+    padding-left: 50px;
+    padding-right: 50px;
+    max-width: 25vw;
+    overflow: scroll;
+    white-space: nowrap;
+    min-width: fit-content;
+}
+
+.result_possibilities_list_option:hover{
+    background-color: #262a30;
+    cursor: pointer;
+
+}
+
+#results_possibilities_list_selection {
+    list-style-type: none;
+}
+
+.results_possibilities_list_ranking {
+    font-size:x-large;
+}
+
+.result_possibilities_list_option_details {
+    color: #c9d1d9;
+    font-size: 14px;
+    gap: 0;
+    display: flex;
+    flex-direction: column;
+    margin: -8px;
+}
+
+.result_possibilities_list_option_team_sizes {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.result_possibilities_list_option_team_size {
+    background-color: #262a30;
+    color: #58a6ff;
+    border-radius: 4px;
+    font-size: 12px;
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+.results_possibility_container{
+    flex-grow: 1;
+    overflow-y: scroll;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.results_pitch_container{
+    background-color: #161b22;
+    width: 416px;
+    margin: 20px;
+    margin-bottom: 0;
+    padding: 10px;
+    border-radius: 10px;
+    height: fit-content;
+}
+
+.results_pitch_title_container{
+    display: flex;
+    gap: 10px;
+    height: 35px;
+    margin-bottom: 5px;
+}
+
+.results_pitch_title{
+    width: 80%;
+    background: #262a30;
+    border-radius: 8px;
+    color: #c9d1d9 !important;
+    padding-left: 10px;
+}
+
+.results_pitch_difference{
+    flex-grow: 1;
+    min-width: fit-content;
+    background: #262a30;
+    border-radius: 6px;
+    color: #c9d1d9 !important;
+    text-align: center;
+}
+
+.results_team_container{
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+}
+
+.results_team_title_container{
+    margin: 4px;
+    display: flex;
+    gap: 10px;
+    height: 25px;
+}
+
+.results_team_title{
+    background-color: #262a30;
+    border-radius: 6px;
+    width: 70%;
+    color: #c9d1d9 !important;
+    padding-left: 10px;
+}
+
+.results_team_teamsize{
+    background-color: #262a30;
+    border-radius: 6px;
+    color: #c9d1d9 !important;
+    text-align: center;
+    padding: 0;
+}
+
+.results_team_players{
+    min-height:140px;
+    list-style: none;
+}
+
+.results_team_teamscore{
+    width: 25%;
+    min-width: fit-content;
+    background-color: #262a30;
+    height: 25px;
+    border-radius: 6px;
+    color: #c9d1d9 !important;
+    text-align: center;
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+.results_team_players{
+    margin-top: 8px;
+    overflow: scroll;
+    background: #0d1117;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    max-height: calc(5*33px + 8px);
+}
+
+.results_team_player{
+    background-color: #161b22;
+    display: flex;
+    height: 25px;
+    padding: 0;
+    font-size: 12px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-radius: 8px;
+    width: calc(416px - 48px);
+    display: flex;
+    justify-content: space-around;
+    color: #c9d1d9;
+    text-align: center;
+    align-items: center;
+    margin: 8px;
+}
+
+.result_possibilities_list_option_selected{
+    background-color: #262a30;
 }

@@ -12,7 +12,7 @@
 <body>
     <div id="headder">
         <ul class="tabs">
-            <li data-tab-target="#introduction_tab" class="tab">Introduction</li>
+            <li data-tab-target="#introduction_tab" class="tab active">Introduction</li>
             <li data-tab-target="#import_data_tab" class="tab">Import Data</li>
             <li data-tab-target="#edit_data_tab" class="tab">Edit Data</li>
             <li data-tab-target="#analysis_tab" class="tab">Analysis</li>
@@ -220,6 +220,15 @@
             </div>
         </div>
         <div id="results_tab" data-tab-content class="">
+            <div id="results_container">
+                <div class="results_possibilities_list_container">
+                    <p class="results_possibilities_list_heading">select possibility:</p>
+                    <li id="results_possibilities_list_selection">
+                    </li>
+                </div>
+                <div id="results_possibility_container">
+                </div>
+            </div>
         </div>
         <div id="log_tab" data-tab-content>
             <h2>Coming soon</h2>

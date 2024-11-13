@@ -70,7 +70,6 @@ def get_teams(teams : Dict[str, dict],
         index_unallocated_players : List[int]= get_index_unallocated_players(unallocated_players, player_index_dict)
         matrix_pairPerformance : List[List[float]]= get_matrix_pairPerformance(pairPerformance, index_player_dict)
         matches_indexes_dict : Dict[int, int]= get_index_matches(matches)
-        print(f"amount_of_tries_for_each_team_size = {amount_of_tries_for_each_team_size}")
         best_games_player_indexes = []
         if algorithm_choice == "brute_force":
             best_games_player_indexes = brute_force(teams_sizes,
@@ -93,7 +92,11 @@ def get_teams(teams : Dict[str, dict],
                                             matches_indexes_dict
                                             )
         algorithm_logger.debug("calculating possibilities succeeded")
-        results_formated = format_cpp_output(amount_of_tries_for_each_team_size, best_games_player_indexes, teams_sizes, index_player_dict, teams, pitchNames, player_index_dict)
+        algorithm_logger.debug(f"cpp_output = {best_games_player_indexes}")
+        algorithm_logger.debug(f"players = {players}")
+        num_active_players = len([p for p in players if players[p]["attendanceState"]])
+        algorithm_logger.debug(f"num_active_players = {num_active_players}")
+        results_formated = format_cpp_output(amount_of_tries_for_each_team_size, best_games_player_indexes, teams_sizes, index_player_dict, teams, pitchNames, player_index_dict, num_active_players, players)
     except Exception as e:
         algorithm_logger.error(f"Calculation failed: {e}")
     return results_formated
