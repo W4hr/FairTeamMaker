@@ -514,7 +514,8 @@ function add_player_to_team(player_name, player_data, team_players_container, te
     analyze_pitch_team_player.classList.add("analyze_pitch_team_player")
 
     const analyze_pitch_team_player_name = document.createElement("p")
-    analyze_pitch_team_player_name.classList.add("analyze_pitch_team_player_name")
+    analyze_pitch_team_player_name.classList.add(`analyze_pitch_team_player_name_${player_name.replace(/ /g, "_")}`)
+    analyze_pitch_team_player_name.classList.add(`analyze_pitch_team_player_name`)
     analyze_pitch_team_player_name.innerText = player_name
 
     const analyze_pitch_team_player_score = document.createElement("p")
@@ -642,10 +643,11 @@ function build_player_table_body(selected_save_data){
         const edit_player_table_player_name_input = document.createElement("textarea")
         edit_player_table_player_name_input.classList.add("table_input_text")
         edit_player_table_player_name_input.classList.add("table_input_name")
+        edit_player_table_player_name_input.classList.add(`table_input_name_${player.replace(/ /g, "_")}`)
         edit_player_table_player_name_input.value = player
         edit_player_table_player_name_input.setAttribute("onclick","this.select();")
         edit_player_table_player_name_input.addEventListener("change", () => {
-            update_player_to_player_upon_name_change(edit_player_table_player_name_input, edit_player_table_row)
+            update_player_name_upon_change(edit_player_table_player_name_input)
         })
 
         edit_player_table_player_name.appendChild(edit_player_table_player_name_input)
@@ -729,7 +731,6 @@ function build_player_to_player_table(selected_save_data){
     document.getElementById("table_player_to_player_tbody").innerHTML = ""
     build_player_to_player_table_thead(selected_save_data)
     build_player_to_player_table_tbody(selected_save_data)
-    update_player_to_player_upon_change()
 }
 
 function build_player_to_player_table_thead(selected_save_data){
@@ -745,6 +746,7 @@ function build_player_to_player_table_thead(selected_save_data){
         const player_to_player_thead_playername = document.createElement("th")
         player_to_player_thead_playername.innerText = player
         player_to_player_thead_playername.classList.add("name_cell")
+        player_to_player_thead_playername.classList.add(`ptp_head_${player.replace(/ /g, "_")}`)
         player_to_player_thead_name.appendChild(player_to_player_thead_playername)
     })
     player_to_player_thead.appendChild(player_to_player_thead_name)
@@ -757,6 +759,7 @@ function build_player_to_player_table_tbody(selected_save_data){
         const player_to_player_tbody_player = document.createElement("tr")
         const player_to_player_tbody_player_name = document.createElement("td")
         player_to_player_tbody_player_name.classList.add("name_cell")
+        player_to_player_tbody_player_name.classList.add(`ptp_body_${player1.replace(/ /g, "_")}`)
         player_to_player_tbody_player_name.innerText = player1;
         player_to_player_tbody_player.appendChild(player_to_player_tbody_player_name)
         players_pairPerformance.forEach(player2 => {
@@ -766,6 +769,10 @@ function build_player_to_player_table_tbody(selected_save_data){
             player_to_player_tbody_player_score_input.setAttribute("type", "number")
             player_to_player_tbody_player_score_input.classList.add("table_input_number")
             player_to_player_tbody_player_score_input.classList.add("table_input_number_ptp")
+            player_to_player_tbody_player_score_input.addEventListener("change", () => {
+                const ptp_table = document.getElementById("table_player_to_player")
+                ptp_table.rows[player_to_player_tbody_player_score.cellIndex].cells[player_to_player_tbody_player_score.rowIndex].children[0].value = player_to_player_tbody_player_score_input.value
+            })
             if (player1 === player2){
                 player_to_player_tbody_player_score_input.value = 0;
                 player_to_player_tbody_player_score_input.setAttribute("disabled", "true")
@@ -777,16 +784,6 @@ function build_player_to_player_table_tbody(selected_save_data){
             player_to_player_tbody_player.appendChild(player_to_player_tbody_player_score)
         })
         player_to_player_tbody.appendChild(player_to_player_tbody_player)
-    })
-}
-
-function update_player_to_player_upon_change(){
-    const build_player_to_player_table = document.getElementById("table_player_to_player")
-    const player_to_player_input_cells = build_player_to_player_table.querySelectorAll(".table_input_number")
-    player_to_player_input_cells.forEach(cell => {
-        cell.addEventListener("change", () => {
-            build_player_to_player_table.rows[cell.closest("td").cellIndex].cells[cell.closest("tr").rowIndex].children[0].value = cell.value
-        })
     })
 }
 
@@ -894,13 +891,6 @@ function update_pitches_selectors() {
     }
 }
 
-function apply_changes_to_players_in_teams(old_name, new_name){
-    document.querySelectorAll(".analyze_pitch_team_player").forEach(li_item => {
-        if (li_item.children[0].innerText == old_name){
-            li_item.children[0].innerText = new_name
-        }
-    })
-}
  // HERE
 document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("download_button").addEventListener("click", () => {
@@ -1768,5 +1758,57 @@ function build_result(possible_game){
         results_pitch_container.appendChild(results_pitch_title_container)
         results_pitch_container.appendChild(results_teams_container)
         document.getElementById("results_possibility_container").appendChild(results_pitch_container)
+    })
+}
+function update_player_name_upon_change(name_input_field){
+    const previous_name_classname = Array.from(name_input_field.classList).find(className => className.startsWith("table_input_name_"))
+    const previous_name = previous_name_classname.replace("table_input_name_", "")
+    const new_name = name_input_field.value
+    name_input_field.classList.remove(`table_input_name_${previous_name}`)
+    name_input_field.classList.add(`table_input_name_${new_name}`)
+
+    update_player_name_in_ui_upon_change(previous_name, new_name)
+    update_player_name_in_data_upon_change(previous_name, new_name, selected_save_data_edit)
+}
+
+function update_player_name_in_ui_upon_change(previous_name, new_name){
+    console.log(`previous_name = ${previous_name}, new_name = ${new_name}`)
+    document.querySelectorAll(`.add_player_to_team_${previous_name.replace(/ /g,"_")}`).forEach(element => {
+        element.innerText = new_name
+        element.value = new_name
+        element.classList.remove(`.add_player_to_team_${previous_name.replace(/ /g,"_")}`)
+        element.classList.add(`add_player_to_team_${new_name.replace(/ /g,"_")}`)
+    })
+    document.querySelectorAll(`.analyze_pitch_team_player_name_${previous_name.replace(/ /g, "_")}`).forEach(element => {
+        element.innerText = new_name
+        element.classList.remove(`analyze_pitch_team_player_name_${previous_name.replace(/ /g,"_")}`)
+        element.classList.add(`analyze_pitch_team_player_name_${new_name.replace(/ /g,"_")}`)
+    })
+    document.querySelectorAll(`.ptp_head_${previous_name.replace(/ /g, "_")}`).forEach(element => {
+        element.innerText = new_name
+        element.classList.remove(`ptp_head_${previous_name.replace(/ /g,"_")}`)
+        element.classList.add(`ptp_head_${new_name.replace(/ /g,"_")}`)
+    })
+    document.querySelectorAll(`.ptp_body_${previous_name.replace(/ /g, "_")}`).forEach(element => {
+        element.innerText = new_name
+        element.classList.remove(`ptp_body_${previous_name.replace(/ /g,"_")}`)
+        element.classList.add(`ptp_body_${new_name.replace(/ /g,"_")}`)
+    })
+
+}
+
+function update_player_name_in_data_upon_change(previous_name, new_name, data){
+    data["players"][new_name] = data["players"][previous_name]
+    delete data["players"][previous_name]
+    data["pairPerformance"][new_name] = data["pairPerformance"][previous_name]
+    delete data["pairPerformance"][previous_name]
+    data["pairPerformance"][new_name][new_name] = data["pairPerformance"][new_name][previous_name]
+    delete data["pairPerformance"][new_name][previous_name]
+
+    Object.keys(data["pairPerformance"]).forEach(player_name1 => {
+        if (data["pairPerformance"][player_name1][previous_name] !== undefined){
+            data["pairPerformance"][player_name1][new_name] = data["pairPerformance"][player_name1][previous_name]
+            delete data["pairPerformance"][player_name1][previous_name]
+        }
     })
 }
