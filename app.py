@@ -230,7 +230,7 @@ async def analyze(project: Project, current_user: UserModel = Depends(get_curren
     try:
          project_dict = project.dict()
          logging.debug(f"project_dict = {project_dict}")
-         result = get_teams(project_dict["teams"], project_dict["matches"], project_dict["settings"]["maxDifferenceTeams"], project_dict["settings"]["maxDifferencePitches"], project_dict["number_of_players"], project_dict["settings"]["maxSittingOut"], 700000, 0.25, project_dict["players"], project_dict["pairPerformance"], 3, project_dict["pitches"], "random")
+         result = get_teams(project_dict["teams"], project_dict["matches"], project_dict["settings"]["maxDifferenceTeams"], project_dict["settings"]["maxDifferencePitches"], project_dict["number_of_players"], project_dict["settings"]["maxSittingOut"], 700000, 0.25, project_dict["players"], project_dict["pairPerformance"], 3, project_dict["pitches"], project_dict["settings"]["algorithmChoice"])
          return JSONResponse(result)
     except Exception as e:
         logging.error(f"500 - INTERNAL ERROR - {e}")

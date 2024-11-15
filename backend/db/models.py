@@ -63,6 +63,7 @@ class Settings(BaseModel):
     maxDifferenceTeams: int
     maxDifferencePitches: int
     auto_save: bool
+    algorithmChoice: str
 
 class Project(BaseModel):
     name: str
