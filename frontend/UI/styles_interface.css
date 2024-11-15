@@ -544,7 +544,7 @@ input[type="radio"]:checked + .list_saves_item {
 
 #edit_player_table_topbar{
     background: #161b22;
-    position: sticky;
+    position: sticky !important;
     height: 2.5vw;
     top: 0px;
 }
@@ -1447,4 +1447,21 @@ h1.analyze{
 
 .result_possibilities_list_option_selected{
     background-color: #262a30;
+}
+
+#analyze_settings_algorithm_choice{
+    font-size: 15px;
+    width: 90%;
+    margin-top: 20px;
+    background: #010409;
+    color: white;
+    border-radius: 4px;
+    border: none;
+    height: 30px;
+    font-size: large;
+    text-align: center;
+}
+
+#analyze_settings_algorithm_choice{
+    font-size: 15px;
 }

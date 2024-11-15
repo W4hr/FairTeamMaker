@@ -209,6 +209,13 @@
                         <p>Maximaler Unterschied in Spieleranzahl zwischen Spielfeldern</p>
                         <input type="number" placeholder="0" id="analyze_settings_max_difference_pitches" class="input_number">
                     </div>
+                    <div class="analyze_settings_container">
+                        <label for="analyze_settings_algorithm_choice">Select Algorythm:</label>
+                        <select id="analyze_settings_algorithm_choice">
+                            <option value="random">random (recommended)</option>
+                            <option value="brute_force">brute force (best for few participants)</option>
+                        </select>
+                    </div>
                     <div>
                         <button class="blue_button" id="download_button">Download</button>
                         <button class="blue_button" id="save_button">Save Project</button>

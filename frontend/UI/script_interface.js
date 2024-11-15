@@ -1028,6 +1028,7 @@ function gather_project_data_settings(project){
     project.settings.maxSittingOut = parseInt(document.getElementById("analyze_settings_max_sit_out_players").value)
     project.settings.maxDifferenceTeams = parseInt(document.getElementById("analyze_settings_max_difference_teams").value)
     project.settings.maxDifferencePitches = parseInt(document.getElementById("analyze_settings_max_difference_pitches").value)
+    project.settings.algorithmChoice = document.getElementById("analyze_settings_algorithm_choice").value
     if (document.getElementById("analyze_settings_interchangeable_toggle").classList.contains("checked")){
         project.settings.interchangeableTeams = true
     } else {
@@ -1177,6 +1178,12 @@ function verify_settings(project){
     if (typeof(settings.maxDifferencePitches) != "number" || settings.maxDifferencePitches < 0){
         show_message("The input for the maximum difference in amount of players between pitches option is either not a number or is smaller than 0", "warning")
         console.error("The input for the maximum difference in amount of players between pitches option is either not a number or is smaller than 0")
+        return false
+    }
+
+    if (typeof(settings.algorithmChoice) != "string" && settings.algorithmChoice != "random" && settings.algorithmChoice != "brute_force"){
+        show_message("The algorithm choice is not valid. Make sure its you choose one of the options", "warning")
+        console.error("The algorithm choice is not valid. Make sure its you choose one of the options")
         return false
     }
 
@@ -1461,12 +1468,14 @@ function build_pitches(project_data){
         const players_team1 = project_data.teams[team1].players
         const players_team2 = project_data.teams[team2].players
 
-        const pitch = build_pitch(pitch_name, team1, num_players_team1, players_team1, team2, num_players_team2, players_team2, unallocated_players)
+        const players = project_data.players
+
+        const pitch = build_pitch(pitch_name, team1, num_players_team1, players_team1, team2, num_players_team2, players_team2, unallocated_players, players)
         pitches_container.appendChild(pitch)
     })
 }
 
-function build_pitch(pitch_name, team_1, num_players_team1, players_team1, team_2, num_players_team2, players_team2, unallocated_players){
+function build_pitch(pitch_name, team_1, num_players_team1, players_team1, team_2, num_players_team2, players_team2, unallocated_players, players){
     const analyze_pitch_container = document.createElement("div")
     analyze_pitch_container.classList.add("analyze_results_pitch")
 
@@ -1506,9 +1515,9 @@ function build_pitch(pitch_name, team_1, num_players_team1, players_team1, team_
     analyze_pitch_title.appendChild(analyze_pitch_title_input)
     analyze_pitch_title.appendChild(analyze_pitch_delete)
     
-    analyze_pitch_teams_container.appendChild(build_team(team_1, unallocated_players, num_players_team1, players_team1))
+    analyze_pitch_teams_container.appendChild(build_team(team_1, unallocated_players, num_players_team1, players_team1, players))
     analyze_pitch_teams_container.appendChild(analyze_pitch_teams_seperater)
-    analyze_pitch_teams_container.appendChild(build_team(team_2, unallocated_players, num_players_team2, players_team2))
+    analyze_pitch_teams_container.appendChild(build_team(team_2, unallocated_players, num_players_team2, players_team2, players))
 
 
 
@@ -1517,7 +1526,7 @@ function build_pitch(pitch_name, team_1, num_players_team1, players_team1, team_
     return analyze_pitch_container
 }
 
-function build_team(team_name, unallocated_players, num_players_team, players_team){
+function build_team(team_name, unallocated_players, num_players_team, players_team, players){
     const analyze_pitch_team = document.createElement("div")
     analyze_pitch_team.classList.add("analyze_pitch_team")
 
@@ -1564,11 +1573,18 @@ function build_team(team_name, unallocated_players, num_players_team, players_te
         analyze_pitch_team_selection_option_player_score.innerText = players[player_name]["primaryScore"]
         analyze_pitch_team_selection_option_player_score.classList.add("analyze_pitch_team_player_score")
         
-        const analyze_pitch_team_selection_option_player_delete = `<div class="analyze_pitch_team_player_delete"><img src="frontend/UI/img/icon/close2.svg" style="height: 15px;"></div>`
+        const analyze_pitch_team_selection_option_player_delete_container = document.createElement("div")
+        analyze_pitch_team_selection_option_player_delete_container.classList.add("analyze_pitch_team_player_delete")
+
+        const analyze_pitch_team_selection_option_player_delete_icon = document.createElement("img")
+        analyze_pitch_team_selection_option_player_delete_icon.setAttribute("src", "frontend/UI/img/icon/close2.svg")
+        analyze_pitch_team_selection_option_player_delete_icon.setAttribute("style", "height: 15px;")
+
+        analyze_pitch_team_selection_option_player_delete_container.appendChild(analyze_pitch_team_selection_option_player_delete_icon)
         
         analyze_pitch_team_selection_option.appendChild(analyze_pitch_team_selection_option_player_name)
         analyze_pitch_team_selection_option.appendChild(analyze_pitch_team_selection_option_player_score)
-        analyze_pitch_team_selection_option.appendChild(analyze_pitch_team_selection_option_player_delete)
+        analyze_pitch_team_selection_option.appendChild(analyze_pitch_team_selection_option_player_delete_container)
         analyze_pitch_team_players.appendChild(analyze_pitch_team_selection_option)
     })
 
@@ -1616,7 +1632,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const allocated_players = Array.from(document.querySelectorAll(".analyze_pitch_team_player_name")).map(p => p.innerText)
         const players = Object.keys(selected_save_data_edit.players)
         const unallocated_players = players.filter(player => !allocated_players.includes(player))
-        document.getElementById("analyze_results_pitches").appendChild(build_pitch(`Pitch ${pitches_count+1}`, `Team ${pitches_count*2+1}`, "a", [], `Team ${pitches_count*2+2}`, "a", [], unallocated_players))
+        document.getElementById("analyze_results_pitches").appendChild(build_pitch(`Pitch ${pitches_count+1}`, `Team ${pitches_count*2+1}`, "a", [], `Team ${pitches_count*2+2}`, "a", [], unallocated_players, {}))
     })
 })
 
