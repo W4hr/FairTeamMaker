@@ -18,7 +18,7 @@ setup(
     author="Jakob Butze",
     author_email="jakobutze@proton.me",
     url="https://github.com/W4hr/FairTeamMaker",
-    description="A cpp implementation of the brute force algorythm calculating the best player combinations.",
+    description="A cpp implementation of the brute force algorithm calculating the best player combinations.",
     ext_modules=ext_modules,
     cmdclass={"build_ext": build_ext},
     zip_safe=False,
