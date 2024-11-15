@@ -14,7 +14,7 @@ function isNumericalNoDecimal(value){
     return /^[0-9]*$/.test(stringValue)
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+window.addEventListener("load", () => {
     initializeTabs()
     initializeClearInputButton()
     initializeAddColumnWindow()
@@ -719,10 +719,11 @@ function initializeLoadButton(){
             build_player_to_player_table(selected_save_data)
             apply_settings_analysis(selected_save_data)
             build_pitches(selected_save_data)
-            document.getElementById("import_data_tab").classList.remove("active_tab")
-            document.getElementById("import_data_tab").classList.remove("active")
-            document.getElementById("edit_data_tab").classList.add("active_tab")
-            document.getElementById("edit_data_tab").classList.add("active")
+            console.log("here")
+            document.querySelector('#import_data_tab').classList.remove("active_tab")
+            document.querySelector('[data-tab-target="#import_data_tab"]').classList.remove("active")
+            document.querySelector('#edit_data_tab').classList.add("active_tab")
+            document.querySelector('[data-tab-target="#edit_data_tab"]').classList.add("active")
             
             apply_changes_to_attendance();
             apply_changes_to_skills();
@@ -1325,9 +1326,9 @@ function verify_teams_and_matches(project){
 function initializeAnalyzeTabButton(){
     document.getElementById("edit_data_tab_analyze_tab").addEventListener("click", () => {
         document.getElementById("edit_data_tab").classList.remove("active_tab")
-        document.getElementById("edit_data_tab").classList.remove("active")
+        document.querySelector('[data-tab-target="#edit_data_tab"]').classList.remove("active")
         document.getElementById("analysis_tab").classList.add("active_tab")
-        document.getElementById("analysis_tab").classList.add("active")
+        document.querySelector('[data-tab-target="#analysis_tab"]').classList.add("active")
     })
 }
 
@@ -1338,9 +1339,9 @@ function initializeAnalyzeButton(){
         document.getElementById("results_possibilities_list_selection").innerHTML = ""
         build_results_preview(results)
         document.getElementById("analysis_tab").classList.remove("active_tab")
-        document.getElementById("analysis_tab").classList.remove("active")
+        document.querySelector('[data-tab-target="#analysis_tab"]').classList.remove("active")
         document.getElementById("results_tab").classList.add("active_tab")
-        document.getElementById("results_tab").classList.add("active")
+        document.querySelector('[data-tab-target="#results_tab"]').classList.add("active")
     })
 }
 
@@ -1592,6 +1593,16 @@ function build_team(team_name, unallocated_players, num_players_team, players_te
         const analyze_pitch_team_selection_option_player_delete_icon = document.createElement("img")
         analyze_pitch_team_selection_option_player_delete_icon.setAttribute("src", "frontend/UI/img/icon/close2.svg")
         analyze_pitch_team_selection_option_player_delete_icon.setAttribute("style", "height: 15px;")
+        analyze_pitch_team_selection_option_player_delete_icon.addEventListener("click", () => {
+            analyze_pitch_team_selection_option.remove()
+            document.querySelectorAll(".analyze_results_pitch_team_add_player_selection").forEach(selector => {
+                const player_select = document.createElement("option")
+                player_select.value = player_name
+                player_select.classList.add(`add_player_to_team_${player_name.replace(/ /g, "_")}`)
+                player_select.innerText = player_name
+                selector.appendChild(player_select)
+            })
+        })
 
         analyze_pitch_team_selection_option_player_delete_container.appendChild(analyze_pitch_team_selection_option_player_delete_icon)
         
