@@ -1,46 +1,8 @@
 // API URL
 const api_address = "http://127.0.0.1:8000";
 const login_url = "http://127.0.0.1:8000/login"
-/*Tab Management*/
-
-const tabs = document.querySelectorAll('[data-tab-target]');
-const tab_contents = document.querySelectorAll('[data-tab-content]');
-
-tabs.forEach(tab => {
-    tab.addEventListener("click", () => {
-        const target = document.querySelector(tab.dataset.tabTarget)
-        tab_contents.forEach(tab_content => {
-            tab_content.classList.remove("active_tab")
-        })
-        target.classList.add("active_tab")
-        tabs.forEach(rtab => {
-            rtab.classList.remove("active")
-        })
-        tab.classList.add("active")
-    })
-})
-
-/*clear input file div*/
-document.getElementById("clear_input_button").addEventListener("click", () => {
-    document.getElementById("json_import_input").value = '';
-});
 
 
-/*Add Column Window*/
-
-const add_column_window = document.getElementById("add_column_window");
-const edit_player_table = document.getElementById("edit_player_table");
-const add_row_window_dimming = document.getElementById("add_row_window_dimming");
-
-document.getElementById("add_column").addEventListener("click", () => {
-    add_column_window.classList.remove("hide");
-    add_row_window_dimming.classList.remove("hide");
-})
-
-document.getElementById("add_column_window_close").addEventListener("click", () => {
-    add_column_window.classList.add("hide");
-    add_row_window_dimming.classList.add("hide");
-})
 // This function checks if a value is a number without any decimal points and is not empty
 function isNumericalNoDecimalNotEmpty(value){
     const stringValue = String(value)
@@ -52,72 +14,140 @@ function isNumericalNoDecimal(value){
     return /^[0-9]*$/.test(stringValue)
 }
 
-document.getElementById("add_column_window_add").addEventListener("click", () => {
-    const add_column_window_min = document.getElementById("add_column_window_min").value;
-    const add_column_window_max = document.getElementById("add_column_window_max").value;
-    const add_column_window_default_value = document.getElementById("add_column_window_default_value").value;
-    const add_column_window_name = document.getElementById("add_column_window_name").value;
-    const categorieNames = selected_save_data_edit.categories.map(categorie => categorie.name).join(", ");
-    const add_column_window_calc = document.getElementById("add_column_window_calc_type").value
+document.addEventListener("DOMContentLoaded", () => {
+    initializeTabs()
+    initializeClearInputButton()
+    initializeAddColumnWindow()
+    initializeAddRow()
+    initializeCheckboxes()
+    
+    get_saves_preview()
 
-    if (add_column_window_name == "" || !isNumericalNoDecimal(add_column_window_min)|| !isNumericalNoDecimal(add_column_window_max)||!isNumericalNoDecimalNotEmpty(add_column_window_default_value) || selected_save_data_edit == "" || selected_save_data_edit == undefined || categorieNames.includes(add_column_window_name)){
-        if (add_column_window_name == ""){
-            show_message("You did not define a name for the categorie. Please give the categorie a name before continuing", "warning")
-        } else if (!isNumericalNoDecimal(add_column_window_min)){
-            show_message("The minimum value for this categorie is not a number or empty. Please remove any deimal points and letters before continuing", "warning")
-        } else if (!isNumericalNoDecimal(add_column_window_max)){
-            show_message("The maximum value for this categorie is not a number or empty. Please remove any deimal points and letters before continuing", "warning")
-        } else if (!isNumericalNoDecimalNotEmpty(add_column_window_default_value)){
-            show_message("The default value for this categorie is not a number. Please define the default value or remove any deimal points and letters before continuing", "warning")
-        } else if (selected_save_data_edit == "" || selected_save_data_edit == undefined) {
-            show_message("You have not selected a project. Before modify anything you must either select a project or create one in the 'Import-Data' Tab")
-        } else if (categorieNames.includes(add_column_window_name)){
-            show_message("The given categorie name is already used for a different categorie. Please change it.", "warning")
-        }
-    } else {
-        const edit_player_table_topbar = document.getElementById("edit_player_table_topbar");
-        const newColumnTop = document.createElement("th");
+    add_new_save()
+    cancle_add_new_save()
 
-        newColumnTop.innerText = add_column_window_name;
-        edit_player_table_topbar.appendChild(newColumnTop);
-        
-        const column_number_rows = remove_from_array_with_tag(document.querySelectorAll('#edit_player_table tr'), ["edit_player_table_topbar"]);
-        column_number_rows.forEach((column_number_row) => {
-            const element = document.createElement("td");
-            const child_element = document.createElement("input");
-            child_element.setAttribute("min", add_column_window_min);
-            child_element.setAttribute("max", add_column_window_max);
-            child_element.setAttribute("value", add_column_window_default_value);
-            child_element.setAttribute("class", "table_input_number");
-            child_element.setAttribute("type", "number");
-            
-            child_element.addEventListener("change", () => {
-                console.log("HELLO");
-                player_name = child_element.parentElement.parentElement.children[1].children[0].value
-                console.log(player_name);
-                categorie_name = document.getElementById('edit_player_table_topbar').getElementsByTagName('th')[element.cellIndex].innerText;
-                selected_save_data_edit["players"][player_name]["scores"][categorie_name] = parseInt(child_element.value)
+    initializeLoadButton()
+    initializeSaveButton()
+
+    change_name_upon_change()
+    change_description_upon_change()
+    table_player_to_player_toggler_EventListener()
+
+    initializeAddProjectButton()
+    initializeLoadProjectInput()
+    initializeAnalyzeTabButton()
+    initializeAnalyzeButton()
+    initializeAddPitchButton()
+})
+
+function initializeTabs(){
+    const tabs = document.querySelectorAll('[data-tab-target]');
+    const tab_contents = document.querySelectorAll('[data-tab-content]');
+    
+    tabs.forEach(tab => {
+        tab.addEventListener("click", () => {
+            const target = document.querySelector(tab.dataset.tabTarget)
+            tab_contents.forEach(tab_content => {
+                tab_content.classList.remove("active_tab")
             })
+            target.classList.add("active_tab")
+            tabs.forEach(rtab => {
+                rtab.classList.remove("active")
+            })
+            tab.classList.add("active")
+        })
+    })
+}
 
-            element.appendChild(child_element);
-            column_number_row.appendChild(element);
-        });
+function initializeClearInputButton(){
+    /*clear input file div*/
+    document.getElementById("clear_input_button").addEventListener("click", () => {
+        document.getElementById("json_import_input").value = '';
+    });
+}
 
+function initializeAddColumnWindow(){
+    /*Add Column Window*/
+
+    const add_column_window = document.getElementById("add_column_window");
+    const add_row_window_dimming = document.getElementById("add_row_window_dimming");
+
+    document.getElementById("add_column").addEventListener("click", () => {
+        add_column_window.classList.remove("hide");
+        add_row_window_dimming.classList.remove("hide");
+    })
+
+    document.getElementById("add_column_window_close").addEventListener("click", () => {
         add_column_window.classList.add("hide");
         add_row_window_dimming.classList.add("hide");
+    })
+    document.getElementById("add_column_window_add").addEventListener("click", () => {
+        const add_column_window_min = document.getElementById("add_column_window_min").value;
+        const add_column_window_max = document.getElementById("add_column_window_max").value;
+        const add_column_window_default_value = document.getElementById("add_column_window_default_value").value;
+        const add_column_window_name = document.getElementById("add_column_window_name").value;
+        const categorieNames = selected_save_data_edit.categories.map(categorie => categorie.name).join(", ");
+        const add_column_window_calc = document.getElementById("add_column_window_calc_type").value
 
-        selected_save_data_edit.categories.push({
-            "name": add_column_window_name,
-            "standardValue": parseInt(add_column_window_default_value),
-            "minimumValue": parseIntButForEmptyString(add_column_window_min),
-            "maximumValue": parseIntButForEmptyString(add_column_window_max),
-            "calculation": add_column_window_calc
-        })
-        Object.keys(selected_save_data_edit.players).forEach(player => {
-            selected_save_data_edit["players"][player].scores[add_column_window_name] = parseInt(add_column_window_default_value)
-        })
-        }
-});
+        if (add_column_window_name == "" || !isNumericalNoDecimal(add_column_window_min)|| !isNumericalNoDecimal(add_column_window_max)||!isNumericalNoDecimalNotEmpty(add_column_window_default_value) || selected_save_data_edit == "" || selected_save_data_edit == undefined || categorieNames.includes(add_column_window_name)){
+            if (add_column_window_name == ""){
+                show_message("You did not define a name for the categorie. Please give the categorie a name before continuing", "warning")
+            } else if (!isNumericalNoDecimal(add_column_window_min)){
+                show_message("The minimum value for this categorie is not a number or empty. Please remove any deimal points and letters before continuing", "warning")
+            } else if (!isNumericalNoDecimal(add_column_window_max)){
+                show_message("The maximum value for this categorie is not a number or empty. Please remove any deimal points and letters before continuing", "warning")
+            } else if (!isNumericalNoDecimalNotEmpty(add_column_window_default_value)){
+                show_message("The default value for this categorie is not a number. Please define the default value or remove any deimal points and letters before continuing", "warning")
+            } else if (selected_save_data_edit == "" || selected_save_data_edit == undefined) {
+                show_message("You have not selected a project. Before modify anything you must either select a project or create one in the 'Import-Data' Tab")
+            } else if (categorieNames.includes(add_column_window_name)){
+                show_message("The given categorie name is already used for a different categorie. Please change it.", "warning")
+            }
+        } else {
+            const edit_player_table_topbar = document.getElementById("edit_player_table_topbar");
+            const newColumnTop = document.createElement("th");
+
+            newColumnTop.innerText = add_column_window_name;
+            edit_player_table_topbar.appendChild(newColumnTop);
+            
+            const column_number_rows = remove_from_array_with_tag(document.querySelectorAll('#edit_player_table tr'), ["edit_player_table_topbar"]);
+            column_number_rows.forEach((column_number_row) => {
+                const element = document.createElement("td");
+                const child_element = document.createElement("input");
+                child_element.setAttribute("min", add_column_window_min);
+                child_element.setAttribute("max", add_column_window_max);
+                child_element.setAttribute("value", add_column_window_default_value);
+                child_element.setAttribute("class", "table_input_number");
+                child_element.setAttribute("type", "number");
+                
+                child_element.addEventListener("change", () => {
+                    console.log("HELLO");
+                    player_name = child_element.parentElement.parentElement.children[1].children[0].value
+                    console.log(player_name);
+                    categorie_name = document.getElementById('edit_player_table_topbar').getElementsByTagName('th')[element.cellIndex].innerText;
+                    selected_save_data_edit["players"][player_name]["scores"][categorie_name] = parseInt(child_element.value)
+                })
+
+                element.appendChild(child_element);
+                column_number_row.appendChild(element);
+            });
+
+            add_column_window.classList.add("hide");
+            add_row_window_dimming.classList.add("hide");
+
+            selected_save_data_edit.categories.push({
+                "name": add_column_window_name,
+                "standardValue": parseInt(add_column_window_default_value),
+                "minimumValue": parseIntButForEmptyString(add_column_window_min),
+                "maximumValue": parseIntButForEmptyString(add_column_window_max),
+                "calculation": add_column_window_calc
+            })
+            Object.keys(selected_save_data_edit.players).forEach(player => {
+                selected_save_data_edit["players"][player].scores[add_column_window_name] = parseInt(add_column_window_default_value)
+            })
+            }
+    });
+}
 
 function parseIntButForEmptyString(value){
     if (value == ""){
@@ -132,14 +162,12 @@ function remove_from_array_with_tag(array_of_items, array_of_unwanted_tags) {
         return !array_of_unwanted_tags.includes(item_from_array.id);
     });
 };
-var counter_player_added = 0
-/* Add Row */
-document.addEventListener("DOMContentLoaded", () => {
-    const add_row = document.getElementById("add_row");
 
-    add_row.addEventListener("click", () => {
-        counter_player_added += 1
-        new_player_name = `Player${counter_player_added}`
+function initializeAddRow(){    
+    /* Add Row */
+    document.getElementById("add_row").addEventListener("click", () => {
+        const count_players = document.querySelectorAll('.table_input_name').length
+        new_player_name = `Player${count_players+1}`
         const NewRow = document.createElement("tr");
         NewRow.setAttribute("class", "player_data_row");
         NewRow.id = new_player_name
@@ -205,7 +233,7 @@ document.addEventListener("DOMContentLoaded", () => {
             NewRow.appendChild(NewNumberCell)
             new_player[new_player_name]["scores"][selected_save_data.categories[i].name] = Number(NewNumberCell_input.value);
         }
-        edit_player_table.appendChild(NewRow)
+        document.getElementById("edit_player_table").appendChild(NewRow)
         selected_save_data_edit.players[new_player_name] = new_player[new_player_name];
 
         const PlayerPairPerformance = {}
@@ -224,7 +252,7 @@ document.addEventListener("DOMContentLoaded", () => {
         build_player_to_player_table(selected_save_data_edit);
         apply_changes_to_skills_single_player(NewRow);
     });
-});
+};
 
 // Preview selected save
 
@@ -297,7 +325,7 @@ function table_player_to_player_toggler_EventListener(){
 }
 // Checkboxes customization
 
-document.addEventListener("DOMContentLoaded", () => {
+function initializeCheckboxes() {
     const checkboxes = document.querySelectorAll(".checkboxes")
 
     checkboxes.forEach((checkbox) => {
@@ -305,12 +333,10 @@ document.addEventListener("DOMContentLoaded", () => {
             checkbox.classList.toggle("checked")
         })
     })
-})
+}
+var list_saves_json = [];
 
-let list_saves_json = [];
-
-const list_saves = document.getElementById("list_saves")
-document.addEventListener("DOMContentLoaded", async () => {
+async function get_saves_preview(){
     try {
         const response_user_saves = await fetch(`${api_address}/user-project-previews`, {
             method: "GET",
@@ -326,7 +352,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     } catch (error) {
         console.error('There was a problem with the fetch operation:', error);
     }
-});
+}
+
 
 // Build Saves List
 function build_save_item (i){
@@ -379,8 +406,9 @@ function build_save_item (i){
     save_li_div_parent.appendChild(save_li_div_p);
     save_li_parent.appendChild(save_li_div_parent);
 
-    list_saves.appendChild(save_li_parent);
+    document.getElementById("list_saves").appendChild(save_li_parent);
 }
+
 function build_save_add(){
     save_li_add = `
         <li>
@@ -390,7 +418,7 @@ function build_save_add(){
             </div>
         </li>
     `;
-    list_saves.innerHTML += save_li_add;
+    document.getElementById("list_saves").innerHTML += save_li_add;
 }
 
 // Important! Clear list of all child elements
@@ -401,7 +429,7 @@ function clear_list (list){
 }
 
 function build_save_items(){
-    clear_list(list_saves)
+    clear_list(document.getElementById("list_saves"))
     build_save_add()
     add_new_save();
     for (let i = 0; i < list_saves_json.length; i++) {
@@ -432,11 +460,7 @@ function cancle_add_new_save() {
     })
 }
 
-// Call Open Add Project Window
-document.addEventListener("DOMContentLoaded", () => {
-    add_new_save();
-    cancle_add_new_save();
-});
+
 
 // Build list of Players in preview
 function build_player_preview(data, player_name){
@@ -682,8 +706,8 @@ function clear_player_table(){
     const edit_player_table = document.getElementById("edit_player_table")
     edit_player_table.innerHTML = ""
 }
-//  Search
-document.addEventListener("DOMContentLoaded", () => {
+
+function initializeLoadButton(){
     document.getElementById("load_config").addEventListener("click", () => {
         if (selected_save_data == "") {
             show_message("No save selected: Please either select a saved project or create one", "warning")
@@ -704,7 +728,7 @@ document.addEventListener("DOMContentLoaded", () => {
             apply_changes_to_skills();
         }
     })
-})
+}
 
 function change_name_upon_change(){
     const properties_name_input = document.getElementById("properties_name_input")
@@ -719,12 +743,6 @@ function change_description_upon_change(){
         selected_save_data_preview.description = properties_notes_input.value
     })
 }
-
-document.addEventListener("DOMContentLoaded", () => {
-    change_name_upon_change()
-    change_description_upon_change()
-    table_player_to_player_toggler_EventListener()
-})
 
 function build_player_to_player_table(selected_save_data){
     document.getElementById("table_player_to_player_thead").innerHTML = ""
@@ -891,8 +909,7 @@ function update_pitches_selectors() {
     }
 }
 
- // HERE
-document.addEventListener("DOMContentLoaded", () => {
+function initializeDownloadButton(){
     document.getElementById("download_button").addEventListener("click", () => {
         if (selected_save_data_edit == ""){
             show_message("Project is empty. Please load a project first.","warning")
@@ -904,43 +921,42 @@ document.addEventListener("DOMContentLoaded", () => {
             dl.click()
         }
     })
-    add_project_eventlistener()
-})
+}
 
-const import_data_input = document.getElementById("json_import_input");
-
-import_data_input.addEventListener("change", () => {
-    const file = import_data_input.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            try {
-                selected_save_data = JSON.parse(event.target.result);
-                const name_property_save = document.getElementById("properties_name_input");
-                const number_players_property_save = document.getElementById("properties_player_count_input");
-                const description_property_save = document.getElementById("properties_notes_input");
-
-                name_property_save.value = selected_save_data["name"];
-                number_players_property_save.setAttribute("placeholder", selected_save_data["number_of_players"]);
-                description_property_save.value = selected_save_data["description"];
-
-                document.getElementById("properties_list_players_list").innerHTML = ""
-                Object.keys(selected_save_data.players).forEach(player_name => {
-                    build_player_preview(selected_save_data, player_name)
-                })
-
-                selected_save_data_preview = selected_save_data;
-                selected_save_data_edit = selected_save_data;
-            } catch (e) {
-                console.error("Error parsing JSON: ", e);
-            }
-        };
-        reader.readAsText(file);
-    }
-});
+function initializeLoadProjectInput(){
+    document.getElementById("json_import_input").addEventListener("change", () => {
+        const file = import_data_input.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    selected_save_data = JSON.parse(event.target.result);
+                    const name_property_save = document.getElementById("properties_name_input");
+                    const number_players_property_save = document.getElementById("properties_player_count_input");
+                    const description_property_save = document.getElementById("properties_notes_input");
+    
+                    name_property_save.value = selected_save_data["name"];
+                    number_players_property_save.setAttribute("placeholder", selected_save_data["number_of_players"]);
+                    description_property_save.value = selected_save_data["description"];
+    
+                    document.getElementById("properties_list_players_list").innerHTML = ""
+                    Object.keys(selected_save_data.players).forEach(player_name => {
+                        build_player_preview(selected_save_data, player_name)
+                    })
+    
+                    selected_save_data_preview = selected_save_data;
+                    selected_save_data_edit = selected_save_data;
+                } catch (e) {
+                    console.error("Error parsing JSON: ", e);
+                }
+            };
+            reader.readAsText(file);
+        }
+    });
+}
 
 // New Project Button
-function add_project_eventlistener(){
+function initializeAddProjectButton(){
     const default_new_project = {
         "name": "Project Name",
         "description": "Project Description",
@@ -1306,17 +1322,16 @@ function verify_teams_and_matches(project){
     return true
 }
 
-
-document.addEventListener("DOMContentLoaded", () => {
+function initializeAnalyzeTabButton(){
     document.getElementById("edit_data_tab_analyze_tab").addEventListener("click", () => {
         document.getElementById("edit_data_tab").classList.remove("active_tab")
         document.getElementById("edit_data_tab").classList.remove("active")
         document.getElementById("analysis_tab").classList.add("active_tab")
         document.getElementById("analysis_tab").classList.add("active")
     })
-})
+}
 
-document.addEventListener("DOMContentLoaded", () => {
+function initializeAnalyzeButton(){
     document.getElementById("analyze_project").addEventListener("click", async() => {
         const project = await get_project_json(selected_save_data_edit)
         const results = await analyze_project(project)
@@ -1327,7 +1342,7 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("results_tab").classList.add("active_tab")
         document.getElementById("results_tab").classList.add("active")
     })
-})
+}
 
 function update_player_to_player_upon_name_change(textarea_name, cell_textarea){
     if (!selected_save_data_edit["players"].hasOwnProperty(textarea_name.value)){
@@ -1370,15 +1385,13 @@ function update_player_to_player_upon_name_change(textarea_name, cell_textarea){
     }
 }
 
-
-document.addEventListener("DOMContentLoaded", () => {
+function initializeSaveButton(){
     const save_button = document.getElementById("save_button")
     save_button.addEventListener("click", async () => {
         var project = gather_project_data_settings(selected_save_data_edit)
         project = gather_project_data_teams_matches(selected_save_data_edit)
         save_project(project)})
-
-})
+}
 
 async function save_project(project){
     console.log(project)
@@ -1626,7 +1639,7 @@ function build_team(team_name, unallocated_players, num_players_team, players_te
     return analyze_pitch_team
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+function initializeAddPitchButton(){
     document.getElementById("analyze_configure_add_pitch_button").addEventListener("click", () => {
         const pitches_count = document.querySelectorAll(".analyze_results_pitch").length
         const allocated_players = Array.from(document.querySelectorAll(".analyze_pitch_team_player_name")).map(p => p.innerText)
@@ -1634,7 +1647,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const unallocated_players = players.filter(player => !allocated_players.includes(player))
         document.getElementById("analyze_results_pitches").appendChild(build_pitch(`Pitch ${pitches_count+1}`, `Team ${pitches_count*2+1}`, "a", [], `Team ${pitches_count*2+2}`, "a", [], unallocated_players, {}))
     })
-})
+}
 
 function build_results_preview(response_data){
     let possibilities_count = 0;
