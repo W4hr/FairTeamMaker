@@ -54,8 +54,8 @@ class Team(BaseModel):
 
 class Category(BaseModel):
     name: str
-    minimumValue: Optional[float] = None
-    maximumValue: Optional[float] = None
+    minimumValue: Optional[float | None]
+    maximumValue: Optional[float | None]
 
 class Settings(BaseModel):
     interchangeableTeams: bool
@@ -80,7 +80,7 @@ class Project(BaseModel):
 
     @model_validator(mode="after")
     def number_of_players_consistency_validator(cls, values):
-        model_logger.debug("Project validation started")
+        model_logger.debug("Project validation started.")
         if len(values.players) != len(values.pairPerformance):
             model_logger.error("The number of players must match the pairPerformance dictionary keys.")
             raise ValueError("The number of players must match the pairPerformance dictionary keys.")
@@ -112,7 +112,7 @@ class Project(BaseModel):
 
         for category in categories_list:
             for player_name, player in player_dict.items():
-                score = player.scores.category.name
+                score = player.scores[category.name]
             if score is None:
                 model_logger.error(f"Player '{player_name}' missing score for category '{category.name}'.")
                 raise ValueError(f"Player '{player_name}' missing score for category '{category.name}'.")
@@ -133,4 +133,9 @@ class Project(BaseModel):
                     model_logger.error(f"Team '{team_name}' has {len(team.players)} players, exceeding the specified limit of {team.num_players}.")
                     raise ValueError(f"Team '{team_name}' has {len(team.players)} players, exceeding the specified limit of {team.num_players}.")
                     
+        return values
+    
+    @model_validator(mode="after")
+    def log_validation_message(cls, values):
+        model_logger.debug("Model validation succeeded")
         return values

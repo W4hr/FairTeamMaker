@@ -111,6 +111,7 @@ function initializeAddColumnWindow(){
             edit_player_table_topbar.appendChild(newColumnTop);
             
             const column_number_rows = remove_from_array_with_tag(document.querySelectorAll('#edit_player_table tr'), ["edit_player_table_topbar"]);
+
             column_number_rows.forEach((column_number_row) => {
                 const element = document.createElement("td");
                 const child_element = document.createElement("input");
@@ -151,7 +152,7 @@ function initializeAddColumnWindow(){
 
 function parseIntButForEmptyString(value){
     if (value == ""){
-        return value
+        return null
     } else {
         return parseInt(value)
     }
