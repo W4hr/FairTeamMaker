@@ -183,6 +183,89 @@
             </div>
         </div>
         <div id="analysis_tab" data-tab-content>
+            <div id="normalization_settings_dimming" class="window_background_dimming hide">
+                <div id="normalization_settings_window">
+                    <div id="normalization_primary_score_container">
+                        <p>Primary Score Normalization</p>
+                        <div class="toggle_container">
+                            <label class="toggle">
+                                <input type="checkbox" id="normalization_primary_toggle">
+                                <span class="slider"></span>
+                            </label>
+                            <label for="normalization_primary_toggle" id="normalization_primary_toggle_status">OFF</label>
+                        </div>
+                        <label for="normalization_primary_score_type">Normalization Type</label>
+                        <select name="normalization_primary_score_type" id="normalization_primary_score_type" class="norm_settings_input">
+                            <option value="logit">logit (recommended)</option>
+                            <option value="sigmoid">sigmoid</option>
+                            <option value="linear">linear</option>
+                        </select>
+                        <label for="primary_min" class="norm_settings_value_label">Minimum Value</label>
+                        <select name="primary_min" id="normalization_primary_score_min" class="norm_settings_input">
+                            <option value="symmetric">Symmetrical (recommended)</option>
+                            <option value="smallest_value">Smallest Value</option>
+                            <option value="largest_value">Largest Value</option>
+                            <option value="custom">Custom Value</option>
+                        </select>
+                        <input type="number" id="normalization_primary_score_min_custom" placeholder="Enter custom minimum (e.g. -3.5)" class="norm_settings_input hide">
+                        <label for="primary_max" class="norm_settings_value_label">Largest Value</label>
+                        <select name="primary_max" id="normalization_primary_score_max" class="norm_settings_input">
+                            <option value="symmetric">Symmetrical (recommended)</option>
+                            <option value="smallest_value">Smallest Value</option>
+                            <option value="largest_value">Largest Value</option>
+                            <option value="custom">Custom Value</option>
+                        </select>
+                        <input type="number" id="normalization_primary_score_max_custom" placeholder="Enter custom maximum (e.g. 135.23)" class="norm_settings_input hide">
+                    </div>
+                    <div id="normalization_pairPerformance_weight">
+                        <p>Pair Score Weight to Primary Score</p>
+                        <select name="" id="normalization_settings_weight" class="norm_settings_input">
+                            <option selected value="automatic">automatic</option>
+                            <option value="custom">custom</option>
+                        </select>
+                        <div class="display_flex hide" id="normalization_settings_weight_custom_container">
+                            <input type="range" max="3" min="0.01" step="0.01" value="0.5" id="normalization_settings_weight_custom">
+                            <p id="normalization_settings_weight_custom_display">0.5</p>
+                        </div>
+                    </div>
+                    <div id="normalization_pair_score_container">
+                        <p>Pair Score Normalization</p>
+                        <div class="toggle_container">
+                            <label class="toggle">
+                                <input type="checkbox" id="normalization_pair_toggle" checked>
+                                <span class="slider"></span>
+                            </label>
+                            <label for="normalization_pair_toggle" id="normalization_pair_toggle_status">ON</label>
+                        </div>
+                        <label for="normalization_pair_score_type">Normalization Type</label>
+                        <select name="normalization_pair_score_type" id="normalization_pair_score_type" class="norm_settings_input">
+                            <option value="logit">logit (recommended)</option>
+                            <option value="sigmoid">sigmoid</option>
+                            <option value="linear">linear</option>
+                        </select>
+                        <label for="pair_min" class="norm_settings_value_label">Minimum Value</label>
+                        <select name="pair_min" id="normalization_pair_score_min" class="norm_settings_input">
+                            <option value="symmetric">Symmetrical (recommended)</option>
+                            <option value="smallest_value">Smallest Value</option>
+                            <option value="largest_value">Largest Value</option>
+                            <option value="custom">Custom Value</option>
+                        </select>
+                        <input type="number" id="normalization_pair_score_min_custom" placeholder="Enter custom minimum (e.g. -3.5)" class="norm_settings_input hide">
+                        <label for="pair_max" class="norm_settings_value_label">Largest Value</label>
+                        <select name="pair_max" id="normalization_pair_score_max" class="norm_settings_input">
+                            <option value="symmetric">Symmetrical (recommended)</option>
+                            <option value="smallest_value">Smallest Value</option>
+                            <option value="largest_value">Largest Value</option>
+                            <option value="custom">Custom Value</option>
+                        </select>
+                        <input type="number" id="normalization_pair_score_max_custom" placeholder="Enter custom maximum (e.g. 135.23)" class="norm_settings_input hide">
+                    </div>
+                    <div class="space_around display_flex">
+                        <button id="normalization_settings_close" class="red_button">Cancel</button>
+                        <button id="normalization_settings_save" class="blue_button">Save</button>
+                    </div>
+                </div>
+            </div>            
             <div id="analyze_results">
                 <div id="analyze_results_pitches">
                     <div id="analyze_configure_add_pitch_container">
@@ -216,6 +299,10 @@
                             <option value="random">random (recommended)</option>
                             <option value="brute_force">brute force (best for few participants)</option>
                         </select>
+                    </div>
+                    <div class="analyze_settings_container">
+                        <p>Normalization Settings</p>
+                        <button class="lightblue_button" id="open_norm_settings_window">Open</button>
                     </div>
                     <div>
                         <button class="blue_button" id="download_button">Download</button>

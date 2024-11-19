@@ -57,6 +57,21 @@ class Category(BaseModel):
     minimumValue: Optional[float | None]
     maximumValue: Optional[float | None]
 
+class NormSettingsPairPerformance(BaseModel):
+    type: str
+    minValue: str | float
+    maxValue: str | float
+    weight: str | float
+
+class NormSettingsPrimaryScore(BaseModel):
+    type: str
+    minValue: str | float
+    maxValue: str | float
+
+class NormSettings(BaseModel):
+    NormSettingsPairPerformance: NormSettingsPairPerformance
+    NormSettingsPrimaryScore: NormSettingsPrimaryScore
+
 class Settings(BaseModel):
     interchangeableTeams: bool
     maxSittingOut: int
@@ -64,6 +79,7 @@ class Settings(BaseModel):
     maxDifferencePitches: int
     auto_save: bool
     algorithmChoice: str
+    normalizationSettings: NormSettings
 
 class Project(BaseModel):
     name: str

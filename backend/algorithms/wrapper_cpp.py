@@ -4,8 +4,8 @@ from typing import Dict, List, Optional
 
 from .team_size_processing import teams_sizes as get_teams_sizes
 from .calculations import distribute_amount_of_combinations_to_calculate
-from .preprocessing import compress_players_dictionary, normalize_primary_score
 from .filtering import get_attending_players, get_unallocated_allocated_players, get_allocated_player_in_teams
+from .preprocessing import compress_players_dictionary, normalize_primary_score, normalize_pairPerformance
 
 from .cpp_data_preperation import *
 
@@ -32,7 +32,8 @@ def get_teams(teams : Dict[str, dict],
               pairPerformance: Dict[str, Dict[str, int]],
               amount_best_games: int,
               pitchNames: List[str],
-              algorithm_choice: str
+              algorithm_choice: str,
+              normalization_settings: Dict[str, Dict[str, any]]
               ):
     try:
         temporary_matches = {key: value for key, value in matches.items()}
@@ -54,13 +55,16 @@ def get_teams(teams : Dict[str, dict],
         algorithm_logger.debug("getting attending players succeeded")
         compressed_players = compress_players_dictionary(attending_players)
         algorithm_logger.debug("compressing players succeeded")
-        normalized_players = normalize_primary_score(compressed_players, None, None, None, None)
+        algorithm_logger.debug(f"compressed_players = {compressed_players}\nnormalization_settings = {normalization_settings}")
+        normalized_players = normalize_primary_score(compressed_players, normalization_settings)
         algorithm_logger.debug("normalizing player data succeeded")
         unallocated_players, _ = get_unallocated_allocated_players(normalized_players, teams)
         algorithm_logger.debug("getting unallocated players succeeded")
         allocated_players = get_allocated_player_in_teams(teams)
         algorithm_logger.debug("getting allocated players succeeded")
 
+        normalized_pairPerformance = normalize_pairPerformance(pairPerformance, normalization_settings, players)
+        algorithm_logger.debug(f"normalizing pairPerformance data successded: {normalized_pairPerformance}")
         # CPP data preperation
         player_index_dict : Dict[str, int]= get_player_index_dict(normalized_players)
         index_player_dict : Dict[int, str]= get_index_player_dict(normalized_players)
@@ -68,7 +72,7 @@ def get_teams(teams : Dict[str, dict],
         index_skill_dict : List[float]= get_index_skill_dict(normalized_players, player_index_dict)
         index_allocated_players : List[List[Optional[int]]]= get_index_allocated_players(player_index_dict, allocated_players)
         index_unallocated_players : List[int]= get_index_unallocated_players(unallocated_players, player_index_dict)
-        matrix_pairPerformance : List[List[float]]= get_matrix_pairPerformance(pairPerformance, index_player_dict)
+        matrix_pairPerformance : List[List[float]]= get_matrix_pairPerformance(normalized_pairPerformance, index_player_dict)
         matches_indexes_dict : Dict[int, int]= get_index_matches(matches)
         best_games_player_indexes = []
         if algorithm_choice == "brute_force":

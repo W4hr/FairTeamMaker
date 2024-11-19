@@ -38,6 +38,11 @@ window.addEventListener("load", () => {
     initializeAnalyzeTabButton()
     initializeAnalyzeButton()
     initializeAddPitchButton()
+    initializeNormSettingsButton()
+    initializeCustomInputShow()
+    initializeDownloadButton()
+    initializeNormSettingsCustomWeight()
+    initializeToggleNormPair()
 })
 
 function initializeTabs(){
@@ -1032,6 +1037,7 @@ function get_project_json(project){
     const cleaned_project = clean_project_teams_matches_pitches(project)
     const analyze_project_settings = gather_project_data_settings(cleaned_project)
     const analyze_project = gather_project_data_teams_matches(analyze_project_settings)
+    analyze_project.settings.normalizationSettings = gather_project_data_norm_settings()
     return analyze_project
 }
 
@@ -1211,6 +1217,10 @@ function verify_settings(project){
         return false
     }
 
+    if (!verify_norm_settings(project.settings.normalizationSettings)){
+        return false
+    }
+
     return  true
 }
 
@@ -1324,6 +1334,190 @@ function verify_teams_and_matches(project){
     return true
 }
 
+function verify_norm_settings(norm_settings){
+    const typeNormSettingsPrimaryScore = norm_settings["NormSettingsPrimaryScore"]["type"]
+    const minNormSettingsPrimaryScore = norm_settings["NormSettingsPrimaryScore"]["minValue"]
+    const maxNormSettingsPrimaryScore = norm_settings["NormSettingsPrimaryScore"]["maxValue"]
+
+    switch(typeNormSettingsPrimaryScore){
+        case "logit":
+        case "sigmoid":
+        case "linear":
+        case "off":
+            break
+        default:
+            return false
+    }
+
+    switch(minNormSettingsPrimaryScore){
+        case "symmetric":
+        case "smallest_value":
+        case "largest_value":
+            break
+        default:
+            if (typeof minNormSettingsPrimaryScore !== "number"){
+                show_message("The minimum value of the Primary Score Normalization settings is invalid. Ensure that the value is one of the options", "warning")
+                console.error(`The minimum value of the Primary Score Normalization settings is invalid. Ensure that the value is one of the options. minNormSettingsPrimaryScore = ${minNormSettingsPrimaryScore} : is number: ${typeof minNormSettingsPrimaryScore}`)
+                return false
+            }
+        }
+
+    switch(maxNormSettingsPrimaryScore){
+        case "symmetric":
+        case "smallest_value":
+        case "largest_value":
+            break
+        default:
+            if (typeof maxNormSettingsPrimaryScore !== "number"){
+                show_message("The maximum value of the Primary Score Normalization settings is invalid. Ensure that the value is one of the options", "warning")
+                console.error(`The maximum value of the Primary Score Normalization settings is invalid. Ensure that the value is one of the options. maxNormSettingsPrimaryScore = ${maxNormSettingsPrimaryScore} : is number: ${typeof maxNormSettingsPrimaryScore}`)
+                return false
+            }
+    }
+
+    const typeNormSettingsPairPerformance = norm_settings["NormSettingsPairPerformance"]["type"] 
+    const minNormSettingsPairPerformance = norm_settings["NormSettingsPairPerformance"]["minValue"]
+    const maxNormSettingsPairPerformance = norm_settings["NormSettingsPairPerformance"]["maxValue"]
+    const weightNormSettingsPairPerformance = norm_settings["NormSettingsPairPerformance"]["weight"]
+
+    switch(typeNormSettingsPairPerformance){
+        case "logit":
+        case "sigmoid":
+        case "linear":
+        case "off":
+            break
+        default:
+            return false
+    }
+
+    switch(minNormSettingsPairPerformance){
+        case "symmetric":
+        case "smallest_value":
+        case "largest_value":
+            break
+        default:
+            if (typeof minNormSettingsPairPerformance !== "number"){
+                show_message("The minimum value of the Pair Performance Normalization settings is invalid. Ensure that the value is one of the options", "warning")
+                console.error(`The minimum value of the Pair Performance Normalization settings is invalid. Ensure that the value is one of the options. minNormSettingsPairPerformance = ${minNormSettingsPairPerformance} : is number: ${typeof minNormSettingsPairPerformance}`)
+                return false
+            }
+        }
+
+    switch(maxNormSettingsPairPerformance){
+        case "symmetric":
+        case "smallest_value":
+        case "largest_value":
+            break
+        default:
+            if (typeof maxNormSettingsPairPerformance !== "number"){
+                show_message("The maximum value of the Pair Performance Normalization settings is invalid. Ensure that the value is one of the options", "warning")
+                console.error(`The maximum value of the Pair Performance Normalization settings is invalid. Ensure that the value is one of the options. maxNormSettingsPairPerformance = ${maxNormSettingsPairPerformance} : is number: ${typeof maxNormSettingsPairPerformance}`)
+                return false
+            }
+    }
+
+    if (weightNormSettingsPairPerformance !== "automatic" && typeof weightNormSettingsPairPerformance !== "number"){
+        show_message("The value for the weight of the pair performance normalization is invalid. Please make sure you either select the automatic option or give a valid custom input.", "warning")
+        console.error(`The value for the weight of the pair performance normalization is invalid: ${weightNormSettingsPairPerformance}: type = ${typeof weightNormSettingsPairPerformance}`)
+        return false
+    }
+    return true
+}
+
+function gather_project_data_norm_settings(){
+    const NormSettingsPrimaryScore = {}
+    
+    if (!document.getElementById("normalization_primary_toggle").checked){
+        NormSettingsPrimaryScore["type"] = "off"
+    } else {
+        NormSettingsPrimaryScore["type"] = document.getElementById("normalization_primary_score_type").value        
+    }
+
+    const primary_min_input = document.getElementById("normalization_primary_score_min").value
+    if (primary_min_input == "custom"){
+        let custom_min = Number(document.getElementById("normalization_primary_score_min_custom").value)
+        if (!isNaN(custom_min)){
+            NormSettingsPrimaryScore["minValue"] = custom_min
+        } else {
+            show_message("The minimum value for Primary Score normalization is invalid. Please enter a valid number.", "warning")
+            console.error(`Invalid value for primary_min_input custom: ${custom_min}`)
+            return false
+        }
+    } else {
+        NormSettingsPrimaryScore["minValue"] = primary_min_input
+    }
+
+    const primary_max_input = document.getElementById("normalization_primary_score_max").value
+    if (primary_max_input == "custom"){
+        let custom_max = Number(document.getElementById("normalization_primary_score_max_custom").value)
+        if (!isNaN(custom_max)){
+            NormSettingsPrimaryScore["maxValue"] = custom_max
+        } else {
+            show_message("The maximum value for Primary Score normalization is invalid. Please enter a valid number.", "warning")
+            console.error(`Invalid value for primary_max_input custom: ${custom_max}`)
+            return false
+        }
+    } else {
+        NormSettingsPrimaryScore["maxValue"] = primary_max_input
+    }
+
+    const NormSettingsPairPerformance = {}
+
+    if (!document.getElementById("normalization_pair_toggle").checked){
+        NormSettingsPairPerformance["type"] = "off"
+    } else{
+        NormSettingsPairPerformance["type"] = document.getElementById("normalization_pair_score_type").value
+    }
+
+    const pair_min_input = document.getElementById("normalization_pair_score_min").value
+    if (pair_min_input == "custom"){
+        let custom_pair_min = Number(document.getElementById("normalization_pair_score_min_custom").value)
+        if (!isNaN(custom_pair_min)){
+            NormSettingsPairPerformance["minValue"] = custom_pair_min
+        } else {
+            show_message("The minimum value for Pair Performance normalization is invalid. Please enter a valid number.", "warning")
+            console.error(`Invalid value for pair_min_input custom: ${custom_pair_min}`)
+                return false
+        }
+    } else {
+        NormSettingsPairPerformance["minValue"] = pair_min_input
+    }
+
+    const pair_max_input = document.getElementById("normalization_pair_score_max").value
+    if (pair_max_input == "custom"){
+        let custom_pair_max = Number(document.getElementById("normalization_pair_score_max_custom").value)
+        if (!isNaN(custom_pair_max)){
+            NormSettingsPairPerformance["maxValue"] = custom_pair_max
+        } else {
+            show_message("The maximum value for Pair Performance normalization is invalid. Please enter a valid number.", "warning")
+            console.error(`Invalid value for pair_max_input custom: ${custom_pair_max}`)
+            return
+        }
+    } else {
+        NormSettingsPairPerformance["maxValue"] = pair_max_input
+    }
+
+    const pair_weight = document.getElementById("normalization_settings_weight").value
+    if (pair_weight !== "automatic"){
+        let custom_pair_weight = Number(document.getElementById("normalization_settings_weight_custom").value)
+        if (!isNaN(custom_pair_weight)){
+            NormSettingsPairPerformance["weight"] = custom_pair_weight
+        } else {
+            show_message("The value for the weight of the pair performance normalization is invalid. Please make sure you either select the automatic option or give a valid custom input.", "warning")
+            console.error(`The value for the weight of the pair performance normalization is invalid: \nvalue =${pair_weight}\ntype = ${typeof pair_weight}`)
+            return
+        }
+    } else {
+        NormSettingsPairPerformance["weight"] = pair_weight
+    }
+
+    const NormSettings = {
+        "NormSettingsPrimaryScore" : NormSettingsPrimaryScore,
+        "NormSettingsPairPerformance" : NormSettingsPairPerformance
+    }
+    return NormSettings
+}
+
 function initializeAnalyzeTabButton(){
     document.getElementById("edit_data_tab_analyze_tab").addEventListener("click", () => {
         document.getElementById("edit_data_tab").classList.remove("active_tab")
@@ -1390,8 +1584,7 @@ function update_player_to_player_upon_name_change(textarea_name, cell_textarea){
 function initializeSaveButton(){
     const save_button = document.getElementById("save_button")
     save_button.addEventListener("click", async () => {
-        var project = gather_project_data_settings(selected_save_data_edit)
-        project = gather_project_data_teams_matches(selected_save_data_edit)
+        const project = get_project_json(selected_save_data)
         save_project(project)})
 }
 
@@ -1851,5 +2044,115 @@ function update_player_name_in_data_upon_change(previous_name, new_name, data){
             data["pairPerformance"][player_name1][new_name] = data["pairPerformance"][player_name1][previous_name]
             delete data["pairPerformance"][player_name1][previous_name]
         }
+    })
+}
+
+function initializeNormSettingsButton(){
+    document.getElementById("open_norm_settings_window").addEventListener("click", () => {
+        document.getElementById("normalization_settings_dimming").classList.remove("hide")
+    })
+    document.getElementById("normalization_settings_close").addEventListener("click", () => {
+        document.getElementById("normalization_settings_dimming").classList.add("hide")
+        document.getElementById("normalization_primary_score_min").value = "symmetric"
+        document.getElementById("normalization_primary_score_max").value = "symmetric"
+        document.getElementById("normalization_pair_score_min").value = "symmetric"
+        document.getElementById("normalization_pair_score_max").value = "symmetric"
+    })
+    document.getElementById("normalization_settings_save").addEventListener("click", () => {
+        const norm_settings = gather_project_data_norm_settings()
+        if (norm_settings !== false){
+            if (verify_norm_settings(norm_settings)){
+                document.getElementById("normalization_settings_dimming").classList.add("hide")
+            }
+        }
+    })
+}
+
+function initializeCustomInputShow(){
+    document.getElementById("normalization_primary_score_min").addEventListener("change", () => {
+        if (document.getElementById("normalization_primary_score_min").value == "custom"){
+            document.getElementById("normalization_primary_score_min_custom").classList.remove("hide")
+        } else {
+            document.getElementById("normalization_primary_score_min_custom").classList.add("hide")
+        }
+    })
+    document.getElementById("normalization_primary_score_max").addEventListener("change", () => {
+        if (document.getElementById("normalization_primary_score_max").value == "custom"){
+            document.getElementById("normalization_primary_score_max_custom").classList.remove("hide")
+        } else {
+            document.getElementById("normalization_primary_score_max_custom").classList.add("hide")
+        }
+    })
+    document.getElementById("normalization_pair_score_min").addEventListener("change", () => {
+        if (document.getElementById("normalization_pair_score_min").value == "custom"){
+            document.getElementById("normalization_pair_score_min_custom").classList.remove("hide")
+        } else {
+            document.getElementById("normalization_pair_score_min_custom").classList.add("hide")
+        }
+    })
+    document.getElementById("normalization_pair_score_max").addEventListener("change", () => {
+        if (document.getElementById("normalization_pair_score_max").value == "custom"){
+            document.getElementById("normalization_pair_score_max_custom").classList.remove("hide")
+        } else {
+            document.getElementById("normalization_pair_score_max_custom").classList.add("hide")
+        }
+    })
+}
+
+function initializeNormSettingsCustomWeight(){
+    const weight_select = document.getElementById("normalization_settings_weight")
+    const weight_custom_container = document.getElementById("normalization_settings_weight_custom_container")
+    weight_select.addEventListener("input", () => {
+        if (weight_select.value == "custom"){
+            weight_custom_container.classList.remove("hide")
+        } else{
+            weight_custom_container.classList.add("hide")
+        }
+    })
+    const weight_input = document.getElementById("normalization_settings_weight_custom")
+    weight_input.addEventListener("input", () => {
+        document.getElementById("normalization_settings_weight_custom_display").innerText = weight_input.value
+    })
+}
+
+function initializeToggleNormPair() {
+    const toggleInput = (ids, toggleCheckbox, statusTextId) => {
+        const toggleState = toggleCheckbox.checked;
+        const statusElement = document.getElementById(statusTextId);
+        if (statusElement) {
+            statusElement.innerText = toggleState ? "ON" : "OFF";
+        }
+
+        ids.forEach((id) => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.disabled = !toggleState;
+                element.classList.toggle("disabled_input", !toggleState);
+            }
+        });
+    };
+    const normalization_pair_toggle = document.getElementById("normalization_pair_toggle");
+
+    normalization_pair_toggle.addEventListener("change", () => {
+        const ids = [
+            "normalization_pair_score_min",
+            "normalization_pair_score_min_custom",
+            "normalization_pair_score_max",
+            "normalization_pair_score_max_custom",
+            "normalization_pair_score_type"
+        ];
+        toggleInput(ids, normalization_pair_toggle, "normalization_pair_toggle_status");
+    });
+    const normalization_primary_toggle = document.getElementById("normalization_primary_toggle")
+
+    normalization_primary_toggle.addEventListener("change", () => {
+        const ids = [
+            "normalization_primary_score_min",
+            "normalization_primary_score_min_custom",
+            "normalization_primary_score_max",
+            "normalization_primary_score_max_custom",
+            "normalization_primary_score_type"
+        ]
+        toggleInput(ids, normalization_primary_toggle, "normalization_primary_toggle_status");
     })
 }
