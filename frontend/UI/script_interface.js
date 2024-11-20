@@ -43,6 +43,7 @@ window.addEventListener("load", () => {
     initializeDownloadButton()
     initializeNormSettingsCustomWeight()
     initializeToggleNormPair()
+    initializeInterchangeableSetting()
 })
 
 function initializeTabs(){
@@ -1053,7 +1054,7 @@ function gather_project_data_settings(project){
     project.settings.maxDifferenceTeams = parseInt(document.getElementById("analyze_settings_max_difference_teams").value)
     project.settings.maxDifferencePitches = parseInt(document.getElementById("analyze_settings_max_difference_pitches").value)
     project.settings.algorithmChoice = document.getElementById("analyze_settings_algorithm_choice").value
-    if (document.getElementById("analyze_settings_interchangeable_toggle").classList.contains("checked")){
+    if (document.getElementById("analyze_settings_interchangeable_toggle").checked){
         project.settings.interchangeableTeams = true
     } else {
         project.settings.interchangeableTeams = false
@@ -1617,11 +1618,83 @@ async function save_project(project){
 function apply_settings_analysis(selected_save_data){
     const settings = selected_save_data["settings"]
     if (settings["interchangeableTeams"]){
-        document.getElementById("analyze_settings_interchangeable_toggle").classList.add("checked")
+        document.getElementById("analyze_settings_interchangeable_toggle").setAttribute("checked", true)
     }
     document.getElementById("analyze_settings_max_sit_out_players").value = settings["maxSittingOut"]
     document.getElementById("analyze_settings_max_difference_teams").value = settings["maxDifferenceTeams"]
     document.getElementById("analyze_settings_max_difference_pitches").value = settings["maxDifferencePitches"]
+    if ("normalizationSettings" in selected_save_data["settings"]){
+        apply_norm_settings_analysis(selected_save_data["settings"]["normalizationSettings"])
+    }   
+}
+
+function apply_norm_settings_analysis(norm_settings){
+    const primary_settings = norm_settings["NormSettingsPrimaryScore"]
+    if (primary_settings["type"] == "off"){
+        document.getElementById("normalization_primary_toggle").checked = false
+        document.getElementById("normalization_primary_toggle_status").innerText = "OFF"
+        document.getElementById("normalization_primary_score_type").classList.add("disabled_input")
+        document.getElementById("normalization_primary_score_min").classList.add("disabled_input")
+        document.getElementById("normalization_primary_score_max").classList.add("disabled_input")
+    } else{
+        document.getElementById("normalization_primary_toggle").checked = true
+        document.getElementById("normalization_primary_toggle_status").innerText = "ON"
+        document.getElementById("normalization_primary_score_type").value = primary_settings["type"]
+        document.getElementById("normalization_primary_score_type").classList.remove("disabled_input")
+        document.getElementById("normalization_primary_score_min").classList.remove("disabled_input")
+        document.getElementById("normalization_primary_score_max").classList.remove("disabled_input")
+    }
+
+    if (typeof primary_settings["minValue"] == "string"){
+        document.getElementById("normalization_primary_score_min").value = primary_settings["minValue"]
+    } else {
+        document.getElementById("normalization_primary_score_min").value = "custom"
+        document.getElementById("normalization_primary_score_min_custom").value = primary_settings["minValue"]
+    }
+
+    if (typeof primary_settings["maxValue"] == "string"){
+        document.getElementById("normalization_primary_score_max").value = primary_settings["maxValue"]
+    } else {
+        document.getElementById("normalization_primary_score_max").value = "custom"
+        document.getElementById("normalization_primary_score_max_custom").value = primary_settings["maxValue"]
+    }
+    
+    const pair_settings = norm_settings["NormSettingsPairPerformance"]
+    if (pair_settings["type"] == "off") {
+        document.getElementById("normalization_pair_toggle").checked = false;
+        document.getElementById("normalization_pair_toggle_status").innerText = "OFF";
+        document.getElementById("normalization_pair_score_type").classList.add("disabled_input");
+        document.getElementById("normalization_pair_score_min").classList.add("disabled_input");
+        document.getElementById("normalization_pair_score_max").classList.add("disabled_input");
+    } else {
+        document.getElementById("normalization_pair_toggle").checked = true;
+        document.getElementById("normalization_pair_toggle_status").innerText = "ON";
+        document.getElementById("normalization_pair_score_type").value = pair_settings["type"];
+        document.getElementById("normalization_pair_score_type").classList.remove("disabled_input");
+        document.getElementById("normalization_pair_score_min").classList.remove("disabled_input");
+        document.getElementById("normalization_pair_score_max").classList.remove("disabled_input");
+    }
+    
+    if (typeof pair_settings["minValue"] == "string") {
+        document.getElementById("normalization_pair_score_min").value = pair_settings["minValue"];
+    } else {
+        document.getElementById("normalization_pair_score_min").value = "custom";
+        document.getElementById("normalization_pair_score_min_custom").value = pair_settings["minValue"];
+    }
+    
+    if (typeof pair_settings["maxValue"] == "string") {
+        document.getElementById("normalization_pair_score_max").value = pair_settings["maxValue"];
+    } else {
+        document.getElementById("normalization_pair_score_max").value = "custom";
+        document.getElementById("normalization_pair_score_max_custom").value = pair_settings["maxValue"];
+    }
+    
+    if (typeof pair_settings["weight"] == "string"){
+        document.getElementById("normalization_settings_weight").value = pair_settings["weight"]
+    } else {
+        document.getElementById("normalization_settings_weight").value = "custom"
+        document.getElementById("normalization_settings_weight_custom").value = pair_settings["weight"]
+    }
 }
 
 async function analyze_project(project){
@@ -2154,5 +2227,16 @@ function initializeToggleNormPair() {
             "normalization_primary_score_type"
         ]
         toggleInput(ids, normalization_primary_toggle, "normalization_primary_toggle_status");
+    })
+}
+
+function initializeInterchangeableSetting(){
+    const interchangeable_toggle = document.getElementById("analyze_settings_interchangeable_toggle")
+    interchangeable_toggle.addEventListener("change", () => {
+        if (interchangeable_toggle.checked){
+            document.getElementById("analyze_settings_interchangeable_toggle_status").innerText = "ON"
+        } else {
+            document.getElementById("analyze_settings_interchangeable_toggle_status").innerText = "OFF"
+        }
     })
 }
