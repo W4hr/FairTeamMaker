@@ -1,3 +1,5 @@
 - add dispersion quantifier to data["setttings"]
-- add normalization settings
 - rework css for frontend (add consitency)
+- add permissiom management
+- add logs to front and backend
+- add other balancing algorythms

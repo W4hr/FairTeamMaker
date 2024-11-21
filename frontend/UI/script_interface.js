@@ -1981,7 +1981,6 @@ function build_results_preview(response_data){
 
 function build_result(possible_game){
     document.getElementById("results_possibility_container").innerHTML = ""
-
     Object.keys(possible_game["pitches"]).forEach((pitch_name) => {
         const pitch_data = possible_game["pitches"][pitch_name]
 
@@ -2001,7 +2000,8 @@ function build_result(possible_game){
         results_pitch_difference.classList.add("results_pitch_difference")
         results_pitch_difference.setAttribute("type", "text")
         results_pitch_difference.disabled = true
-        results_pitch_difference.value = possible_game["difference"]
+
+        const team_scores = []
 
         const results_teams_container = document.createElement("div")
         results_teams_container.classList.add("results_teams_container")
@@ -2023,12 +2023,12 @@ function build_result(possible_game){
             results_team_teamsize.classList.add("results_team_teamsize")
             results_team_teamsize.setAttribute("type", "text")
             results_team_teamsize.disabled = true
-            results_team_teamsize.value = `Players: ${pitch_data[team_name].length}`
+            results_team_teamsize.value = `Players: ${pitch_data[team_name].players.length}`
 
             const results_team_players = document.createElement("ul")
             results_team_players.classList.add("results_team_players")
             
-            pitch_data[team_name].forEach(player_data => {
+            pitch_data[team_name].players.forEach(player_data => {
                 const [player_name, player_score] = Object.entries(player_data)[0]
 
                 const results_team_player = document.createElement("li")
@@ -2048,7 +2048,8 @@ function build_result(possible_game){
             results_team_teamscore.classList.add("results_team_teamscore")
             results_team_teamscore.setAttribute("type", "text")
             results_team_teamscore.disabled = true
-            results_team_teamscore.value = `Teamscore: n/a`
+            results_team_teamscore.value = pitch_data[team_name].team_score
+            team_scores.push(pitch_data[team_name].team_score)
 
             results_team_title_container.appendChild(results_team_title)
             results_team_title_container.appendChild(results_team_teamsize)
@@ -2058,6 +2059,7 @@ function build_result(possible_game){
             results_team_container.appendChild(results_team_teamscore)
             results_teams_container.appendChild(results_team_container)
         })
+        results_pitch_difference.value = Math.abs(team_scores[0] - team_scores[1])
 
         results_pitch_title_container.appendChild(results_pitch_title)
         results_pitch_title_container.appendChild(results_pitch_difference)

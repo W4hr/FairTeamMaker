@@ -1338,6 +1338,7 @@ h1.analyze{
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
+    width: 100%;
 }
 
 .results_pitch_container{
@@ -1462,6 +1463,7 @@ h1.analyze{
     height: 30px;
     font-size: large;
     text-align: center;
+    padding-left: 12px;
 }
 
 #analyze_settings_algorithm_choice{

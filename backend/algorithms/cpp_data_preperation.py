@@ -42,33 +42,53 @@ def convert_brute_force_output_into_json(input_data: List[List[List[Tuple[float,
             structured_data.append({"games": games})
     return structured_data
 
-def format_cpp_output(amount_of_tries, cpp_output, teams_sizes, index_player_dict, teams, pitch_names, player_index_dict, num_active_players, players):
+def format_cpp_output(cpp_output, index_player_dict, teams, pitch_names, num_active_players, players, index_allocated_players):
     teams_names = list(teams.keys())
-    formated = []
-    for i, _ in enumerate(amount_of_tries):
-        output = {
-            "pitches": {},
-            "teams_size": teams_sizes[i],
-            "difference": 0,
-            "sitting_out": 0
-        }
-        for game in cpp_output[i]:
-            difference, teams_indexes = game
-            output["difference"] = difference
-            for pitch_index, pitch_name in enumerate(pitch_names):
-                team1 = teams_indexes[pitch_index * 2]
-                team1_allocated_players_indexes = [int(player_index_dict[player]) for player in teams[list(teams.keys())[pitch_index*2]]["players"]]
-                team1_complete = team1 + team1_allocated_players_indexes
-                team2 = teams_indexes[pitch_index * 2 + 1]
-                team2_allocated_players_indexes = [int(player_index_dict[player]) for player in teams[list(teams.keys())[pitch_index*2+1]]["players"]]
-                team2_complete = team2 + team2_allocated_players_indexes
-                output["pitches"][pitch_name] = {
-                    teams_names[pitch_index*2]: [{index_player_dict[index_player]: players[index_player_dict[index_player]]["primaryScore"]} for index_player in team1_complete],
-                    teams_names[pitch_index*2+1]: [{index_player_dict[index_player]: players[index_player_dict[index_player]]["primaryScore"]} for index_player in team2_complete]
+    formatted = []
+
+    for team_size_possible_games in cpp_output:
+        team_sizes = team_size_possible_games["teams_sizes"]
+        sitting_out = num_active_players - sum(team_sizes)
+        for possible_game in team_size_possible_games["possible_games"]:
+            output = {
+                "pitches": {},
+                "teams_size": team_sizes,
+                "difference": possible_game["difference"],
+                "sitting_out": sitting_out
+            }
+            for i in range(len(possible_game["teams"]) // 2):
+                team1_indices = possible_game["teams"][i * 2]
+                team2_indices = possible_game["teams"][i * 2 + 1]
+
+                team1_complete = [
+                    {
+                        index_player_dict[player_index]: players[index_player_dict[player_index]]["primaryScore"]
+                    }
+                    for player_index in team1_indices
+                ]
+
+                team1_complete += [{index_player_dict[player_index]: players[index_player_dict[player_index]]["primaryScore"]} for player_index in index_allocated_players[i*2]]
+
+                team2_complete = [
+                    {
+                        index_player_dict[player_index]: players[index_player_dict[player_index]]["primaryScore"]
+                    }
+                    for player_index in team2_indices
+                ]
+
+                team2_complete += [{index_player_dict[player_index]: players[index_player_dict[player_index]]["primaryScore"]} for player_index in index_allocated_players[i*2+1]]
+
+                output["pitches"][pitch_names[i]] = {
+                    teams_names[i * 2]: {
+                        "players": team1_complete,
+                        "team_score": possible_game["teams_scores"][i * 2]
+                    },
+                    teams_names[i * 2 + 1]: {
+                        "players": team2_complete,
+                        "team_score": possible_game["teams_scores"][i * 2 + 1]
+                    }
                 }
-            sum_players_playing = 0
-            for team_player_indexes in teams_indexes:
-                sum_players_playing += len(team_player_indexes)
-            output["sitting_out"] = num_active_players - sum_players_playing
-            formated.append(output)
-    return formated
+
+            formatted.append(output)
+
+    return formatted
