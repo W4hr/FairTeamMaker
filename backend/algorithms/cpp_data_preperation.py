@@ -48,7 +48,7 @@ def format_cpp_output(cpp_output, index_player_dict, teams, pitch_names, num_act
 
     for team_size_possible_games in cpp_output:
         team_sizes = team_size_possible_games["teams_sizes"]
-        sitting_out = num_active_players - sum(team_sizes)
+        sitting_out = num_active_players - (sum(team_sizes) + len([x for xs in index_allocated_players for x in xs]))
         for possible_game in team_size_possible_games["possible_games"]:
             output = {
                 "pitches": {},
