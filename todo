@@ -1,5 +1,5 @@
 - add dispersion quantifier to data["setttings"]
 - rework css for frontend (add consitency)
-- add permissiom management
+- add permissiom management (administration interface)
 - add logs to front and backend
 - add other balancing algorythms

@@ -514,6 +514,12 @@ function build_player_preview(data, player_name){
             Object.keys(selected_save_data_preview.pairPerformance).forEach(pairPerformancePlayer => {
                 delete selected_save_data_preview.pairPerformance[pairPerformancePlayer][player_to_delete_name];
             })
+            Object.keys(selected_save_data_preview.teams).forEach(team_name => {
+                if (selected_save_data_preview.teams[team_name].players.includes(player_to_delete_name)){
+                    const index_player_in_team = selected_save_data_preview.teams[team_name].players.indexOf(player_to_delete_name) // remove player from allocated to teams array
+                    selected_save_data_preview.teams[team_name].players.splice(index_player_in_team, 1)
+                }
+            })
             selected_save_data_preview["number_of_players"] -= 1;
             document.getElementById("properties_player_count_input").setAttribute("placeholder", selected_save_data_preview["number_of_players"])
 
@@ -1740,6 +1746,14 @@ function build_pitches(project_data){
     const players = Object.keys(project_data.players)
     const unallocated_players = players.filter(player => !allocated_players.includes(player))
     const pitches_container = document.getElementById("analyze_results_pitches")
+    pitches_container.innerHTML = `
+    <div id="analyze_configure_add_pitch_container">
+        <div id="analyze_configure_add_pitch_button">
+            <img src="frontend/UI/img/icon/add.svg" alt="Add Pitch">
+            <p>Spielfeld hinzufügen</p>
+        </div>
+    </div>`
+    initializeAddPitchButton()
     project_data["pitches"].forEach((pitch_name, pitch_index) => {
         const team1 = teams_names_list[pitch_index*2]
         const team2 = teams_names_list[pitch_index*2+1]
