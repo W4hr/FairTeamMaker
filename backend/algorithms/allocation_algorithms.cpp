@@ -110,7 +110,7 @@ std::vector<py::dict> convert_results_to_dict(const std::vector<GamesCombination
     return results;
 }
 
-std::tuple<double, std::vector<double>> calculate_score_difference(std::vector<std::vector<int>> game, std::vector<std::vector<int>> players_allocated_teams, std::vector<double> player_scores, std::vector<std::vector<double>> player_to_player) {
+std::tuple<double, std::vector<double>> calculate_score_difference(std::vector<std::vector<int>> game, std::vector<std::vector<int>> players_allocated_teams, std::vector<double> player_scores, std::vector<std::vector<double>> player_to_player, double (*difference_function)(std::vector<double>)) {
     std::vector<std::vector<int>> combined_teams;
     combined_teams.reserve(game.size());
     for (size_t i = 0; i < game.size(); ++i) {
@@ -146,13 +146,29 @@ std::tuple<double, std::vector<double>> calculate_score_difference(std::vector<s
         game_scores.push_back(team_scores[t] + player_to_player_scores_teams[t]);
     }
 
+    double difference_scores = difference_function(game_scores);
+
+    return std::make_tuple(difference_scores, game_scores);
+}
+
+double calculate_difference(std::vector<double> game_scores){
     double difference_scores = 0;
 
     for (size_t t = 0; t < game_scores.size(); t += 2) {
         difference_scores += std::fabs(game_scores[t] - game_scores[t + 1]);
     }
+    return difference_scores;
+}
 
-    return std::make_tuple(difference_scores, game_scores);
+double calculate_interchangeble_difference(std::vector<double> game_scores){
+    double difference_scores = 0;
+
+    for (size_t t = 0; t < game_scores.size(); t++) {
+        for (size_t i = 0; i < game_scores.size(); i++){
+            difference_scores += std::fabs(game_scores[t] - game_scores[i]);
+        }
+    }
+    return difference_scores;
 }
 
 // Brute Force Algorythm
@@ -164,9 +180,12 @@ std::vector<py::dict> brute_force(
     const std::vector<double>& player_data,
     std::vector<int>& indexes_players_unallocated,
     int len_leaderboard,
-    const std::vector<std::vector<double>>& player_to_player
+    const std::vector<std::vector<double>>& player_to_player,
+    bool interchangeable
     ){
     std::vector<GamesCombinations> best_games;
+
+    double (*difference_function)(std::vector<double>) = interchangeable? calculate_interchangeble_difference : calculate_difference;
 
     for (size_t i = 0; i < amount_of_tries.size(); ++i) {
         std::vector<int> current_teams_sizes = team_sizes[i];
@@ -191,7 +210,7 @@ std::vector<py::dict> brute_force(
                     teams.push_back(team);
                     start += *team_size;
                 }
-                std::tie(game_difference, game_scores) = calculate_score_difference(teams, players_allocated_teams, player_data, player_to_player);
+                std::tie(game_difference, game_scores) = calculate_score_difference(teams, players_allocated_teams, player_data, player_to_player, difference_function);
 
                 if (top_vector.size() < len_leaderboard || game_difference < top_vector.top().difference) {
                     std::string string_teams = serialize(teams);
@@ -235,7 +254,7 @@ std::vector<py::dict> brute_force(
                         teams.push_back(team);
                         start += *team_size;
                     }
-                    std::tie(game_difference, game_scores) = calculate_score_difference(teams, players_allocated_teams, player_data, player_to_player);
+                    std::tie(game_difference, game_scores) = calculate_score_difference(teams, players_allocated_teams, player_data, player_to_player, difference_function);
 
                     if (top_vector.size() < len_leaderboard || game_difference < top_vector.top().difference) {
                         std::string string_teams = serialize(teams);
@@ -283,10 +302,13 @@ std::vector<py::dict> random(
     const std::vector<double>& player_data,
     std::vector<int>& indexes_players_unallocated,
     int len_leaderboard,
-    const std::vector<std::vector<double>>& player_to_player
+    const std::vector<std::vector<double>>& player_to_player,
+    bool interchangeable
 ) {
     std::vector<GamesCombinations> best_games;
     
+    double (*difference_function)(std::vector<double>) = interchangeable? calculate_interchangeble_difference : calculate_difference;
+
     std::random_device rd;
     std::default_random_engine rng(rd());
 
@@ -314,7 +336,7 @@ std::vector<py::dict> random(
                     teams.push_back(team);
                     start += *team_size;
                 }
-                std::tie(game_difference, game_scores) = calculate_score_difference(teams, players_allocated_teams, player_data, player_to_player);
+                std::tie(game_difference, game_scores) = calculate_score_difference(teams, players_allocated_teams, player_data, player_to_player, difference_function);
 
                 if (top_vector.size() < len_leaderboard || game_difference < top_vector.top().difference) {
                     std::string string_teams = serialize(teams);
@@ -359,7 +381,7 @@ std::vector<py::dict> random(
                         teams.push_back(team);
                         start += *team_size;
                     }
-                    std::tie(game_difference, game_scores) = calculate_score_difference(teams, players_allocated_teams, player_data, player_to_player);
+                    std::tie(game_difference, game_scores) = calculate_score_difference(teams, players_allocated_teams, player_data, player_to_player, difference_function);
 
                     if (top_vector.size() < len_leaderboard || game_difference < top_vector.top().difference) {
                         std::string string_teams = serialize(teams);
@@ -409,7 +431,8 @@ PYBIND11_MODULE(game_calculator, m) {
         py::arg("player_data"),
         py::arg("indexes_players_unallocated"),
         py::arg("len_leaderboard"),
-        py::arg("player_to_player")
+        py::arg("player_to_player"),
+        py::arg("interchangeable")
     );
 
     m.def("random", &random, "Generate possible games using random shuffling",
@@ -419,6 +442,7 @@ PYBIND11_MODULE(game_calculator, m) {
         py::arg("player_data"),
         py::arg("indexes_players_unallocated"),
         py::arg("len_leaderboard"),
-        py::arg("player_to_player")
+        py::arg("player_to_player"),
+        py::arg("interchangeable")
     );
 }

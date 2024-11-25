@@ -18,24 +18,28 @@ algorithm_logger.addHandler(file_handler)
 algorithm_logger.setLevel(logging.DEBUG)
 
 
-### THIS IS THE FASTER CPP/PYTHON BRUTE FORCE IMPLEMENTATION
+### THIS IS THE FASTER CPP/PYTHON BRUTE FORCE/RANDOM IMPLEMENTATION
 
-def get_teams(teams : Dict[str, dict], 
-              matches: Dict[str, str], 
-              maxDifferenceTeams: int, 
-              maxDifferencePitch: int, 
-              player_count: int, 
-              maximum_number_players_sitting_out: int,
-              desired_amount_of_combinations: int,
-              dispersion_tries: int,
-              players: Dict[str, Dict[str, int]],
-              pairPerformance: Dict[str, Dict[str, int]],
-              amount_best_games: int,
-              pitchNames: List[str],
-              algorithm_choice: str,
-              normalization_settings: Dict[str, Dict[str, any]]
-              ):
+def get_teams(data: dict):
     try:
+        pitchNames: List[str] = data["pitches"]
+        teams: Dict[str, dict] = data["teams"]
+        matches: Dict[str, str] = data["matches"]
+        player_count: int = data["number_of_players"]
+        players: Dict[str, Dict[str, int]] = data["players"]
+        pairPerformance: Dict[str, Dict[str, int]] = data["pairPerformance"]
+
+        maxDifferenceTeams: int = data["settings"]["maxDifferenceTeams"]
+        maxDifferencePitch: int = data["settings"]["maxDifferencePitches"]
+        interchangeable : bool = data["settings"]["interchangeableTeams"]
+        maximum_number_players_sitting_out: int = data["settings"]["maxSittingOut"]
+        algorithm_choice: str = data["settings"]["algorithmChoice"]
+        normalization_settings: Dict[str, Dict[str, any]] = data["settings"]["normalizationSettings"]
+
+        desired_amount_of_combinations: int = 700000
+        dispersion_tries: float = 0.5
+        amount_best_games: int = 5
+
         temporary_matches = {key: value for key, value in matches.items()}
         temporary_matches.update({value: key for key, value in matches.items()})
         algorithm_logger.debug("initializing temporary matches succeeded")
@@ -90,7 +94,8 @@ matrix_pairPerformance = {matrix_pairPerformance}
                                                     index_skill_dict,
                                                     index_unallocated_players,
                                                     amount_best_games,
-                                                    matrix_pairPerformance
+                                                    matrix_pairPerformance,
+                                                    interchangeable
                                                     )
         elif algorithm_choice == "random":
             best_games_player_indexes = random(teams_sizes,
@@ -99,7 +104,8 @@ matrix_pairPerformance = {matrix_pairPerformance}
                                             index_skill_dict,
                                             index_unallocated_players,
                                             amount_best_games,
-                                            matrix_pairPerformance
+                                            matrix_pairPerformance,
+                                            interchangeable
                                             )
         algorithm_logger.debug("calculating possibilities succeeded")
         algorithm_logger.debug(f"cpp_output = {best_games_player_indexes}")
