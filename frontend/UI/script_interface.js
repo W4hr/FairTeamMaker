@@ -2199,8 +2199,13 @@ function initializeNormSettingsCustomWeight(){
         }
     })
     const weight_input = document.getElementById("normalization_settings_weight_custom")
+    const weight_input_number = document.getElementById("normalization_settings_weight_custom_display")
     weight_input.addEventListener("input", () => {
-        document.getElementById("normalization_settings_weight_custom_display").innerText = weight_input.value
+        weight_input_number.value = weight_input.value
+    })
+    weight_input_number.addEventListener("input", () => {
+        weight_input.value = weight_input_number.value
+
     })
 }
 
