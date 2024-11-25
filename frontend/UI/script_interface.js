@@ -1958,7 +1958,7 @@ function build_results_preview(response_data){
 
         const result_possibilities_list_option_details_skill_diff = document.createElement("p")
         result_possibilities_list_option_details_skill_diff.classList.add("result_possibilities_list_option_details")
-        result_possibilities_list_option_details_skill_diff.innerText = `skill difference: ${possibility["difference"]}`
+        result_possibilities_list_option_details_skill_diff.innerText = `skill difference: ${Math.round(possibility["difference"]*100)/100}`
 
         const result_possibilities_list_option_details_sitting_out = document.createElement("p")
         result_possibilities_list_option_details_sitting_out.classList.add("result_possibilities_list_option_details")
@@ -2052,7 +2052,7 @@ function build_result(possible_game){
                 results_team_player_name.innerText = player_name
                 
                 const results_team_player_score = document.createElement("p")
-                results_team_player_score.innerText = player_score
+                results_team_player_score.innerText = Math.round(player_score*100)/100
 
                 results_team_player.appendChild(results_team_player_name)
                 results_team_player.appendChild(results_team_player_score)
@@ -2062,7 +2062,7 @@ function build_result(possible_game){
             results_team_teamscore.classList.add("results_team_teamscore")
             results_team_teamscore.setAttribute("type", "text")
             results_team_teamscore.disabled = true
-            results_team_teamscore.value = pitch_data[team_name].team_score
+            results_team_teamscore.value = Math.round(pitch_data[team_name].team_score *100)/100
             team_scores.push(pitch_data[team_name].team_score)
 
             results_team_title_container.appendChild(results_team_title)
@@ -2073,7 +2073,7 @@ function build_result(possible_game){
             results_team_container.appendChild(results_team_teamscore)
             results_teams_container.appendChild(results_team_container)
         })
-        results_pitch_difference.value = Math.abs(team_scores[0] - team_scores[1])
+        results_pitch_difference.value = Math.round(Math.abs(team_scores[0] - team_scores[1])*100)/100
 
         results_pitch_title_container.appendChild(results_pitch_title)
         results_pitch_title_container.appendChild(results_pitch_difference)
