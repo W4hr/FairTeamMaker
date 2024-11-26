@@ -289,10 +289,10 @@
                     <label for="add_project_autosave_option" id="add_project_autosave_option_text">Auto-Save</label>
                     <button class="checkboxes" id="add_project_autosave_option"></button>
                 </div>
-                <label for="project_description_input">Beschreibung: </label>
+                <label for="project_description_input">Description: </label>
                 <textarea rows="2" id="add_project_description_input"></textarea>
                 <div class="align">
-                    <p>Farbe auswählen: </p>
+                    <p>Select Color: </p>
                     <input type="color" name="" id="project_color_input" value="#ffffff">
                 </div>
                 <div class="display_flex space_around">
@@ -306,7 +306,7 @@
                         <li>
                             <div id="add_new_save">
                                 <img src="frontend/UI/img/icon/add.svg">
-                                <p id="add_new_save_text_field">Neues Projekt</p>
+                                <p id="add_new_save_text_field">New Project</p>
                             </div>
                         </li>
                     </ul>
@@ -322,7 +322,7 @@
                         <div class="properties_name"><p>Name:</p><input type="text" id="properties_name_input" placeholder="Name"></div>
                         <div class="properties_player"><p>Players:</p> <input type="text" disabled placeholder="" id="properties_player_count_input"></div>
                     </div>
-                    <div class="properties_notes"><p>Beschreibung: </p><input type="text" id="properties_notes_input" placeholder="Description"></div>
+                    <div class="properties_notes"><p>Description: </p><input type="text" id="properties_notes_input" placeholder="Description"></div>
                     <div class="properties_list_players">
                         <ul id="properties_list_players_list">
                         </ul>
@@ -336,29 +336,29 @@
                 <div class="window_background_dimming hide" id="add_row_window_dimming"></div>
                 <div id="add_column_window" class="hide">
                     <div class="input-group">
-                        <label for="add_column_window_name">Kategorie Name: </label>
+                        <label for="add_column_window_name">Category Name: </label>
                         <input type="text" placeholder="Bezeichnung der Kategorie" id="add_column_window_name" class="add_column_input">
                     </div>
                     <div class="input-group">
-                        <label for="add_column_window_min">Zahlen von </label>
+                        <label for="add_column_window_min">Numbers from </label>
                         <input type="number" id="add_column_window_min" class="add_column_input"> 
-                        <label for="add_column_window_max"> bis </label>
+                        <label for="add_column_window_max"> to </label>
                         <input type="number" class="add_column_input" id="add_column_window_max">
                     </div>
                     <div class="input-group">
-                        <label for="add_column_window_default_number">Standard Wert festlegen</label>
+                        <label for="add_column_window_default_number">Set default value</label>
                         <input id="add_column_window_default_value" type="number">
                     </div>
                     <div class="input-group">
-                        <label for="select_type">Typ für Berechnung</label>
+                        <label for="select_type">Calculation type</label>
                         <select name="select_type" id="add_column_window_calc_type" class="add_column_input">
-                            <option value="add">Individuum</option>
+                            <option value="add">Individually</option>
                             <option value="multiply">Team</option>
                         </select>
                     </div>
                     <div id="add_column_window_buttons">
-                        <button id="add_column_window_close">Abbrechen</button>
-                        <button id="add_column_window_add">Spalte hinzufügen</button>
+                        <button id="add_column_window_close">Cancle</button>
+                        <button id="add_column_window_add">Add Column</button>
                     </div>
                 </div>
                 <div id="edit_player_table_container">
@@ -373,9 +373,9 @@
                 </div>
                 <div id="edit_data_tab_buttons">
                     <a href="#table_player_to_player">
-                        <button id="table_player_to_player_toggler" class="lightblue_button">Spieler zu Spieler</button>
+                        <button id="table_player_to_player_toggler" class="lightblue_button">Pair Performance</button>
                     </a>
-                    <button class="red_button">Änderungen Verwerfen</button>
+                    <button class="red_button">Discard Changes</button>
                     <button class="blue_button" id="edit_data_tab_analyze_tab">Analyze</button>
                 </div>
                 <div id="table_player_to_player_window" class="hide">
@@ -480,14 +480,14 @@
                     <div id="analyze_configure_add_pitch_container">
                         <div id="analyze_configure_add_pitch_button">
                             <img src="frontend/UI/img/icon/add.svg" alt="Add Pitch">
-                            <p>Spielfeld hinzufügen</p>
+                            <p>Add Pitch</p>
                         </div>
                     </div>
                 </div>
                 <div id="analyze_settings">
-                    <h1 class="analyze">Einstellungen</h1>
+                    <h1 class="analyze">Settings</h1>
                     <div class="analyze_settings_container" id="analyze_settings_interchangeable_toggle_container">
-                        <p>Austauschbare Teams</p>
+                        <p>Interchangeable Teams</p>
                         <div class="toggle_container">
                             <label class="toggle">
                                 <input type="checkbox" id="analyze_settings_interchangeable_toggle">
@@ -497,15 +497,15 @@
                         </div>
                     </div>
                     <div class="analyze_settings_container">
-                        <p>Maximale Anzahl aussetzende Spieler</p>
+                        <p>Max Excluded Players</p>
                         <input type="number" placeholder="0" id="analyze_settings_max_sit_out_players" class="input_number">
                     </div>
                     <div class="analyze_settings_container">
-                        <p>Maximaler Unterschied in Spieleranzahl zwischen Teams</p>
+                        <p>Max Player Count Difference Between Teams</p>
                         <input type="number" placeholder="0" id="analyze_settings_max_difference_teams" class="input_number">
                     </div>
                     <div class="analyze_settings_container">
-                        <p>Maximaler Unterschied in Spieleranzahl zwischen Spielfeldern</p>
+                        <p>Max Player Count Difference Between Pitches</p>
                         <input type="number" placeholder="0" id="analyze_settings_max_difference_pitches" class="input_number">
                     </div>
                     <div class="analyze_settings_container">
