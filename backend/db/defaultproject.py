@@ -18,13 +18,14 @@ def create_default_starter_project():
             "color": "#529955",
             "number_of_players": 2,
             "matches": {},
+            "pitches": ["Pitch 1"],
             "teams": {},
             "settings": {
                 "interachangableTeams": True,
                 "maxSittingOut": 2,
                 "maxDifferenceTeams": 2,
                 "maxDifferencePitches": 2,
-                "auto-save": "False"
+                "auto-save": False
             },
             "categories": [],
             "players": {

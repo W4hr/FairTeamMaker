@@ -212,6 +212,9 @@ function initializeAddRow(){
         primaryScoreCellInput.setAttribute("type", "number");
         primaryScoreCellInput.value = 0;
         primaryScoreCellInput.classList.add("table_input_number");
+        primaryScoreCellInput.addEventListener("change", () => {
+            update_player_primary_score_upon_change(NewNameCell_textarea, primaryScoreCellInput)
+        })
         primaryScoreCell.appendChild(primaryScoreCellInput);
         NewRow.appendChild(primaryScoreCell)
 
@@ -257,9 +260,13 @@ function initializeAddRow(){
         });
         selected_save_data_edit["number_of_players"] += 1
         build_player_to_player_table(selected_save_data_edit);
-        apply_changes_to_skills_single_player(NewRow);
     });
 };
+
+function update_player_primary_score_upon_change(name_input_field, primary_score_input_field){
+    const player_name = name_input_field.value
+    selected_save_data_edit["players"][player_name]["primaryScore"] = Number(primary_score_input_field.value)
+}
 
 // Preview selected save
 
@@ -694,6 +701,9 @@ function build_player_table_body(selected_save_data){
         edit_player_table_player_skill_input.setAttribute("type", "number")
         edit_player_table_player_skill_input.setAttribute("value", selected_save_data["players"][player].primaryScore)
         edit_player_table_player_skill_input.classList.add("table_input_number")
+        edit_player_table_player_skill_input.addEventListener("change", () => {
+            update_player_primary_score_upon_change(edit_player_table_player_name_input, edit_player_table_player_skill_input)
+        })
         edit_player_table_player_skill.appendChild(edit_player_table_player_skill_input)
 
         edit_player_table_row.appendChild(edit_player_table_player_attendance)
@@ -737,9 +747,6 @@ function initializeLoadButton(){
             document.querySelector('[data-tab-target="#import_data_tab"]').classList.remove("active")
             document.querySelector('#edit_data_tab').classList.add("active_tab")
             document.querySelector('[data-tab-target="#edit_data_tab"]').classList.add("active")
-            
-            apply_changes_to_attendance();
-            apply_changes_to_skills();
         }
     })
 }
@@ -786,7 +793,7 @@ function build_player_to_player_table_thead(selected_save_data){
 
 function build_player_to_player_table_tbody(selected_save_data){
     const player_to_player_tbody = document.getElementById("table_player_to_player_tbody")
-    const players_pairPerformance = Object.keys(selected_save_data.pairPerformance);
+    const players_pairPerformance = Object.keys(selected_save_data_edit.pairPerformance);
     players_pairPerformance.forEach(player1 => {
         const player_to_player_tbody_player = document.createElement("tr")
         const player_to_player_tbody_player_name = document.createElement("td")
@@ -802,8 +809,7 @@ function build_player_to_player_table_tbody(selected_save_data){
             player_to_player_tbody_player_score_input.classList.add("table_input_number")
             player_to_player_tbody_player_score_input.classList.add("table_input_number_ptp")
             player_to_player_tbody_player_score_input.addEventListener("change", () => {
-                const ptp_table = document.getElementById("table_player_to_player")
-                ptp_table.rows[player_to_player_tbody_player_score.cellIndex].cells[player_to_player_tbody_player_score.rowIndex].children[0].value = player_to_player_tbody_player_score_input.value
+                update_player_to_player_upon_change(player_to_player_tbody_player_name, player_to_player_tbody_player_score_input)
             })
             if (player1 === player2){
                 player_to_player_tbody_player_score_input.value = 0;
@@ -819,59 +825,28 @@ function build_player_to_player_table_tbody(selected_save_data){
     })
 }
 
-function apply_changes_to_attendance(){
-    document.querySelectorAll(".button_activation_attendance").forEach((attendance_button, index) => {
-        attendance_button.addEventListener("click", () => {
-            const player_name = attendance_button.closest("tr").id
-            selected_save_data_edit.players[player_name].attendanceState = !selected_save_data_edit.players[player_name].attendanceState
-        })
-    })
-}
-
-function apply_changes_to_skills(){
-    document.querySelectorAll(".table_input_number").forEach(changed_input => {
-        changed_input.addEventListener("change", () => {
-            if (isNumericalNoDecimalNotEmpty(changed_input.value)){
-                changed_input_row_Index = changed_input.closest("tr").rowIndex - 1
-                if (changed_input.closest("td").cellIndex == 2){
-                    selected_save_data_edit.players[Object.keys(selected_save_data_edit.players)[changed_input_row_Index]].primaryScore = Number(changed_input.value)
-                } else if (changed_input.closest("td").cellIndex > 2){
-                    changed_input_cell_Index = changed_input.closest("td").cellIndex - 2
-                    const changed_categorie = document.getElementById("edit_player_table").rows[0].cells[changed_input_cell_Index + 2]
-                    selected_save_data_edit.players[Object.keys(selected_save_data_edit.players)[changed_input_row_Index]].scores[changed_categorie.innerText] = Number(changed_input.value)
-                } else {
-                    show_message("The changes could not be applied", "warning")
-                    console.error("The changed number could not be applied")
-                }
-                console.log(selected_save_data)
-            } else {
-                show_message("One Value is either empty or not a number. Please remove any letters or decimal points.", "warning")
-            }
-        })
-    })
-}
-
-function apply_changes_to_skills_single_player(player){
-    player.querySelectorAll(".table_input_number").forEach(changed_input => {
-        changed_input.addEventListener("change", () => {
-            if (isNumericalNoDecimalNotEmpty(changed_input.value)){
-                changed_input_row_Index = changed_input.closest("tr").rowIndex - 1
-                if (changed_input.closest("td").cellIndex == 2){
-                    selected_save_data_edit.players[Object.keys(selected_save_data_edit.players)[changed_input_row_Index]].primaryScore = Number(changed_input.value)
-                } else if (changed_input.closest("td").cellIndex > 2){
-                    changed_input_cell_Index = changed_input.closest("td").cellIndex - 2
-                    const changed_categorie = document.getElementById("edit_player_table").rows[0].cells[changed_input_cell_Index + 2]
-                    selected_save_data_edit.players[Object.keys(selected_save_data_edit.players)[changed_input_row_Index]].scores[changed_categorie.innerText] = Number(changed_input.value)
-                } else {
-                    show_message("The changes could not be applied", "warning")
-                    console.error("The changed number could not be applied")
-                }
-                console.log(selected_save_data)
-            } else {
-                show_message("One Value is either empty or not a number. Please remove any letters or decimal points.", "warning")
-            }
-        })
-    })
+function update_player_to_player_upon_change(name_cell, pairPerformance_input_cell) {
+    const ptp_table = document.getElementById("table_player_to_player");
+    const row = pairPerformance_input_cell.parentElement.parentElement;
+    const rowIndex = Array.from(ptp_table.rows).indexOf(row);
+    const cellIndex = Array.from(row.cells).indexOf(pairPerformance_input_cell.parentElement);
+    ptp_table.rows[cellIndex].cells[rowIndex].querySelector(".table_input_number_ptp").value = pairPerformance_input_cell.value;
+    const player1_name = name_cell.innerText;
+    const ptp_thead = document.getElementById("table_player_to_player_thead");
+    const player2_name = ptp_thead.rows[0].cells[cellIndex].innerText;
+    if (
+        selected_save_data_edit.pairPerformance[player1_name] &&
+        selected_save_data_edit.pairPerformance[player1_name][player2_name] &&
+        selected_save_data_edit.pairPerformance[player2_name] &&
+        selected_save_data_edit.pairPerformance[player2_name][player1_name]
+    ) {
+        selected_save_data_edit.pairPerformance[player1_name][player2_name] = Number(pairPerformance_input_cell.value);
+        selected_save_data_edit.pairPerformance[player2_name][player1_name] = Number(pairPerformance_input_cell.value);
+    } else {
+        show_message(`There has been an error applying the changes to ${player1_name} & ${player2_name}.`, "warning");
+        console.error(`There has been an error applying the changes to ${player1_name} & ${player2_name}.`);
+    }
+    console.log(`rowIndex = ${rowIndex}, cellIndex = ${cellIndex}, player1_name = ${player1_name}, player2_name = ${player2_name}, updatedValue = ${pairPerformance_input_cell.value}`);
 }
 
 var list_players = []
@@ -938,7 +913,8 @@ function initializeDownloadButton(){
 }
 
 function initializeLoadProjectInput(){
-    document.getElementById("json_import_input").addEventListener("change", () => {
+    const import_data_input = document.getElementById("json_import_input")
+    import_data_input.addEventListener("change", () => {
         const file = import_data_input.files[0];
         if (file) {
             const reader = new FileReader();
@@ -1554,14 +1530,13 @@ function update_player_to_player_upon_name_change(textarea_name, cell_textarea){
         const changed_name_new_name = textarea_name.value;
 
         // Apply changes in the analyze Tab
-        apply_changes_to_players_in_teams(changed_name_previous_name, changed_name_new_name)
+        update_player_name_in_ui_upon_change(changed_name_previous_name, changed_name_new_name)
 
         selected_save_data_edit.players[changed_name_new_name] = selected_save_data_edit.players[changed_name_previous_name]
         delete selected_save_data_edit.players[changed_name_previous_name]
 
         selected_save_data_edit.pairPerformance[changed_name_new_name] = selected_save_data_edit.pairPerformance[changed_name_previous_name];
         delete selected_save_data_edit.pairPerformance[changed_name_previous_name];
-        console.log
 
         for (let player in selected_save_data_edit.pairPerformance){
             if (selected_save_data_edit.pairPerformance[player][changed_name_previous_name] !== undefined){
@@ -1754,20 +1729,22 @@ function build_pitches(project_data){
         </div>
     </div>`
     initializeAddPitchButton()
-    project_data["pitches"].forEach((pitch_name, pitch_index) => {
-        const team1 = teams_names_list[pitch_index*2]
-        const team2 = teams_names_list[pitch_index*2+1]
+    if (project_data["pitches"]){
+        project_data["pitches"].forEach((pitch_name, pitch_index) => {
+            const team1 = teams_names_list[pitch_index*2]
+            const team2 = teams_names_list[pitch_index*2+1]
 
-        const num_players_team1 = project_data.teams[team1].num_players
-        const num_players_team2 = project_data.teams[team2].num_players
-        const players_team1 = project_data.teams[team1].players
-        const players_team2 = project_data.teams[team2].players
+            const num_players_team1 = project_data.teams[team1].num_players
+            const num_players_team2 = project_data.teams[team2].num_players
+            const players_team1 = project_data.teams[team1].players
+            const players_team2 = project_data.teams[team2].players
 
-        const players = project_data.players
+            const players = project_data.players
 
-        const pitch = build_pitch(pitch_name, team1, num_players_team1, players_team1, team2, num_players_team2, players_team2, unallocated_players, players)
-        pitches_container.appendChild(pitch)
-    })
+            const pitch = build_pitch(pitch_name, team1, num_players_team1, players_team1, team2, num_players_team2, players_team2, unallocated_players, players)
+            pitches_container.appendChild(pitch)
+        })
+    }
 }
 
 function build_pitch(pitch_name, team_1, num_players_team1, players_team1, team_2, num_players_team2, players_team2, unallocated_players, players){

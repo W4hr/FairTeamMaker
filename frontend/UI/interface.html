@@ -25,51 +25,260 @@
     <div class="tab-content">
         <div id="introduction_tab" data-tab-content class="active_tab">
             <div class="introduction_container">
-                <h1 class="introduction_heading">Einführung</h1>
-                <div class="introduction_warning">Warnung: Diese Website ist noch nicht für Handys im Hochformat optimiert. Bitte benutzen Sie ein PC. Website ist noch in Entwicklung und momentan reines Front-End. Das bedeutet, dass alles, was auf dem PC selbst passiert, weitestgehend funktioniert, aber alles, was auf dem Server passiert, noch nicht. Außerdem sind Englisch und Deutsch noch durcheinander.</div>
-                <div class="introduction_section">
-                    <h2 class="introduction_section_heading">Ziel des Projektes</h2>
-                    <p>Das Ziel dieses Projektes ist es, eine voll funktionsfähige Website zu erstellen (mit Front- und Backend), die anhand eines Scores für jeden Spieler faire Teams bilden kann. Der Fokus liegt dabei auf Variabilität und Benutzerfreundlichkeit.</p>
-                    <p>Diese Einführung soll dir, Dani, erklären, wie das Ganze funktioniert, was ich mir dabei gedacht habe und um dir meine Fragen zu stellen.</p>
+                <h1 class="introduction_heading">Introduction</h1>
+                <div class="introduction_warning">
+                    Note: This website is not yet optimized for mobile devices in portrait mode. Please use a PC for the best experience.
                 </div>
                 <div class="introduction_section">
-                    <h2 class="introduction_section_heading">Tab-Übersicht</h2>
-                    <p>Ich gehe einfach mal jeden Tab durch und erkläre, was alles bedeutet.</p>
-                    <h3 class="introduction_bold">Import-Data Tab</h3>
-                    <p>Dieser Tab ist dafür gedacht, einfachen und schnellen Zugriff auf vergangene Projekte, wie Klassen oder Gruppen, zu haben.</p>
+                    <h2 class="introduction_section_heading">Table of Contents</h2>
                     <ul class="introduction_list">
-                        <li class="introduction_list_item">Das linke Fenster in diesem Tab ist dafür gedacht, ein auf dem Server gespeichertes Projekt auszuwählen. Man kann das Projekt manuell und automatisch (alle paar Minuten) speichern lassen, um einfach und schnell von überall auf die Projekte zugreifen zu können. Ich habe schon eine Login-Seite, die ich noch einbinden muss, um für jedem Benutzer private Projekte zu ermöglichen.</li>
-                        <li class="introduction_list_item">Das Upload-File-Fenster in der Mitte ist dafür gedacht, dass man die Projektdatei über dieses Fenster ausgewählt und importieren kann. Die Idee ist, dass man sich das Projekt jeder Zeit als Datei herunterladen kann. Die Datei wird eine JSON-Datei sein, die man wie eine Textdatei bearbeiten kann.</li>
-                        <li class="introduction_list_item">Im rechten Fenster kann man dann die Daten des Projekts einsehen, das man entweder im linken Fenster ausgewählt hat oder über das mittlere Fenster geladen hat.</li>
+                        <li class="introduction_list_item"><a href="#project-goal">Project Goal</a></li>
+                        <li class="introduction_list_item"><a href="#tab-overview">Tab Overview</a></li>
+                        <li class="introduction_list_item"><a href="#login">Login and Account Management</a></li>
+                        <li class="introduction_list_item"><a href="#import-data">Import Data Tab</a></li>
+                        <li class="introduction_list_item"><a href="#edit-data">Edit Data Tab</a></li>
+                        <li class="introduction_list_item"><a href="#analysis">Analysis Tab</a></li>
+                        <li class="introduction_list_item"><a href="#results">Results Tab</a></li>
+                        <li class="introduction_list_item"><a href="#logs">Logs Tab</a></li>
+                        <li class="introduction_list_item"><a href="#feedback">Feedback and Support</a></li>
                     </ul>
-                    <h3 class="introduction_bold">Edit-Data Tab</h3>
-                    <p>Dieser Tab ist dafür gedacht, die Spieler-Daten einfach bearbeiten zu können. Er umfasst eine Tabelle zum Bearbeiten der Punkte jedes Spielers und eine Tabelle für das Verhältnis von Spieler zu Spieler.</p>
-                    <h4 class="introduction_bold">Spielerfähigkeiten-Tabelle</h4>
-                    <p>Die erste Spalte ist zum Erfassen der Anwesenheit jedes Spielers. Man kann die Anwesenheit per Klick ein- und ausschalten. Personen, die nicht anwesend sind, werden in der Teambildung nicht berücksichtigt.</p>
-                    <p>Die zweite Spalte ist zum Eingeben der Namen der Spieler.</p>
-                    <p>Die beiden weiteren Spalten sind nur Beispiele. Die Tabelle kann um unendlich viele Spalten erweitert werden. Jede Spalte, die nach der Namensspalte kommt, ist eine Spalte zum Vergeben von Scores, wie gut jeder einzelne Spieler ist. Wenn man eine Score-Spalte hinzufügt, wird ein Eingabefenster erscheinen.</p>
-                    <div class="introduction_code">
-                        \( \sum_{\text{Team}} * \sum_{\text{Individuum}} \)
+                </div>
+                <div id="project-goal" class="introduction_section">
+                    <h2 class="introduction_section_heading">Project Goal</h2>
+                    <p>
+                        Welcome to FairTeamMaker, a platform designed to help you create balanced and fair teams based on player scores. This guide will walk you through the features of the website and explain how to use them effectively.
+                    </p>
+                </div>
+                <div id="tab-overview" class="introduction_section">
+                    <h2 class="introduction_section_heading">Tab Overview</h2>
+                    <p>
+                        The website is organized into six tabs, each serving a specific purpose in the team creation process. These tabs are arranged in the order you need to use them:
+                    </p>
+                    <ul class="introduction_list">
+                        <li class="introduction_list_item">Introduction</li>
+                        <li class="introduction_list_item">Import Data</li>
+                        <li class="introduction_list_item">Edit Data</li>
+                        <li class="introduction_list_item">Analysis</li>
+                        <li class="introduction_list_item">Results</li>
+                        <li class="introduction_list_item">Logs (currently empty as a placeholder for future implementation)</li>
+                    </ul>
+                </div>
+                <div id="login" class="introduction_section">
+                    <h2 class="introduction_section_heading">Login and Account Management</h2>
+                    <p>
+                        To access all features, you need to log in:
+                    </p>
+                    <ul class="introduction_list">
+                        <li class="introduction_list_item"><strong>Login</strong>: If you don't have a valid session token, you'll be redirected to the login page. You can log in with your username and password.</li>
+                        <li class="introduction_list_item"><strong>Sign Up</strong>: Create a new account with a username and password. Be careful with your password, as there's no password recovery option yet.</li>
+                        <li class="introduction_list_item"><strong>Session Duration</strong>: Your login is valid for 24 hours.</li>
+                    </ul>
+                    <p>
+                        If you're not automatically redirected, please <a href="./login">click here</a> to go to the login page.
+                    </p>
+                </div>
+                <div id="import-data" class="introduction_section">
+                    <h2 class="introduction_section_heading">Import Data Tab</h2>
+                    <p>
+                        This tab allows you to access and manage your projects easily.
+                    </p>
+                    <ol class="introduction_list">
+                        <li class="introduction_list_item"><strong>Project Selection</strong>: On the left side, you can select a project saved on the server. New users have a default project they can load and edit. You can also create a new project using the "Add Project" button, where you can set a name, description, and color for easy distinction.</li>
+                        <li class="introduction_list_item"><strong>File Upload</strong>: In the middle, you can upload a project file from your device. You can download your project as a JSON file at any time from the <strong>Analysis</strong> tab, edit it as needed, and then upload it here.</li>
+                        <li class="introduction_list_item"><strong>Project Details</strong>: On the right, you can view and edit the project's details, such as the name and description, and delete players. Currently, this is the only way to delete players. You will also see a list of all players with their names and primary skill scores.</li>
+                    </ol>
+                    <div class="introduction_image">
+                        <img src="import_data_tab.png" alt="Screenshot of the Import Data Tab" />
+                        <p class="introduction_image_caption">Screenshot of the Import Data Tab with the three important elements circled and numbered 1, 2, and 3</p>
                     </div>
-                    <p>Neue Spieler kann man einfach hinzufügen indem man eine neue Reihe einfügt.</p>
-                    <h4 class="introduction_bold">Spieler-Zu-Spieler-Tabelle</h4>
-                    <p>Diese Tabelle kann über den Knopf unten links unter der Spielerfähigkeiten-Tabelle geöffnet werden. Sie ist dafür gedacht, mehr Kontrolle darüber zu haben, wer mit wem in ein Team kommt.</p>
-                    <p>Veränderungen in der Spielerfähigkeiten-Tabelle werden direkt in diese Tabelle übernommen. Da es immer zwei Eingabefelder für jede Spielerkombination gibt, wird das zweite Eingabefeld, egal welches, automatisch geändert. Die Kombination aus zweimal demselben Spieler wird automatisch gesperrt.</p>
-                    <h3 class="introduction_bold">Analyze Tab</h3>
-                    <p>Dieser Tab lässt dich die Bedingungen des Spiels einstellen und liefert die Ergebnisse.</p>
-                    <p>Beim ersten Mal Öffnen dieses Tabs wirst du mit dem Einstellungsfenster begrüßt. Hier kann man zuerst die Anzahl der Spielfelder einstellen (1 Spielfeld = 2 Teams). Du kannst außerdem austauschbare Teams hier ein- und ausschalten. Austauschbare Teams bedeuten, dass alle Teams ungefähr gleich stark sein müssen, sodass jedes Team gegen jedes andere Team spielen kann. Ansonsten werden jede Runde neue Teams gebildet.</p>
-                    <p>Der Cancel-Button bringt dich zurück zur Spielerfähigkeiten-Tabelle. Der Analyze-Button lässt eine 2-sekündige Ladeanimation abspielen und zeigt dann ein Beispiel, wie die Ergebnisse präsentiert werden. Die Ladezeit ist derzeit künstlich. Es wird von einer Ladezeit um 1-2 Sekunden zu rechnen sein.</p>
-                    <p>Das Ergebnisfenster zeigt die Teamzusammensetzungen und deren Scores pro Spielfeld an. Wenn zuvor 2 Spielfelder in die Einstellungen eingegeben wurden, werden hier die Teams für jedes der 2 Spielfelder angezeigt. Für jedes Team wird außerdem der Endscore angezeigt, der ausgerechnet wurde. Rechts im Fenster gibt es zusätzlich eine Liste der Spieler, die aussetzen, sowie eine Liste der nicht anwesenden Spieler.</p>
                 </div>
-                <div class="introduction_section">
-                    <h2 class="introduction_section_heading">Zum Schluss noch meine Fragen:</h2>
+                <div id="edit-data" class="introduction_section">
+                    <h2 class="introduction_section_heading">Edit Data Tab</h2>
+                    <p>
+                        In this tab, you can edit player data to refine how teams are formed.
+                    </p>
+                    <ol class="introduction_list">
+                        <li class="introduction_list_item"><strong>Attendance</strong>: The first column allows you to mark whether a player is present. Players marked as absent will not be considered in team formation.</li>
+                        <li class="introduction_list_item"><strong>Player Names</strong>: The second column is for entering player names. Name changes here will automatically apply throughout the user interface.</li>
+                        <li class="introduction_list_item"><strong>Primary Skill Score</strong>: The third column is for inputting the primary skill score, which is currently the only skill considered in the team balancing algorithm.</li>
+                        <li class="introduction_list_item"><strong>Additional Categories</strong>: You can add more skill categories (e.g., strategy, endurance) by clicking the "+" button on the right side of the table. However, these additional categories are not yet implemented in the back-end and will not affect team balancing at this time.</li>
+                    </ol>
+                    <div class="introduction_image">
+                        <img src="edit_data_tab.png" alt="Screenshot of the Edit Data Tab" />
+                        <p class="introduction_image_caption">[Screenshot of the Edit Data Tab with columns marked: 1 - Attendance, 2 - Player Names, 3 - Primary Skill Score, 4 - Additional Categories]</p>
+                    </div>
+                    <p>
+                        Player-to-Player Relationships
+                    </p>
+                    <p>
+                        You can open the Pair Performance table by clicking the corresponding button. This table allows you to define how well players perform together.
+                    </p>
                     <ul class="introduction_list">
-                        <li class="introduction_list_item">Wie wichtig fändest du die Möglichkeit, Kategorien zusammenhängend zu machen? Also Spieler zum Beispiel in Angriff, Mittelfeld und Verteidigung einzuschätzen und dann die Mannschaften so bilden zu lassen, dass nicht fünf Menschen, die gut im Angriff sind, in ein Team kommen, sondern Spieler mit verschiedenen Stärken und Schwächen.</li>
-                        <li class="introduction_list_item">Wie wichtig wäre ein heller Modus für die Website?</li>
-                        <li class="introduction_list_item">Fändest du es gut, wenn es die Option gäbe, anhand der Spielergebnisse die Scores der Spieler automatisch anzupassen?</li>
+                        <li class="introduction_list_item"><strong>Structure</strong>: The table displays players' names both horizontally and vertically. Each cell represents the relationship between two players.</li>
+                        <li class="introduction_list_item"><strong>Mirrored Cells</strong>: Changes to one cell automatically update the corresponding mirrored cell.</li>
+                        <li class="introduction_list_item"><strong>Values</strong>:
+                            <ul>
+                                <li>Positive: Indicates improved performance when the two players are on the same team.</li>
+                                <li>Negative: Indicates reduced performance when the two players are on the same team.</li>
+                            </ul>
+                        </li>
+                        <li class="introduction_list_item"><strong>Custom Scale</strong>: The scale for these values is customizable.</li>
+                    </ul>
+                    <p>
+                        Below the Pair Performance table, there is a "Discard Changes" button to revert to the last saved data. Next to it is the "Analyze" button, which takes you to the Analysis tab.
+                    </p>
+                </div>
+                <div id="analysis" class="introduction_section">
+                    <h2 class="introduction_section_heading">Analysis Tab</h2>
+                    <div class="introduction_image">
+                        <img src="analysis_tab.png" alt="Screenshot of the Analysis Tab" />
+                        <p class="introduction_image_caption">[Screenshot of the Analysis Tab with: 1 - Add Pitch Button, 2 - A Pitch, 3 - Settings]</p>
+                    </div>
+                    <p>
+                        This tab allows you to set up the environment and requirements for team formation.
+                    </p>
+                    <h3 class="introduction_subheading">1. Pitches</h3>
+                    <p>
+                        You can add pitches using the "Add Pitch" button. Each pitch contains two teams. For each pitch, you can:
+                    </p>
+                    <ul class="introduction_list">
+                        <li class="introduction_list_item"><strong>Change the Pitch Name</strong>: Ensure each pitch has a unique name.</li>
+                        <li class="introduction_list_item"><strong>Change Team Names</strong>: Each team must have a unique name.</li>
+                        <li class="introduction_list_item"><strong>Define Team Size</strong>: Set the number of players per team. You can set it to "Automatic" to let the program determine the best team sizes.</li>
+                        <li class="introduction_list_item"><strong>Allocate Players</strong>: Assign specific players to teams. Players can be unallocated using the red "X" next to their names.</li>
+                    </ul>
+                    <p>
+                        Note:
+                    </p>
+                    <ul class="introduction_list">
+                        <li class="introduction_list_item">The number of allocated players cannot exceed the team size.</li>
+                        <li class="introduction_list_item">Each player can only be assigned to one team.</li>
+                        <li class="introduction_list_item">Teams cannot have the same name, and pitches cannot have the same name.</li>
+                    </ul>
+                    <h3 class="introduction_subheading">2. Settings</h3>
+                    <ul class="introduction_list">
+                        <li class="introduction_list_item"><strong>Interchangeable Teams</strong>: Toggle whether the teams should be balanced to be roughly equal in performance, allowing any team to play against any other.</li>
+                        <li class="introduction_list_item"><strong>Maximum Number of Sitting Out Players</strong>: Define how many players can sit out, which may result in fairer teams.</li>
+                        <li class="introduction_list_item"><strong>Maximum Difference Between Teams</strong>: Set the maximum allowable difference in the number of players between two teams.</li>
+                        <li class="introduction_list_item"><strong>Maximum Difference Between Pitches</strong>: Set the maximum allowable difference in the number of players between pitches.</li>
+                        <li class="introduction_list_item"><strong>Algorithm Selection</strong>: Choose between different algorithms for team formation:
+                            <ul>
+                                <li><strong>Random</strong>: Tries various combinations and selects the best.</li>
+                                <li><strong>Brute Force</strong>: Tries a large number of combinations (recommended only for a small number of players).</li>
+                            </ul>
+                        </li>
+                        <li class="introduction_list_item"><strong>Normalization Options</strong>:
+                            <ul>
+                                <li><strong>Primary Score and Pair Performance</strong>: Toggle normalization on or off separately for each.</li>
+                                <li><strong>Normalization Methods</strong>:
+                                    <ul>
+                                        <li>Linear Normalization</li>
+                                        <li>Sigmoid Function</li>
+                                        <li>Logit Function</li>
+                                    </ul>
+                                </li>
+                                <li><strong>Minimum and Maximum Values</strong>: Define how values are normalized:
+                                    <ul>
+                                        <li>Symmetrical</li>
+                                        <li>Maximum Value</li>
+                                        <li>Minimum Value</li>
+                                        <li>Custom Value</li>
+                                    </ul>
+                                </li>
+                                <li><strong>Inversion</strong>: By selecting maximum for minimum and vice versa, you can invert the scale.</li>
+                                <li><strong>Weight</strong>: Set a weight for the Pair Performance relative to the Primary Score.</li>
+                            </ul>
+                        </li>
+                    </ul>
+                    <h4 class="introduction_subheading">Normalization Explanation</h4>
+                    <p>
+                        Normalization adjusts different scales of data to a common scale, which helps in fair comparison and combination.
+                    </p>
+                    <ul class="introduction_list">
+                        <li class="introduction_list_item"><strong>Linear Normalization</strong>:
+                            <ul>
+                                <li><strong>Formula</strong>: Transforms values linearly to fit within a specified range.</li>
+                                <li><strong>Use Case</strong>: Simple scaling without altering the distribution of data.</li>
+                            </ul>
+                        </li>
+                        <li class="introduction_list_item"><strong>Sigmoid Function</strong>:
+                            <ul>
+                                <li><strong>Formula</strong>: \( f(x) = \frac{1}{1 + e^{-x}} \)</li>
+                                <li><strong>Characteristics</strong>: Compresses extreme values towards the center of the scale.</li>
+                                <li><strong>Use Case</strong>: Reduces the impact of outliers, emphasizing moderate values.</li>
+                            </ul>
+                        </li>
+                        <li class="introduction_list_item"><strong>Logit Function</strong>:
+                            <ul>
+                                <li><strong>Formula</strong>: \( f(x) = \ln\left(\frac{x}{1 - x}\right) \)</li>
+                                <li><strong>Characteristics</strong>: Expands values at the extremes while compressing those near the center.</li>
+                                <li><strong>Use Case</strong>: Highlights significant differences in extreme values.</li>
+                            </ul>
+                        </li>
+                    </ul>
+                    <div class="introduction_image">
+                        <img src="normalization_functions.png" alt="Graphs of Normalization Functions" />
+                        <p class="introduction_image_caption">[Graphics of the three normalization functions]</p>
+                    </div>
+                    <h3 class="introduction_subheading">3. Actions</h3>
+                    <ul class="introduction_list">
+                        <li class="introduction_list_item"><strong>Download Project</strong>: Save your project as a JSON file.</li>
+                        <li class="introduction_list_item"><strong>Save Project</strong>: Save your project to the server.</li>
+                        <li class="introduction_list_item"><strong>Analyze</strong>: Send the project to the server for calculation. The analysis may take a few seconds.</li>
+                    </ul>
+                    <p>
+                        Note:
+                    </p>
+                    <ul class="introduction_list">
+                        <li class="introduction_list_item"><strong>Validation</strong>: Before any action, the data is validated. If an action doesn't execute, it's likely due to a validation error, which will be displayed.</li>
+                        <li class="introduction_list_item"><strong>Error Reporting</strong>: Errors can be reported at <a href="https://github.com/W4hr/FairTeamMaker/issues">GitHub Issues</a>.</li>
                     </ul>
                 </div>
-            </div>
+                <div id="results" class="introduction_section">
+                    <h2 class="introduction_section_heading">Results Tab</h2>
+                    <div class="introduction_image">
+                        <img src="results_tab.png" alt="Screenshot of the Results Tab" />
+                        <p class="introduction_image_caption">[Screenshot of the Results Tab with: 1 - Options List, 2 - Pitches and Teams]</p>
+                    </div>
+                    <p>
+                        After analysis, you will be redirected to the Results tab.
+                    </p>
+                    <h3 class="introduction_subheading">1. Options List</h3>
+                    <p>
+                        On the right, you'll see a list of possible team combinations. Each option previews:
+                    </p>
+                    <ul class="introduction_list">
+                        <li class="introduction_list_item">Total performance difference between teams.</li>
+                        <li class="introduction_list_item">Number of players sitting out.</li>
+                    </ul>
+                    <h3 class="introduction_subheading">2. Detailed Results</h3>
+                    <p>
+                        Selecting an option displays:
+                    </p>
+                    <ul class="introduction_list">
+                        <li class="introduction_list_item"><strong>Pitches and Teams</strong>: Shows the pitches and the teams on each pitch.</li>
+                        <li class="introduction_list_item"><strong>Allocated Players</strong>: Lists players assigned to each team, along with their normalized scores.</li>
+                        <li class="introduction_list_item"><strong>Team Scores</strong>: Overall score for each team based on the allocated players.</li>
+                        <li class="introduction_list_item"><strong>Performance Difference</strong>: The difference in performance between the two teams on each pitch.</li>
+                        <li class="introduction_list_item"><strong>Team Sizes</strong>: Number of players in each team.</li>
+                    </ul>
+                </div>
+                <div id="logs" class="introduction_section">
+                    <h2 class="introduction_section_heading">Logs Tab</h2>
+                    <p>
+                        Currently, the Logs tab is empty and serves as a placeholder for future implementation.
+                    </p>
+                </div>
+                <div id="feedback" class="introduction_section">
+                    <h2 class="introduction_section_heading">Feedback and Support</h2>
+                    <p>
+                        We appreciate your feedback! If you encounter any errors or have feature requests, please report them at <a href="https://github.com/W4hr/FairTeamMaker/issues">GitHub Issues</a>.
+                    </p>
+                </div>
+                <div class="introduction_warning">
+                    Note: This website is not yet optimized for mobile devices in portrait mode. Please use a PC for the best experience.
+                </div>
+            </div>            
         </div>
         <div id="import_data_tab" data-tab-content>
             <div class="window_background_dimming hide" id="add_project_window_dimming"></div>
