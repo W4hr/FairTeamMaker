@@ -128,7 +128,6 @@ function initializeAddColumnWindow(){
                 child_element.setAttribute("type", "number");
                 
                 child_element.addEventListener("change", () => {
-                    console.log("HELLO");
                     player_name = child_element.parentElement.parentElement.children[1].children[0].value
                     console.log(player_name);
                     categorie_name = document.getElementById('edit_player_table_topbar').getElementsByTagName('th')[element.cellIndex].innerText;
@@ -201,7 +200,7 @@ function initializeAddRow(){
         NewNameCell_textarea.classList.add("table_input_name");
         NewNameCell_textarea.value = new_player_name;
         NewNameCell_textarea.addEventListener("change", () => {
-            update_player_to_player_upon_name_change(NewNameCell_textarea, NewRow)
+            selected_save_data_edit = update_player_name_upon_change(NewNameCell_textarea)
         })
         NewNameCell.appendChild(NewNameCell_textarea)
         NewRow.appendChild(NewNameCell)
@@ -669,14 +668,15 @@ function build_player_table_body(selected_save_data){
         const edit_player_table_player_attendance = document.createElement("td")
         edit_player_table_player_attendance.classList.add("edit_attendance")
 
-        edit_player_table_player_attendance_button = document.createElement("div")
+        const edit_player_table_player_attendance_button = document.createElement("div")
         edit_player_table_player_attendance_button.classList.add("button_activation_attendance")
         if (!selected_save_data["players"][player].attendanceState){
             edit_player_table_player_attendance_button.classList.add("red_deactivated")
         }
         edit_player_table_player_attendance_button.addEventListener("click", () => {
-            const player_name = edit_player_table_player_attendance_button.closest("tr").id
-            selected_save_data_edit.players[player_name].attendanceState = !selected_save_data_edit.players[player_name].attendanceState
+            edit_player_table_player_attendance_button.classList.toggle("red_deactivated")
+            const player_name = edit_player_table_row.id
+            selected_save_data.players[player_name].attendanceState = !selected_save_data.players[player_name].attendanceState
         })
 
         edit_player_table_player_attendance.appendChild(edit_player_table_player_attendance_button)
@@ -691,7 +691,7 @@ function build_player_table_body(selected_save_data){
         edit_player_table_player_name_input.value = player
         edit_player_table_player_name_input.setAttribute("onclick","this.select();")
         edit_player_table_player_name_input.addEventListener("change", () => {
-            update_player_name_upon_change(edit_player_table_player_name_input)
+            selected_save_data_edit = update_player_name_upon_change(edit_player_table_player_name_input)
         })
 
         edit_player_table_player_name.appendChild(edit_player_table_player_name_input)
@@ -1523,46 +1523,6 @@ function initializeAnalyzeButton(){
     })
 }
 
-function update_player_to_player_upon_name_change(textarea_name, cell_textarea){
-    if (!selected_save_data_edit["players"].hasOwnProperty(textarea_name.value)){
-        const changed_name_index = cell_textarea.rowIndex -1;
-        const changed_name_previous_name = cell_textarea.closest("tr").id
-        const changed_name_new_name = textarea_name.value;
-
-        // Apply changes in the analyze Tab
-        update_player_name_in_ui_upon_change(changed_name_previous_name, changed_name_new_name)
-
-        selected_save_data_edit.players[changed_name_new_name] = selected_save_data_edit.players[changed_name_previous_name]
-        delete selected_save_data_edit.players[changed_name_previous_name]
-
-        selected_save_data_edit.pairPerformance[changed_name_new_name] = selected_save_data_edit.pairPerformance[changed_name_previous_name];
-        delete selected_save_data_edit.pairPerformance[changed_name_previous_name];
-
-        for (let player in selected_save_data_edit.pairPerformance){
-            if (selected_save_data_edit.pairPerformance[player][changed_name_previous_name] !== undefined){
-                selected_save_data_edit.pairPerformance[player][changed_name_new_name] = selected_save_data_edit.pairPerformance[player][changed_name_previous_name]
-                delete selected_save_data_edit.pairPerformance[player][changed_name_previous_name]
-            }
-        }
-        const table_player_to_player_thead_cell_changed_player = document.getElementById("table_player_to_player").rows[0].cells[changed_name_index+1]
-        if (table_player_to_player_thead_cell_changed_player.innerText === changed_name_previous_name){
-            table_player_to_player_thead_cell_changed_player.innerText = changed_name_new_name
-        } else {
-            console.error("The name of the Player could not be found in the player-to-player table")
-        }
-        const table_player_to_player_tbody_cell_changed_player = document.getElementById("table_player_to_player_tbody").rows[changed_name_index].cells[0]
-        if (table_player_to_player_tbody_cell_changed_player.innerText == changed_name_previous_name){
-            table_player_to_player_tbody_cell_changed_player.innerText = changed_name_new_name
-        } else {
-            console.error("The name of the Player could not be found in the player-to-player table")
-        }
-        cell_textarea.closest("tr").id = changed_name_new_name
-    } else {
-        console.error("Another Player already has that name. Please choose a different name")
-        show_message("Another Player already has that name. Please choose a different name", "warning")
-    }
-}
-
 function initializeSaveButton(){
     const save_button = document.getElementById("save_button")
     save_button.addEventListener("click", async () => {
@@ -1725,11 +1685,11 @@ function build_pitches(project_data){
     <div id="analyze_configure_add_pitch_container">
         <div id="analyze_configure_add_pitch_button">
             <img src="frontend/UI/img/icon/add.svg" alt="Add Pitch">
-            <p>Spielfeld hinzufügen</p>
+            <p>Add Pitch</p>
         </div>
     </div>`
     initializeAddPitchButton()
-    if (project_data["pitches"]){
+    if (project_data["pitches"].length > 0){
         project_data["pitches"].forEach((pitch_name, pitch_index) => {
             const team1 = teams_names_list[pitch_index*2]
             const team2 = teams_names_list[pitch_index*2+1]
@@ -2068,7 +2028,9 @@ function update_player_name_upon_change(name_input_field){
     name_input_field.classList.add(`table_input_name_${new_name}`)
 
     update_player_name_in_ui_upon_change(previous_name, new_name)
-    update_player_name_in_data_upon_change(previous_name, new_name, selected_save_data_edit)
+    const previous_name_unformatted = previous_name.replace(/_/g, " ")
+    const updated_team_data = update_player_name_in_data_upon_change(previous_name_unformatted, new_name, selected_save_data_edit)
+    return updated_team_data
 }
 
 function update_player_name_in_ui_upon_change(previous_name, new_name){
@@ -2098,12 +2060,26 @@ function update_player_name_in_ui_upon_change(previous_name, new_name){
 }
 
 function update_player_name_in_data_upon_change(previous_name, new_name, data){
-    data["players"][new_name] = data["players"][previous_name]
-    delete data["players"][previous_name]
-    data["pairPerformance"][new_name] = data["pairPerformance"][previous_name]
-    delete data["pairPerformance"][previous_name]
-    data["pairPerformance"][new_name][new_name] = data["pairPerformance"][new_name][previous_name]
-    delete data["pairPerformance"][new_name][previous_name]
+    if (data["players"].hasOwnProperty(previous_name)){
+        data["players"][new_name] = data["players"][previous_name]
+        delete data["players"][previous_name]
+    } else {
+        show_message("The player does not appear to exist in the data. The change could not be applied.", "warning")
+        console.error(`The player does not appear to exist in the data. The change could not be applied. previous_name = ${previous_name}, new_name = ${new_name}`)
+        console.log(data)
+        return
+    }
+    if (data["pairPerformance"].hasOwnProperty(previous_name)){
+        data["pairPerformance"][new_name] = data["pairPerformance"][previous_name]
+        delete data["pairPerformance"][previous_name]
+        data["pairPerformance"][new_name][new_name] = data["pairPerformance"][new_name][previous_name]
+        delete data["pairPerformance"][new_name][previous_name]
+    } else {
+        show_message("The player does not appear to exist in the pair performance data. The change could not be applied.", "warning")
+        console.error(`The player does not appear to exist in the pair performance data. The change could not be applied. previous_name = ${previous_name}, new_name = ${new_name}`)
+        console.log(data)
+        return
+    }
 
     Object.keys(data["pairPerformance"]).forEach(player_name1 => {
         if (data["pairPerformance"][player_name1][previous_name] !== undefined){
@@ -2111,6 +2087,7 @@ function update_player_name_in_data_upon_change(previous_name, new_name, data){
             delete data["pairPerformance"][player_name1][previous_name]
         }
     })
+    return data
 }
 
 function initializeNormSettingsButton(){

@@ -19,7 +19,15 @@ def create_default_starter_project():
             "number_of_players": 2,
             "matches": {},
             "pitches": ["Pitch 1"],
-            "teams": {},
+            "teams": {
+                "Team 1": {
+                    "num_players": None,
+                    "players":[]
+                },
+                "Team 2": {
+                    "num_players": None,
+                    "players":[]}
+                    },
             "settings": {
                 "interachangableTeams": True,
                 "maxSittingOut": 2,
