@@ -976,6 +976,14 @@ a:hover {
     justify-content: space-around;
 }
 
+.space_between{
+    justify-content: space-between;
+}
+
+.flex_grow{
+    flex-grow: 1;
+}
+
 .align_center{
     justify-content: center;
     align-items: center;
@@ -1167,6 +1175,14 @@ a:hover {
     height: 20px;
 }
 
+.gap20px{
+    gap: 20px;
+}
+
+.transition{
+    transition: all 0.5s ease-in-out !important;
+}
+
 .analyze_pitch_team_player{
     display: flex;
     justify-content: space-between;
@@ -1300,7 +1316,7 @@ h1.analyze{
     transition: background-color 0.3s ease;
     padding-left: 50px;
     padding-right: 50px;
-    max-width: 25vw;
+    max-width: 25vw !important;
     overflow: scroll;
     white-space: nowrap;
     min-width: fit-content;

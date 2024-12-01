@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field, ConfigDict, validator, model_validator
 from datetime import datetime
-from typing import Optional, Dict, List
+from typing import Optional, Dict, List, Any
 from bson import ObjectId
 
 import logging
@@ -57,16 +57,21 @@ class Category(BaseModel):
     minimumValue: Optional[float | None]
     maximumValue: Optional[float | None]
 
-class NormSettingsPairPerformance(BaseModel):
-    type: str
-    minValue: str | float
-    maxValue: str | float
-    weight: str | float
-
 class NormSettingsPrimaryScore(BaseModel):
+    status: bool
     type: str
-    minValue: str | float
-    maxValue: str | float
+    minValue: str
+    minValueCustom: float
+    maxValue: str
+    maxValueCustom: float
+    minValueOutput: str
+    minValueOutputCustom: float
+    maxValueOutput: str
+    maxValueOutputCustom: float
+
+class NormSettingsPairPerformance(NormSettingsPrimaryScore):
+    weight: str
+    weightCustom: float
 
 class NormSettings(BaseModel):
     NormSettingsPairPerformance: NormSettingsPairPerformance
@@ -154,4 +159,35 @@ class Project(BaseModel):
     @model_validator(mode="after")
     def log_validation_message(cls, values):
         model_logger.debug("Model validation succeeded")
+        return values
+    
+    @model_validator(mode="after")
+    def norm_settings_validator(cls, values):
+        norm_types = {"linear", "sigmoid", "logit"}
+        values_options = {"symmetric", "smallest_value", "largest_value"}
+
+        def validate_type(setting_type: str, context: str):
+            if setting_type not in norm_types:
+                error_message = f"The type of the {context} normalization is invalid: {setting_type}"
+                model_logger.error(error_message)
+                raise ValueError(error_message)
+
+        def validate_min_max(value: Any, context: str):
+            if value not in values_options and not isinstance(value, (int, float)):
+                error_message = f"The {context} value in the normalization settings is invalid: {value}"
+                model_logger.error(error_message)
+                raise ValueError(error_message)
+
+        # Validate primary normalization settings
+        norm_settings_primary = values.settings.normalizationSettings.NormSettingsPrimaryScore
+        validate_type(norm_settings_primary.type, "primary score")
+        validate_min_max(norm_settings_primary.minValue, "minimum primary score")
+        validate_min_max(norm_settings_primary.maxValue, "maximum primary score")
+
+        # Validate pair performance normalization settings
+        norm_settings_pair = values.settings.normalizationSettings.NormSettingsPairPerformance
+        validate_type(norm_settings_pair.type, "pair performance score")
+        validate_min_max(norm_settings_pair.minValue, "minimum pair performance score")
+        validate_min_max(norm_settings_pair.maxValue, "maximum pair performance score")
+
         return values

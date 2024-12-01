@@ -37,7 +37,7 @@ def get_teams(data: dict):
         normalization_settings: Dict[str, Dict[str, any]] = data["settings"]["normalizationSettings"]
 
         desired_amount_of_combinations: int = 700000
-        dispersion_tries: float = 0.5
+        dispersion_tries: float = 1
         amount_best_games: int = 5
 
         temporary_matches = {key: value for key, value in matches.items()}
@@ -61,7 +61,7 @@ def get_teams(data: dict):
         algorithm_logger.debug("compressing players succeeded")
         algorithm_logger.debug(f"compressed_players = {compressed_players}\nnormalization_settings = {normalization_settings}")
         normalized_players = normalize_primary_score(compressed_players, normalization_settings)
-        algorithm_logger.debug("normalizing player data succeeded")
+        algorithm_logger.debug(f"normalizing player data succeeded: {normalized_players}")
         unallocated_players, _ = get_unallocated_allocated_players(normalized_players, teams)
         algorithm_logger.debug("getting unallocated players succeeded")
         allocated_players = get_allocated_player_in_teams(teams)
@@ -72,7 +72,7 @@ def get_teams(data: dict):
         # CPP data preperation
         player_index_dict : Dict[str, int]= get_player_index_dict(normalized_players)
         index_player_dict : Dict[int, str]= get_index_player_dict(normalized_players)
-        # CPP ready conversion
+        # CPP compatible conversion
         index_skill_dict : List[float]= get_index_skill_dict(normalized_players, player_index_dict)
         index_allocated_players : List[List[Optional[int]]]= get_index_allocated_players(player_index_dict, allocated_players)
         index_unallocated_players : List[int]= get_index_unallocated_players(unallocated_players, player_index_dict)

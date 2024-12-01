@@ -29,6 +29,12 @@
                 <div class="introduction_warning">
                     Note: This website is not yet optimized for mobile devices in portrait mode. Please use a PC for the best experience.
                 </div>
+                <div id="project-goal" class="introduction_section">
+                    <h2 class="introduction_section_heading">Project Goal</h2>
+                    <p>
+                        Welcome to FairTeamMaker, a platform designed to help you create balanced and fair teams based on player scores. This guide will walk you through the features of the website and explain how to use them effectively.
+                    </p>
+                </div>
                 <div class="introduction_section">
                     <h2 class="introduction_section_heading">Table of Contents</h2>
                     <ul class="introduction_list">
@@ -42,12 +48,6 @@
                         <li class="introduction_list_item"><a href="#logs">Logs Tab</a></li>
                         <li class="introduction_list_item"><a href="#feedback">Feedback and Support</a></li>
                     </ul>
-                </div>
-                <div id="project-goal" class="introduction_section">
-                    <h2 class="introduction_section_heading">Project Goal</h2>
-                    <p>
-                        Welcome to FairTeamMaker, a platform designed to help you create balanced and fair teams based on player scores. This guide will walk you through the features of the website and explain how to use them effectively.
-                    </p>
                 </div>
                 <div id="tab-overview" class="introduction_section">
                     <h2 class="introduction_section_heading">Tab Overview</h2>
@@ -394,7 +394,7 @@
         <div id="analysis_tab" data-tab-content>
             <div id="normalization_settings_dimming" class="window_background_dimming hide">
                 <div id="normalization_settings_window">
-                    <div id="normalization_primary_score_container">
+                    <div id="normalization_primary_score_container" class="transition">
                         <p>Primary Score Normalization</p>
                         <div class="toggle_container">
                             <label class="toggle">
@@ -425,6 +425,24 @@
                             <option value="custom">Custom Value</option>
                         </select>
                         <input type="number" id="normalization_primary_score_max_custom" placeholder="Enter custom maximum (e.g. 135.23)" class="norm_settings_input hide">
+                        <div class="display_flex space_between gap20px">
+                            <div class="flex_grow">
+                                <label for="normalization_primary_score_min_output" class="norm_settings_value_label">Output Smallest Value</label>
+                                <select name="normalization_primary_score_min_output" id="normalization_primary_score_min_output" class="norm_settings_input transition">
+                                    <option value="automatic">automatic</option>
+                                    <option value="custom">custom</option>
+                                </select>
+                                <input type="number" id="normalization_primary_score_min_output_custom" class="norm_settings_input transition" value="1">
+                            </div>
+                            <div class="flex_grow">
+                                <label for="normalization_primary_score_max_output" class="norm_settings_value_label"> Output Largest Value</label>
+                                <select name="normalization_primary_score_max_output" id="normalization_primary_score_max_output" class="norm_settings_input transition">
+                                    <option value="automatic">automatic</option>
+                                    <option value="custom">custom</option>
+                                </select>
+                                <input type="number" id="normalization_primary_score_max_output_custom" class="norm_settings_input transition" value="3">
+                            </div>
+                        </div>
                     </div>
                     <div id="normalization_pairPerformance_weight">
                         <p>Pair Score Weight to Primary Score</p>
@@ -468,6 +486,24 @@
                             <option value="custom">Custom Value</option>
                         </select>
                         <input type="number" id="normalization_pair_score_max_custom" placeholder="Enter custom maximum (e.g. 135.23)" class="norm_settings_input hide">
+                        <div class="display_flex space_between gap20px">
+                            <div class="flex_grow">
+                                <label for="normalization_pair_score_min_output" class="norm_settings_value_label">Output Smallest Value</label>
+                                <select name="normalization_pair_score_min_output" id="normalization_pair_score_min_output" class="norm_settings_input transition">
+                                    <option value="weight">use weight (recommended)</option>
+                                    <option value="custom">custom</option>
+                                </select>
+                                <input type="number" id="normalization_pair_score_min_output_custom" class="norm_settings_input transition" value="1">
+                            </div>
+                            <div class="flex_grow">
+                                <label for="normalization_pair_score_max_output" class="norm_settings_value_label"> Output Largest Value</label>
+                                <select name="normalization_pair_score_max_output" id="normalization_pair_score_max_output" class="norm_settings_input transition">
+                                    <option value="weight">use weight (recommended)</option>
+                                    <option value="custom">custom</option>
+                                </select>
+                                <input type="number" id="normalization_pair_score_max_output_custom" class="norm_settings_input transition" value="3">
+                            </div>
+                        </div>
                     </div>
                     <div class="space_around display_flex">
                         <button id="normalization_settings_close" class="red_button">Cancel</button>

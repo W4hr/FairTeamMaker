@@ -33,7 +33,35 @@ def create_default_starter_project():
                 "maxSittingOut": 2,
                 "maxDifferenceTeams": 2,
                 "maxDifferencePitches": 2,
-                "auto-save": False
+                "auto_save": False,
+                "normalizationSettings": {
+                    "NormSettingsPrimaryScore": {
+                        "status": True,
+                        "type": "logit",
+                        "minValue": "symmetric",
+                        "minValueCustom": 0,
+                        "maxValue": "symmetric",
+                        "maxValueCustom": 10,
+                        "minValueOutput": "automatic",
+                        "minValueOutputCustom": 1,
+                        "maxValueOutput": "automatic",
+                        "maxValueOutputCustom": 3
+                    },
+                    "NormSettingsPairPerformance": {
+                        "status": True,
+                        "type": "logit",
+                        "minValue": "symmetric",
+                        "minValueCustom": 0,
+                        "maxValue": "symmetric",
+                        "maxValueCustom": 10,
+                        "minValueOutput": "weight",
+                        "minValueOutputCustom": 0.5,
+                        "maxValueOutput": "weight",
+                        "maxValueOutputCustom": 1.5,
+                        "weight": "custom",
+                        "weightCustom": 0.4
+                    }
+                }
             },
             "categories": [],
             "players": {
