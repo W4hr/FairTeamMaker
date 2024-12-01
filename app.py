@@ -37,16 +37,15 @@ if not SECRET_KEY:
 # Logging
 import logging
 
-logging.basicConfig(level=logging.DEBUG,
-                    filename="./log.log",
-                    filemode="w",
-                    format="%(asctime)s - %(levelname)s - %(message)s")
+logging.basicConfig(
+    filename="app.log",
+    filemode="w",
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    level=logging.DEBUG
+)
 
-model_logger = logging.getLogger("models")
-file_handler = logging.FileHandler("models.log", mode="w")
-file_handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
-model_logger.addHandler(file_handler)
-model_logger.setLevel(logging.DEBUG)
+model_logger = logging.getLogger("model validation")
+
 
 async def http422_error_handler(
     _: Request, exc: Union[RequestValidationError, ValidationError]) -> JSONResponse:
