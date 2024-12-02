@@ -24,5 +24,5 @@ def normalize_sig(value:int
 
 def normalize_logit(value:float
                     ) -> float:
-    return 0.22755980665671 * (math.log(value/(1 - value))) - 0.5
+    return 0.22755980665671 * (math.log(value/(1 - value))) + 0.5
 # Modified logit function to ensure that normalize_logit(0.9) = 1 and normalize_logit(0.1) = 0

@@ -12,10 +12,6 @@ from .cpp_data_preperation import *
 # Logging
 import logging
 algorithm_logger = logging.getLogger("algorithm")
-file_handler = logging.FileHandler("./algorithm.log", mode="w")
-file_handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
-algorithm_logger.addHandler(file_handler)
-algorithm_logger.setLevel(logging.DEBUG)
 
 
 ### THIS IS THE FASTER CPP/PYTHON BRUTE FORCE/RANDOM IMPLEMENTATION

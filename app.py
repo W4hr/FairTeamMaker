@@ -45,7 +45,7 @@ logging.basicConfig(
 )
 
 model_logger = logging.getLogger("model validation")
-
+logging.getLogger("pymongo").setLevel(logging.ERROR)
 
 async def http422_error_handler(
     _: Request, exc: Union[RequestValidationError, ValidationError]) -> JSONResponse:

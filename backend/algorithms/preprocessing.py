@@ -2,6 +2,9 @@ from typing import Dict, List
 import copy
 from .normalization import normalize_lin, normalize_sig, normalize_logit
 
+import logging
+preprocessing_logger = logging.getLogger(__name__)
+
 def compress_players_dictionary(players: Dict[str, dict]
                                 ) -> Dict[str, Dict[str, int]]:
     return {p : {"primaryScore" : players[p]["primaryScore"]} for p in players} # remove all data that is currently irrelevant to save memory
@@ -9,69 +12,81 @@ def compress_players_dictionary(players: Dict[str, dict]
 def normalize_primary_score(players: Dict[str, Dict[str, float]],
                             normalization_settings
                             ) -> Dict[str, Dict[str, int]]: # max_score and min_score between two values the primaryScore takes playe and min and max defines between two values the output will be
-    primaryNormOptions = normalization_settings["NormSettingsPrimaryScore"]
-    norm_status = primaryNormOptions["status"]
-    if not norm_status:
-        return players
-    min_value_setting, max_value_setting = primaryNormOptions["minValue"], primaryNormOptions["maxValue"]
+    try:
+        primaryNormOptions = normalization_settings["NormSettingsPrimaryScore"]
+        norm_status = primaryNormOptions["status"]
+        if not norm_status:
+            return players
+        preprocessing_logger.debug(f"Normalization Primary Score settings = {primaryNormOptions}")
+        preprocessing_logger.debug(f"Normalization Primary Score status = {norm_status}")
 
-    # determining smallest value
-    list_primary_scores = [players[p]["primaryScore"] for p in players]
-    if min_value_setting == "custom":
-        smallest_value = primaryNormOptions["minValueCustom"]
-    elif min_value_setting == "smallest_value":
-        smallest_value = min(list_primary_scores)
-    elif min_value_setting == "largest_value":
-        smallest_value = max(list_primary_scores)
-    elif min_value_setting == "symmetric":
-        smallest_value = -max([abs(min(list_primary_scores)), abs(max(list_primary_scores))])
+        min_value_setting, max_value_setting = primaryNormOptions["minValue"], primaryNormOptions["maxValue"]
 
-    # determining largest value
-    if max_value_setting == "custom":
-        largest_value = primaryNormOptions["maxValueCustom"]
-    elif max_value_setting == "smallest_value":
-        largest_value = min(list_primary_scores)
-    elif max_value_setting == "largest_value":
-        largest_value = max(list_primary_scores)
-    elif max_value_setting == "symmetric":
-        largest_value = max([abs(min(list_primary_scores)), abs(max(list_primary_scores))])
-
-    # determining smallest output value
-    minValueOutput, maxValueOutput = primaryNormOptions["minValueOutput"], primaryNormOptions["maxValueOutput"]
-    if minValueOutput == "automatic":
-        smallest_output_value = 1
-    elif minValueOutput == "custom":
-        smallest_output_value = primaryNormOptions["minValueOutputCustom"]
-
-    if maxValueOutput == "automatic":
-        largest_output_value = 3
-    elif maxValueOutput == "custom":
-        largest_output_value = primaryNormOptions["maxValueOuputCustom"]
+        # determining smallest value
+        list_primary_scores = [players[p]["primaryScore"] for p in players]
+        if min_value_setting == "custom":
+            smallest_value = primaryNormOptions["minValueCustom"]
+        elif min_value_setting == "smallest_value":
+            smallest_value = min(list_primary_scores)
+        elif min_value_setting == "largest_value":
+            smallest_value = max(list_primary_scores)
+        elif min_value_setting == "symmetric":
+            smallest_value = -max([abs(min(list_primary_scores)), abs(max(list_primary_scores))])
+        preprocessing_logger.debug(f"Normalization Primary Score smallest value = {smallest_value}")
 
 
-    players_lin_normalized = copy.deepcopy(players)
-    norm_type = primaryNormOptions["type"]
+        # determining largest value
+        if max_value_setting == "custom":
+            largest_value = primaryNormOptions["maxValueCustom"]
+        elif max_value_setting == "smallest_value":
+            largest_value = min(list_primary_scores)
+        elif max_value_setting == "largest_value":
+            largest_value = max(list_primary_scores)
+        elif max_value_setting == "symmetric":
+            largest_value = max([abs(min(list_primary_scores)), abs(max(list_primary_scores))])
+        preprocessing_logger.debug(f"Normalization Primary Score largest value = {largest_value}")
 
-    if norm_type == "linear":
-        for player_name, player_data in players_lin_normalized.items():
-            player_data["primaryScore"] = normalize_lin(players_lin_normalized[player_name]["primaryScore"], smallest_value, largest_value, smallest_output_value, largest_output_value)
-        return players_lin_normalized
-    elif norm_type == "sigmoid":
-        for player_name, player_data in players_lin_normalized.items():
-            player_data["primaryScore"] = normalize_lin(players_lin_normalized[player_name]["primaryScore"], smallest_value, largest_value, -3, 3)
-        player_sig_normalized = copy.deepcopy(players_lin_normalized)
-        for player_name, player_data in player_sig_normalized.items():
-            player_data["primaryScore"] = normalize_sig(player_sig_normalized[player_name]["primaryScore"]) * (largest_output_value - smallest_output_value) + smallest_output_value
-        return player_sig_normalized
-    elif norm_type == "logit" and min_value_setting != "symmetric":
-        for player_name, player_data in players_lin_normalized.items():
-            player_data["primaryScore"] = normalize_lin(players_lin_normalized[player_name]["primaryScore"], smallest_value, largest_value, 0.1, 0.9)
-        player_logit_normalized = copy.deepcopy(players_lin_normalized)
-        for player_name, player_data in player_logit_normalized.items():
-            player_data["primaryScore"] = normalize_logit(player_logit_normalized[player_name]["primaryScore"]) * (largest_output_value - smallest_output_value) + smallest_output_value
-        return player_logit_normalized
-    else:
-        raise ValueError(f"Normalization type was invalid: {primaryNormOptions['type']}")
+        # determining smallest output value
+        minValueOutput, maxValueOutput = primaryNormOptions["minValueOutput"], primaryNormOptions["maxValueOutput"]
+        if minValueOutput == "automatic":
+            smallest_output_value = 1
+        elif minValueOutput == "custom":
+            smallest_output_value = primaryNormOptions["minValueOutputCustom"]
+        preprocessing_logger.debug(f"Normalization Primary Score smallest output value = {smallest_output_value}")
+
+        if maxValueOutput == "automatic":
+            largest_output_value = 3
+        elif maxValueOutput == "custom":
+            largest_output_value = primaryNormOptions["maxValueOutputCustom"]
+        preprocessing_logger.debug(f"Normalization Primary Score largest output value = {largest_output_value}")
+
+
+        players_lin_normalized = copy.deepcopy(players)
+        norm_type = primaryNormOptions["type"]
+        preprocessing_logger.debug(f"Normalization Primary Score type = {norm_type}")
+
+        if norm_type == "linear":
+            for player_name, player_data in players_lin_normalized.items():
+                player_data["primaryScore"] = normalize_lin(players_lin_normalized[player_name]["primaryScore"], smallest_value, largest_value, smallest_output_value, largest_output_value)
+            return players_lin_normalized
+        elif norm_type == "sigmoid":
+            for player_name, player_data in players_lin_normalized.items():
+                player_data["primaryScore"] = normalize_lin(players_lin_normalized[player_name]["primaryScore"], smallest_value, largest_value, -3, 3)
+            player_sig_normalized = copy.deepcopy(players_lin_normalized)
+            for player_name, player_data in player_sig_normalized.items():
+                player_data["primaryScore"] = normalize_sig(player_sig_normalized[player_name]["primaryScore"]) * (largest_output_value - smallest_output_value) + smallest_output_value
+            return player_sig_normalized
+        elif norm_type == "logit":
+            for player_name, player_data in players_lin_normalized.items():
+                player_data["primaryScore"] = normalize_lin(players_lin_normalized[player_name]["primaryScore"], smallest_value, largest_value, 0.1, 0.9)
+            player_logit_normalized = copy.deepcopy(players_lin_normalized)
+            for player_name, player_data in player_logit_normalized.items():
+                player_data["primaryScore"] = normalize_logit(player_logit_normalized[player_name]["primaryScore"]) * (largest_output_value - smallest_output_value) + smallest_output_value
+            return player_logit_normalized
+        else:
+            raise ValueError(f"Normalization type was invalid: {primaryNormOptions['type']}")
+    except Exception as e:
+        raise 
 
 def normalize_pairPerformance(player_to_player_data: Dict[str, Dict[str, int]],
                               normalization_settings,
@@ -85,6 +100,8 @@ def normalize_pairPerformance(player_to_player_data: Dict[str, Dict[str, int]],
 
     list_ptp_values = [x for xs in [[player_to_player_data[p1][p2] for p2 in player_to_player_data[p1]] for p1 in player_to_player_data.keys()] for x in xs]
 
+    preprocessing_logger.debug(f"Normalization PairPerformance status = {norm_status}")
+
     if min_value_setting == "custom":
         smallest_value = pairNormSettings["minValueCustom"]
     elif min_value_setting == "smallest_value":
@@ -93,6 +110,7 @@ def normalize_pairPerformance(player_to_player_data: Dict[str, Dict[str, int]],
         smallest_value = max(list_ptp_values)
     elif min_value_setting == "symmetric":
         smallest_value = -max([abs(min(list_ptp_values)), abs(max(list_ptp_values))])
+    preprocessing_logger.debug(f"Normalization PairPerformance smallest value = {smallest_value}")
 
     if max_value_setting == "custom":
         largest_value = pairNormSettings["maxValueCustom"]
@@ -102,6 +120,7 @@ def normalize_pairPerformance(player_to_player_data: Dict[str, Dict[str, int]],
         largest_value = max(list_ptp_values)
     elif max_value_setting == "symmetric":
         largest_value = max([abs(min(list_ptp_values)), abs(max(list_ptp_values))])
+    preprocessing_logger.debug(f"Normalization PairPerformance largest value = {largest_value}")
 
     if pairNormSettings["weight"] == "automatic":
         primary_score_list = [player_data[player_name]["primaryScore"] for player_name in player_data.keys()]
@@ -112,6 +131,7 @@ def normalize_pairPerformance(player_to_player_data: Dict[str, Dict[str, int]],
             ptp_weight = 5
     else:
         ptp_weight = float(pairNormSettings["weightCustom"])
+    preprocessing_logger.debug(f"Normalization PairPerformance weight = {ptp_weight}")
 
     ptp_lin_norm = {p1: {} for p1 in player_to_player_data}
 
@@ -120,6 +140,7 @@ def normalize_pairPerformance(player_to_player_data: Dict[str, Dict[str, int]],
     else:
         primary_score_list_normalized = [player_data[player_name]["primaryScore"] for player_name in player_data.keys()]
         smallest_output_value = min(primary_score_list_normalized) * ptp_weight
+    preprocessing_logger.debug(f"Normalization PairPerformance smallest output = {smallest_output_value}")
 
     if pairNormSettings["maxValueOutput"] == "custom":
         largest_output_value = pairNormSettings["maxValueOutputCustom"]
@@ -127,8 +148,10 @@ def normalize_pairPerformance(player_to_player_data: Dict[str, Dict[str, int]],
         if not primary_score_list_normalized:
             primary_score_list_normalized = [player_data[player_name]["primaryScore"] for player_name in player_data.keys()]
         largest_output_value = max(primary_score_list_normalized) * ptp_weight
+    preprocessing_logger.debug(f"Normalization PairPerformance largest output = {largest_output_value}")
 
     norm_type = pairNormSettings["type"]
+    preprocessing_logger.debug(f"Normalization PairPerformance type = {norm_type}")
 
     if norm_type == "linear":
         for p1 in player_to_player_data.keys():
