@@ -1678,18 +1678,8 @@ function apply_norm_settings_analysis(norm_settings){
     document.getElementById("normalization_primary_score_max_custom").value = primary_settings["maxValueOutputCustom"]
     // Pair Performance Norm Settings
     const pair_settings = norm_settings["NormSettingsPairPerformance"]
-    const pair_input_ids = ["normalization_primary_score_type", "normalization_primary_score_min", "normalization_primary_score_min_custom", "normalization_primary_score_max", "normalization_primary_score_max", "normalization_primary_score_min_output", "normalization_primary_score_min_output_custom", "normalization_primary_score_max_output", "normalization_primary_score_max_output_custom"]
-    if (!pair_settings["status"]){
-        document.getElementById("normalization_pair_toggle").checked = false
-        document.getElementById("normalization_pair_toggle_status").innerText = "OFF"
-        document.getElementById("normalization_pair_score_type").value = pair_settings["type"]
-        batchEditClass(pair_input_ids, "disabled_input", true)
-    } else{
-        document.getElementById("normalization_pair_toggle").checked = true
-        document.getElementById("normalization_pair_toggle_status").innerText = "ON"
-        document.getElementById("normalization_pair_score_type").value = pair_settings["type"]
-        batchEditClass(pair_input_ids, "disabled_input", false)
-    }
+
+    document.getElementById("normalization_pair_toggle").checked = pair_settings["status"]
     document.getElementById("normalization_pair_score_type").value = pair_settings["type"]
     document.getElementById("normalization_pair_score_min").value = pair_settings["minValue"]
     document.getElementById("normalization_pair_score_min_custom").value = pair_settings["minValueCustom"]
@@ -1699,6 +1689,97 @@ function apply_norm_settings_analysis(norm_settings){
     document.getElementById("normalization_pair_score_max_custom").value = pair_settings["minValueOutputCustom"]
     document.getElementById("normalization_pair_score_max_custom").value = pair_settings["maxValueOutput"]
     document.getElementById("normalization_pair_score_max_custom").value = pair_settings["maxValueOutputCustom"]
+    update_norm_settings_visual()
+}
+
+function update_norm_settings_visual(){
+
+    //Primary Norm Settings
+    const primary_input_ids = [
+        "normalization_primary_score_type", 
+        "normalization_primary_score_min","normalization_primary_score_min_custom",
+        "normalization_primary_score_max", "normalization_primary_score_max",
+        "normalization_primary_score_min_output", "normalization_primary_score_min_output_custom",
+        "normalization_primary_score_max_output", "normalization_primary_score_max_output_custom"
+    ]
+    if (document.getElementById("normalization_primary_toggle").checked){
+        document.getElementById("normalization_primary_toggle_status").innerText == "ON"
+        batchEditClass(primary_input_ids, "disabled_input", true)
+    } else {
+        document.getElementById("normalization_primary_toggle_status").innerText == "OFF"
+        batchEditClass(primary_input_ids, "disabled_input", false)
+    }
+
+    if (document.getElementById("normalization_primary_score_min").value == "custom"){
+        document.getElementById("normalization_primary_score_min_custom").classList.remove("hide")
+    } else {
+        document.getElementById("normalization_primary_score_min_custom").classList.add("hide")
+    }
+
+    if (document.getElementById("normalization_primary_score_max").value == "custom"){
+        document.getElementById("normalization_primary_score_max_custom").classList.remove("hide")
+    } else {
+        document.getElementById("normalization_primary_score_max_custom").classList.add("hide")
+    }
+
+    if (document.getElementById("normalization_primary_score_min_output").value == "custom"){
+        document.getElementById("normalization_primary_score_min_output_custom").classList.remove("hide")
+    } else {
+        document.getElementById("normalization_primary_score_min_output_custom").classList.add("hide")
+    }
+
+    if (document.getElementById("normalization_primary_score_max_output").value == "custom"){
+        document.getElementById("normalization_primary_score_max_output_custom").classList.remove("hide")
+    } else {
+        document.getElementById("normalization_primary_score_max_output_custom").classList.add("hide")
+    }
+
+    // Weight
+
+    if (document.getElementById("normalization_settings_weight").value == "custom"){
+        document.getElementById("normalization_settings_weight_custom").classList.remove("hide")
+    } else{
+        document.getElementById("normalization_settings_weight_custom").classList.add("hide")
+    }
+    // Pair Performance
+    const pair_input_ids = [
+        "normalization_pair_score_type", 
+        "normalization_pair_score_min","normalization_pair_score_min_custom",
+        "normalization_pair_score_max", "normalization_pair_score_max",
+        "normalization_pair_score_min_output", "normalization_pair_score_min_output_custom",
+        "normalization_pair_score_max_output", "normalization_pair_score_max_output_custom"
+    ]
+    if (document.getElementById("normalization_pair_toggle").checked){
+        document.getElementById("normalization_pair_toggle_status").innerText == "ON"
+        batchEditClass(pair_input_ids, "disabled_input", true)
+    } else {
+        document.getElementById("normalization_pair_toggle_status").innerText == "OFF"
+        batchEditClass(pair_input_ids, "disabled_input", false)
+    }
+
+    if (document.getElementById("normalization_pair_score_min").value == "custom"){
+        document.getElementById("normalization_pair_score_min_custom").classList.remove("hide")
+    } else {
+        document.getElementById("normalization_pair_score_min_custom").classList.add("hide")
+    }
+
+    if (document.getElementById("normalization_pair_score_max").value == "custom"){
+        document.getElementById("normalization_pair_score_max_custom").classList.remove("hide")
+    } else {
+        document.getElementById("normalization_pair_score_max_custom").classList.add("hide")
+    }
+
+    if (document.getElementById("normalization_pair_score_min_output").value == "custom"){
+        document.getElementById("normalization_pair_score_min_output_custom").classList.remove("hide")
+    } else {
+        document.getElementById("normalization_pair_score_min_output_custom").classList.add("hide")
+    }
+
+    if (document.getElementById("normalization_pair_score_max_output").value == "custom"){
+        document.getElementById("normalization_pair_score_max_output_custom").classList.remove("hide")
+    } else {
+        document.getElementById("normalization_pair_score_max_output_custom").classList.add("hide")
+    }
 }
 
 async function analyze_project(project){
@@ -2247,7 +2328,11 @@ function initializeToggleNormPair() {
             "normalization_pair_score_min_custom",
             "normalization_pair_score_max",
             "normalization_pair_score_max_custom",
-            "normalization_pair_score_type"
+            "normalization_pair_score_type",
+            "normalization_pair_score_min_output",
+            "normalization_pair_score_min_output_custom",
+            "normalization_pair_score_max_output",
+            "normalization_pair_score_max_output_custom"
         ];
         toggleInput(ids, normalization_pair_toggle, "normalization_pair_toggle_status");
     });
@@ -2259,7 +2344,11 @@ function initializeToggleNormPair() {
             "normalization_primary_score_min_custom",
             "normalization_primary_score_max",
             "normalization_primary_score_max_custom",
-            "normalization_primary_score_type"
+            "normalization_primary_score_type",
+            "normalization_primary_score_min_output",
+            "normalization_primary_score_min_output_custom",
+            "normalization_primary_score_max_output",
+            "normalization_primary_score_max_output_custom"
         ]
         toggleInput(ids, normalization_primary_toggle, "normalization_primary_toggle_status");
     })
