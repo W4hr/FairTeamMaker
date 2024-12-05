@@ -4,17 +4,27 @@ from typing import Optional, Dict, List, Any
 from bson import ObjectId
 
 import logging
+
 model_logger = logging.getLogger("models")
-file_handler = logging.FileHandler("models.log", mode="w")
-file_handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
-model_logger.addHandler(file_handler)
-model_logger.setLevel(logging.DEBUG)
+
+class UserPermissions(BaseModel):
+    custom_iteration_count: bool = True
+    max_iterations_count: int = 70000
+    saving: bool = True
+    max_saves: int = 999
+
+class UserSettings(BaseModel):
+    iterations_fallback: bool
 
 class UserModel(BaseModel):
     id: Optional[str] = Field(None, alias="_id")
     username: str
     disabled: bool = False
     hashed_password: str
+    permissions: Optional[UserPermissions]
+    count_saves: int
+    settings: UserSettings
+
     model_config = ConfigDict(
         extra="forbid",
         populate_by_name= True,
@@ -23,7 +33,13 @@ class UserModel(BaseModel):
                 "_id": "6512fbd2c9b3129f730c1234",
                 "username": "example_user",
                 "disabled": True,
-                "hashed_password": "example_hash"
+                "hashed_password": "example_hash",
+                "permissions": {
+                    "custom_iteration_count": True,
+                    "max_iterations_count": 70000,
+                    "saving": True,
+                    "max_saves": 999
+                }
             }
         }
     )
@@ -85,6 +101,7 @@ class Settings(BaseModel):
     auto_save: bool
     algorithmChoice: str
     normalizationSettings: NormSettings
+    count_iterations: Optional[int]
 
 class Project(BaseModel):
     name: str
