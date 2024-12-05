@@ -16,6 +16,8 @@ from dotenv import load_dotenv
 import os
 from pymongo.errors import PyMongoError
 
+from backend.api.permissions import can_project_analysis, can_save
+
 from backend.db.defaultproject import create_default_starter_project
 from backend.scripts.data_preprocessing import get_preview, create_project_data
 from backend.algorithms.wrapper_cpp import get_teams
@@ -40,12 +42,15 @@ import logging
 logging.basicConfig(
     filename="app.log",
     filemode="w",
-    format="%(asctime)s - [%(module)s] - %(name)s - %(levelname)s - %(message)s",
+    format="%(asctime)s - %(name)s - %(levelname)s - [%(module)s] - %(message)s",
     level=logging.DEBUG
 )
 
+data_logger = logging.getLogger("data")
 model_logger = logging.getLogger("model validation")
 logging.getLogger("pymongo").setLevel(logging.ERROR)
+logging.getLogger("motor").setLevel(logging.ERROR)
+logging.getLogger("passlib.registry").setLevel(logging.ERROR)
 
 async def http422_error_handler(
     _: Request, exc: Union[RequestValidationError, ValidationError]) -> JSONResponse:
@@ -215,9 +220,12 @@ async def get_users_project(uuid:str, current_user: UserModel = Depends(get_curr
 @app.post("/user-save-project")
 async def save_project(project: Project, current_user: UserModel = Depends(get_current_active_user)):
     try:
-        full_project = create_project_data(project, str(current_user.id))
-        full_project = jsonable_encoder(full_project)
-        await mongoprojects.insert_one(full_project)
+        if (can_save(current_user)):
+            full_project = create_project_data(project, str(current_user.id))
+            full_project = jsonable_encoder(full_project)
+            await mongoprojects.insert_one(full_project)
+        else:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User is not permitted to save.")
     except PyMongoError as me:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Something went wrong when saving the project")
     except Exception as e:
@@ -228,9 +236,12 @@ async def save_project(project: Project, current_user: UserModel = Depends(get_c
 async def analyze(project: Project, current_user: UserModel = Depends(get_current_active_user)):
     try:
          project_dict = project.dict()
-         logging.debug(f"project_dict = {project_dict}")
-         result = get_teams(project_dict)
-         return JSONResponse(result)
+         if (can_project_analysis(current_user, project)): # Add Automatic correction
+            data_logger.debug(f"project_dict = {project_dict}")
+            result = get_teams(project_dict)
+            return JSONResponse(result)
+         else:
+             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="The user is not permitted")
     except Exception as e:
         logging.error(f"500 - INTERNAL ERROR - {e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An unexpected error occurred. Please try again later.")
