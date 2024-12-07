@@ -18,3 +18,7 @@ def get_unallocated_allocated_players(players: Dict[str,Dict[str, int]],
 def get_allocated_player_in_teams(teams: Dict[str, Dict[str, int | List[Optional[str]]]]
                                   ) -> List[List[str]]:
     return [team_data["players"] for _, team_data in teams.items()]
+
+def compress_players_dictionary(players: Dict[str, dict]
+                                ) -> Dict[str, Dict[str, int]]:
+    return {p : {"primaryScore" : players[p]["primaryScore"]} for p in players} # remove all data that is currently irrelevant to save memory

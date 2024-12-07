@@ -23,6 +23,11 @@ struct BenchmarkResult{
     long calculation_time;
 };
 
+struct GameCombination{
+    double difference;
+    std::string string_teams;
+};
+
 // convert data to py::dict - python dictionary
 py::dict BenchmarkResult_to_dict(const BenchmarkResult& result){
     py::dict dict;

@@ -1,10 +1,10 @@
 import random
 import string
 from typing import List, Dict, Optional
-from backend.algorithms.team_size_processing import teams_sizes
-from backend.algorithms.cpp_data_preperation import get_player_index_dict
+from data_processing.team_size_processing import teams_sizes
+from data_processing.calculations import distribute_amount_of_combinations_to_calculate
 
-from .benchmark_algorithms import random as cpp_random
+from algorithms.game_calculator import random as cpp_random
 # Variables
 
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -43,7 +43,7 @@ def run_benchmarks(player_count_Options, amount_allocated_players_percent_Option
                                 "team_count" : team_count,
                                 "interchangable": interchangable,
                                 "teams_sizes": teams_sizes,
-                                "results" : cpp_random(team_sizes, 700000, allocated_players_indexes, players_skills, unallocated_players, 10, player_relationships, interchangable)
+                                "results" : cpp_random(team_sizes, [25987, 22145, 13703, 6157, 2009], allocated_players_indexes, players_skills, unallocated_players, 1, player_relationships, interchangable)
                             }
                             mongobenchmarks.insert_one(result)
 
@@ -59,14 +59,15 @@ def get_teams_sizes(player_count: int, count_allocated_players: int, count_max_s
     allocated_players_names = random.sample(players_names, count_allocated_players)
     allocated_players_teams = randomly_split_list(allocated_players_names, count_teams)
     teams = {}
-    for i, _ in enumerate(count_teams):
-        teams[teams_names[i]] = {
+    for i, tn in enumerate(teams_names):
+        teams[tn] = {
             "num_players": None,
             "players": allocated_players_teams[i]
         }
-    matches = {teams_names[i]: teams_names[i + 1] for i in range(0, len(teams_names), 2)}
-    teams_sizes: List[List[int]] = teams_sizes(teams, matches, 4, 4, player_count, count_max_sitting_out)
-    return teams_sizes, allocated_players_teams
+    matches = {**{teams_names[i]: teams_names[i + 1] for i in range(0, len(teams_names), 2)},
+               **{teams_names[i+1]: teams_names[i] for i in range(0, len(teams_names), 2)}}
+    teams_sizes_list: List[List[int]] = teams_sizes(teams, matches, 4, 4, player_count, count_max_sitting_out)
+    return teams_sizes_list, allocated_players_teams
 
 def randomly_split_list(list: List[any],
                         count_splices: int
@@ -75,7 +76,7 @@ def randomly_split_list(list: List[any],
     return [list[cuts[i]:cuts[i + 1]] for i in range(0, len(cuts) - 1)]
 
 def player_data_preperation(allocated_players_teams: List[List[Optional[str]]], players_names):
-    player_index_dict = get_player_index_dict(players_names)
+    player_index_dict = {player_name: player_index for player_index, player_name in enumerate(players_names)}
 
     allocated_players = [[player_index_dict[p] for p in team] for team in allocated_players_teams]
 

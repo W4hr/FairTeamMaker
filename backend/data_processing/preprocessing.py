@@ -5,10 +5,6 @@ from .normalization import normalize_lin, normalize_sig, normalize_logit
 import logging
 preprocessing_logger = logging.getLogger(__name__)
 
-def compress_players_dictionary(players: Dict[str, dict]
-                                ) -> Dict[str, Dict[str, int]]:
-    return {p : {"primaryScore" : players[p]["primaryScore"]} for p in players} # remove all data that is currently irrelevant to save memory
-
 def normalize_primary_score(players: Dict[str, Dict[str, float]],
                             normalization_settings
                             ) -> Dict[str, Dict[str, int]]: # max_score and min_score between two values the primaryScore takes playe and min and max defines between two values the output will be

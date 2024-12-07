@@ -22,7 +22,6 @@ class UserModel(BaseModel):
     disabled: bool = False
     hashed_password: str
     permissions: Optional[UserPermissions]
-    count_saves: int
     settings: UserSettings
 
     model_config = ConfigDict(

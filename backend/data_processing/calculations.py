@@ -50,3 +50,6 @@ def distribute_amount_of_combinations_to_calculate(desired_amount_of_combination
     k = get_k(desired_amount_of_combinations, amount_different_potential_team_sizes)
     lin_normalized = [normalize_lin(v, 0, amount_different_potential_team_sizes, 0, 2) for v in range(0, amount_different_potential_team_sizes)]
     return [round(x) for x in normalize_norm(lin_normalized, k)]
+
+if __name__ == "__main__":
+	print(distribute_amount_of_combinations_to_calculate(700000,5))
