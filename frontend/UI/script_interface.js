@@ -361,7 +361,6 @@ function initializeCheckboxes() {
         })
     })
 }
-var list_saves_json = [];
 
 async function get_saves_preview(){
     try {
@@ -374,8 +373,10 @@ async function get_saves_preview(){
             const errorData = await response_user_saves.json();
             throw new Error("Saves API request returned not ok: " + response_user_saves.statusText);
         }
-        list_saves_json = await response_user_saves.json();
-        build_save_items()
+        const response = await response_user_saves.json();
+        console.log(`Project previews successfully received: ${JSON.stringify(response)}`)
+        const project_previews = response["project_previews"] 
+        build_save_items(project_previews)
     } catch (error) {
         console.error('There was a problem with the fetch operation:', error);
     }
@@ -383,11 +384,11 @@ async function get_saves_preview(){
 
 
 // Build Saves List
-function build_save_item (i){
+function build_save_item (i, project_previews){
     const save_li_parent = document.createElement("li");
     const save_li_div_parent = document.createElement("div");
     save_li_div_parent.setAttribute("class", "list_saves_item");
-    save_li_div_parent.id = list_saves_json[i].uuid;
+    save_li_div_parent.id = project_previews[i].uuid;
 
     const save_li_div_input = document.createElement("input");
     save_li_div_input.type = "radio";
@@ -403,22 +404,22 @@ function build_save_item (i){
 
     const save_li_div_label_div_div = document.createElement("div");
     save_li_div_label_div_div.classList.add("list_save_item_save-reason_indicator");
-    save_li_div_label_div_div.style.backgroundColor = list_saves_json[i].color
+    save_li_div_label_div_div.style.backgroundColor = project_previews[i].color
 
     const save_li_div_label_div_div_parent = document.createElement("div");
     save_li_div_label_div_div_parent.classList.add("list_save_item_name-and-time");
 
     const save_li_div_label_div_div_p_name = document.createElement("p");
     save_li_div_label_div_div_p_name.classList.add("list_save_item_name");
-    save_li_div_label_div_div_p_name.textContent = list_saves_json[i].name;
+    save_li_div_label_div_div_p_name.textContent = project_previews[i].name;
 
     const save_li_div_label_div_div_p_date = document.createElement("p");
     save_li_div_label_div_div_p_date.classList.add("list_save_item_date-time");
-    save_li_div_label_div_div_p_date.textContent = `${list_saves_json[i].date} - ${list_saves_json[i].time}`;
+    save_li_div_label_div_div_p_date.textContent = `${project_previews[i].date} - ${project_previews[i].time}`;
 
     const save_li_div_p = document.createElement("p");
     save_li_div_p.classList.add("list_save_item_save");
-    save_li_div_p.textContent = list_saves_json[i].save_reason;
+    save_li_div_p.textContent = project_previews[i].save_reason;
 
     save_li_div_label_div_div_parent.appendChild(save_li_div_label_div_div_p_name);
     save_li_div_label_div_div_parent.appendChild(save_li_div_label_div_div_p_date);
@@ -455,12 +456,12 @@ function clear_list (list){
     }
 }
 
-function build_save_items(){
+function build_save_items(project_previews){
     clear_list(document.getElementById("list_saves"))
     build_save_add()
     add_new_save();
-    for (let i = 0; i < list_saves_json.length; i++) {
-        build_save_item(i)
+    for (let i = 0; i < project_previews.length; i++) {
+        build_save_item(i, project_previews)
     }
     selectionsaves()
 }
