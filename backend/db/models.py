@@ -1,7 +1,5 @@
 from pydantic import BaseModel, Field, ConfigDict, validator, model_validator
-from datetime import datetime
 from typing import Optional, Dict, List, Any
-from bson import ObjectId
 
 import logging
 
@@ -38,6 +36,9 @@ class UserModel(BaseModel):
                     "max_iterations_count": 70000,
                     "saving": True,
                     "max_saves": 999
+                },
+                "settings": {
+                    "iteration_fallback": True
                 }
             }
         }

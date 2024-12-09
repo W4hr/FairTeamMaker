@@ -44,6 +44,7 @@ window.addEventListener("load", () => {
     initializeNormSettingsCustomWeight()
     initializeToggleNormPair()
     initializeInterchangeableSetting()
+    initializeIterationInput()
 })
 
 function initializeTabs(){
@@ -374,8 +375,10 @@ async function get_saves_preview(){
             throw new Error("Saves API request returned not ok: " + response_user_saves.statusText);
         }
         const response = await response_user_saves.json();
-        console.log(`Project previews successfully received: ${JSON.stringify(response)}`)
-        const project_previews = response["project_previews"] 
+        console.log(`Project previews successfully received`)
+        const project_previews = response["project_previews"]
+        const user_data = response["user_data"]
+        apply_user_preferences(user_data)
         build_save_items(project_previews)
     } catch (error) {
         console.error('There was a problem with the fetch operation:', error);
@@ -1057,11 +1060,8 @@ function gather_project_data_settings(project){
     project.settings.maxDifferenceTeams = parseInt(document.getElementById("analyze_settings_max_difference_teams").value)
     project.settings.maxDifferencePitches = parseInt(document.getElementById("analyze_settings_max_difference_pitches").value)
     project.settings.algorithmChoice = document.getElementById("analyze_settings_algorithm_choice").value
-    if (document.getElementById("analyze_settings_interchangeable_toggle").checked){
-        project.settings.interchangeableTeams = true
-    } else {
-        project.settings.interchangeableTeams = false
-    }
+    project.settings.interchangeableTeams = document.getElementById("analyze_settings_interchangeable_toggle").checked
+    project.settings.count_iterations = parseInt(document.getElementById("analyze_settings_iteration_range").value)
     return project
 }
 
@@ -1780,7 +1780,7 @@ function update_norm_settings_visual(){
         document.getElementById("normalization_pair_score_max_output_custom").classList.remove("hide")
     } else {
         document.getElementById("normalization_pair_score_max_output_custom").classList.add("hide")
-    }
+    } //HERE
 }
 
 async function analyze_project(project){
@@ -2294,15 +2294,24 @@ function initializeNormSettingsCustomWeight(){
             weight_custom_container.classList.add("hide")
         }
     })
-    const weight_input = document.getElementById("normalization_settings_weight_custom")
-    const weight_input_number = document.getElementById("normalization_settings_weight_custom_display")
-    weight_input.addEventListener("input", () => {
-        weight_input_number.value = weight_input.value
-    })
-    weight_input_number.addEventListener("input", () => {
-        weight_input.value = weight_input_number.value
+    short_uvoiuc("normalization_settings_weight_custom", "normalization_settings_weight_custom_display")
+}
+// A shortcut of "update_value_of_input_upon_change" for certain usecases
+function short_uvoiuc(id_element_1, id_element_2){
+    const e1 = document.getElementById(id_element_1)
+    const e2 = document.getElementById(id_element_2)
+    update_value_of_input_upon_change(e1, e2)
+    update_value_of_input_upon_change(e2, e1)
+}
 
+function update_value_of_input_upon_change(element_1, element_2){
+    element_1.addEventListener("input", () => {
+        element_2.value = element_1.value
     })
+}
+
+function initializeIterationInput(){
+    short_uvoiuc("analyze_settings_iteration_range", "analyze_settings_iteration_input")
 }
 
 function initializeToggleNormPair() {
@@ -2364,4 +2373,14 @@ function initializeInterchangeableSetting(){
             document.getElementById("analyze_settings_interchangeable_toggle_status").innerText = "OFF"
         }
     })
+}
+
+function apply_user_preferences(user_data){
+    const user_permissions = user_data["permissions"]
+    document.getElementById("analyze_settings_iteration_range").setAttribute("max", Number(user_permissions["max_iterations_count"]))
+    if (!user_permissions["custom_iteration_count"]){
+        document.getElementById("analyze_settings_iteration_input_container").classList.add("hide")
+    } else {
+        document.getElementById("analyze_settings_iteration_input_container").classList.remove("hide")
+    }
 }

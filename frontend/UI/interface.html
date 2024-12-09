@@ -392,6 +392,12 @@
             </div>
         </div>
         <div id="analysis_tab" data-tab-content>
+            <div class="window_background_dimming hide">
+                <div>
+                    <span>Loading ...</span>
+                    <span></span>
+                </div>
+            </div>
             <div id="normalization_settings_dimming" class="window_background_dimming hide">
                 <div id="normalization_settings_window">
                     <div id="normalization_primary_score_container" class="transition">
@@ -554,6 +560,13 @@
                     <div class="analyze_settings_container">
                         <p>Normalization Settings</p>
                         <button class="lightblue_button" id="open_norm_settings_window">Open</button>
+                    </div>
+                    <div class="analyze_settings_container" id="analyze_settings_iteration_input_container">
+                        <p>Amount of Iterations</p>
+                        <div class="">
+                            <input type="range" min="1" max="100000" class="w70p" id="analyze_settings_iteration_range">
+                            <input type="number" class="input_number" id="analyze_settings_iteration_input">
+                        </div>
                     </div>
                     <div>
                         <button class="blue_button" id="download_button">Download</button>

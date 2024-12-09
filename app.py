@@ -8,7 +8,7 @@ from pydantic import ValidationError
 
 from starlette.responses import FileResponse
 from typing import Union
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -19,8 +19,8 @@ from pymongo.errors import PyMongoError
 from backend.api.permissions import can_project_analysis, can_save
 
 from backend.db.defaultproject import create_default_starter_project
-from backend.scripts.data_preprocessing import get_preview, create_project_data
-from backend.algorithms.wrapper_cpp import get_teams
+from backend.db.data_processing import get_preview, create_project_data
+from backend.wrapper_cpp import get_games
 
 from backend.db.models import TokenData, Token, UserModel, Project
 
@@ -42,15 +42,17 @@ import logging
 logging.basicConfig(
     filename="app.log",
     filemode="w",
-    format="%(asctime)s - %(name)s - %(levelname)s - [%(module)s] - %(message)s",
+    format="%(asctime)s - %(name)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s",
     level=logging.DEBUG
 )
 
+app_logger = logging.getLogger("app")
 data_logger = logging.getLogger("data")
 model_logger = logging.getLogger("model validation")
 logging.getLogger("pymongo").setLevel(logging.ERROR)
 logging.getLogger("motor").setLevel(logging.ERROR)
 logging.getLogger("passlib.registry").setLevel(logging.ERROR)
+logging.getLogger("python_multipart.multipart").setLevel(logging.ERROR)
 
 async def http422_error_handler(
     _: Request, exc: Union[RequestValidationError, ValidationError]) -> JSONResponse:
@@ -69,6 +71,7 @@ mongodb = mongoclient["myWebsiteDB"]
 mongousers = mongodb["users"]
 mongoprojects = mongodb["projects"]
 mongologs = mongodb["logs"]
+mongosettings = mongodb["settings"]
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oAuth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -98,7 +101,7 @@ async def get_token_from_cookie(request: Request) -> str:
     return token
 
 async def get_user(username:str) -> UserModel | None:
-    user = await mongousers.find_one({"username": username}, {"_id": 1, "username": 1,"hashed_password": 1, "disabled": 1})
+    user = await mongousers.find_one({"username": username})
     if user:
         user["_id"] = str(user["_id"])
         user_in_UserModel = UserModel(**user)
@@ -176,11 +179,22 @@ async def SignUp(username: str = Form(...), password: str = Form(...)):
         user_existing = await mongousers.find_one({"username" : username})
         if user_existing:
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Username already taken")
+        default_user_permissions = await mongosettings.find_one({"default_user_permissions": {"$exists": True}})
+        if not default_user_permissions:
+            app_logger.error("default user permissions configuration is missing in the databank")
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        default_user_settings = await mongosettings.find_one({"default_user_settings": {"$exists": True}})
+        if not default_user_settings:
+            app_logger.error("default user settings configuration is missing in the databank")
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
         user_in_db = UserModel(
-            username=username,
-            hashed_password=generate_password_hash(password),
-            disabled=False)
-        user = await mongousers.insert_one(user_in_db.model_dump(by_alias=False, exclude=["_id"]))
+            username = username,
+            hashed_password = generate_password_hash(password),
+            disabled = False,
+            permissions = default_user_permissions["default_user_permissions"],
+            settings = default_user_settings["default_user_settings"]
+            )
+        user = await mongousers.insert_one(user_in_db.model_dump(by_alias=True, exclude=["_id"]))
         default_starter_project = create_default_starter_project()
         default_starter_project["owner"] = str(user.inserted_id)
         await mongoprojects.insert_one(default_starter_project)
@@ -196,7 +210,10 @@ async def get_users_project_previews(current_user: UserModel = Depends(get_curre
             projects_previews = await mongoprojects.find(
                 {"owner": str(current_user.id)}
             ).to_list(length=None)
-            return JSONResponse([get_preview(project) for project in projects_previews])
+            return JSONResponse({
+                "user_data": current_user.dict(include={"username", "disabled", "permissions", "settings"}),
+                "project_previews": [get_preview(project) for project in projects_previews]
+                })
         else:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An unexpected error occurred.")
     except PyMongoError as e:
@@ -238,7 +255,7 @@ async def analyze(project: Project, current_user: UserModel = Depends(get_curren
          project_dict = project.dict()
          if (can_project_analysis(current_user, project)): # Add Automatic correction
             data_logger.debug(f"project_dict = {project_dict}")
-            result = get_teams(project_dict)
+            result = get_games(project_dict)
             return JSONResponse(result)
          else:
              raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="The user is not permitted")

@@ -1651,3 +1651,7 @@ input:checked + .slider:before {
 #normalization_primary_toggle_status{
     width: 32px;
 }
+
+.w70p{
+    width: 70%;
+}
