@@ -469,6 +469,7 @@ input[type="radio"]:checked + .list_saves_item {
     text-align: center;
     font-size: small;
     justify-content: center;
+    align-items: center;
 }
 
 .blue_button {
@@ -496,6 +497,10 @@ input[type="radio"]:checked + .list_saves_item {
 .lightblue_button:hover {
     background: #262a30;
     cursor: pointer;
+}
+
+.sorting_option:checked +  .lightblue_button{
+    background: #262a30;
 }
 
 .button_center {

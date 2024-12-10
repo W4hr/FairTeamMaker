@@ -45,6 +45,7 @@ window.addEventListener("load", () => {
     initializeToggleNormPair()
     initializeInterchangeableSetting()
     initializeIterationInput()
+    initializeResultsSortingOptions()
 })
 
 function initializeTabs(){
@@ -1597,9 +1598,9 @@ function initializeAnalyzeTabButton(){
 function initializeAnalyzeButton(){
     document.getElementById("analyze_project").addEventListener("click", async() => {
         const project = await get_project_json(selected_save_data_edit)
-        const results = await analyze_project(project)
-        document.getElementById("results_possibilities_list_selection").innerHTML = ""
-        build_results_preview(results)
+        anaylze_result = await analyze_project(project)
+        build_results_preview(anaylze_result)
+        document.getElementById("sort_hidden_selector").checked = true
         document.getElementById("analysis_tab").classList.remove("active_tab")
         document.querySelector('[data-tab-target="#analysis_tab"]').classList.remove("active")
         document.getElementById("results_tab").classList.add("active_tab")
@@ -1783,6 +1784,8 @@ function update_norm_settings_visual(){
     } //HERE
 }
 
+var anaylze_result = {};
+
 async function analyze_project(project){
     try{
         if (project["pitches"].length > 0){
@@ -1803,7 +1806,6 @@ async function analyze_project(project){
                 show_message("Analyzing was successful", "success")
                 const data = await response.json()
                 console.log("Analyzing was successful")
-                console.log(data)
                 return data
             }
         } else{
@@ -2023,6 +2025,7 @@ function initializeAddPitchButton(){
 }
 
 function build_results_preview(response_data){
+    document.getElementById("results_possibilities_list_selection").innerHTML = ""
     let possibilities_count = 0;
     const results_possibilities_list_selection = document.getElementById("results_possibilities_list_selection")
     response_data.forEach(possibility => {
@@ -2383,4 +2386,41 @@ function apply_user_preferences(user_data){
     } else {
         document.getElementById("analyze_settings_iteration_input_container").classList.remove("hide")
     }
+}
+
+function initializeResultsSortingOptions(){
+    const sort_difference_selector = document.getElementById("results_sort_option_sd")
+    sort_difference_selector.addEventListener("input", () => {
+        if (sort_difference_selector.checked){
+            if (anaylze_result){
+                anaylze_result.sort((a,b) => a.difference - b.difference);
+                build_results_preview(anaylze_result)
+            }
+        }
+    })
+    const sort_sitting_out_players_selector = document.getElementById("results_sort_option_sop")
+    sort_sitting_out_players_selector.addEventListener("input", () => {
+        if (sort_sitting_out_players_selector.checked){
+            if (anaylze_result){
+                anaylze_result.sort((a,b) => a.sitting_out - b.sitting_out);
+                build_results_preview(anaylze_result)
+            }
+        }
+    })
+    const sort_team_size_selector = document.getElementById("results_sort_option_ts")
+    sort_team_size_selector.addEventListener("input", () => {
+        if (sort_team_size_selector.checked){
+            if (anaylze_result){
+                anaylze_result.sort((a,b) => {
+                    const string_a = JSON.stringify(a.teams_size)
+                    const string_b = JSON.stringify(b.teams_size)
+
+                    if (string_a < string_b) return -1
+                    if (string_a > string_b) return 1
+                    return 0
+                });
+                build_results_preview(anaylze_result)
+            }
+        }
+    })
 }

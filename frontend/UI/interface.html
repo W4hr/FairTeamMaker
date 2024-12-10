@@ -582,10 +582,33 @@
             <div id="results_container">
                 <div class="results_possibilities_list_container">
                     <p class="results_possibilities_list_heading">select possibility:</p>
+                    <form class="display_flex gap20px" style="margin-bottom: 30px;">
+                        <p>sort by</p>
+                        <input type="radio" id="sort_hidden_selector" hidden>
+
+                        <input type="radio" id="results_sort_option_sd" hidden class="sorting_option">
+                        <label for="results_sort_option_sd" class="lightblue_button" style="display: flex;margin: 0;">skill difference</label>
+                      
+                        <input type="radio" id="results_sort_option_sop" hidden class="sorting_option">
+                        <label for="results_sort_option_sop" class="lightblue_button" style="display: flex;margin: 0;">sitting out players</label>
+                      
+                        <input type="radio" id="results_sort_option_ts" hidden class="sorting_option">
+                        <label for="results_sort_option_ts" class="lightblue_button" style="display: flex;margin: 0;">team sizes</label>
+                    </form>
                     <li id="results_possibilities_list_selection">
                     </li>
                 </div>
                 <div id="results_possibility_container">
+                    This is the 'Results' tab. Currently, it's empty except for this text. You'll be able to view your results as soon as you analyze a project.<br>
+                    <br>
+                    Here's how to do it:<br>
+                    1.  Load or create a project in the 'Import Data' tab, then click 'Load.'<br>
+                    2.  Edit the data in the 'Edit Data' tab.<br>
+                    3.  Adjust the settings to suit your needs.<br>
+                    4.  Click 'Analyze' and wait a few seconds.<br>
+                    5.  Finally, view the results here in the 'Results' tab.<br>
+                    <br>
+                    For more details, check out the 'Introduction' tab.
                 </div>
             </div>
         </div>
