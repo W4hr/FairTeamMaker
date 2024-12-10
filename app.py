@@ -47,7 +47,9 @@ logging.basicConfig(
 )
 
 app_logger = logging.getLogger("app")
+app_logger.setLevel(logging.DEBUG)
 data_logger = logging.getLogger("data")
+data_logger.setLevel(logging.DEBUG)
 model_logger = logging.getLogger("model validation")
 logging.getLogger("pymongo").setLevel(logging.ERROR)
 logging.getLogger("motor").setLevel(logging.ERROR)
@@ -237,11 +239,14 @@ async def get_users_project(uuid:str, current_user: UserModel = Depends(get_curr
 @app.post("/user-save-project")
 async def save_project(project: Project, current_user: UserModel = Depends(get_current_active_user)):
     try:
+        app_logger.debug("started saving process")
         if (can_save(current_user)):
+            app_logger.debug("Saving started")
             full_project = create_project_data(project, str(current_user.id))
             full_project = jsonable_encoder(full_project)
             await mongoprojects.insert_one(full_project)
         else:
+            app_logger.debug("User is not permitted to save.")
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User is not permitted to save.")
     except PyMongoError as me:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Something went wrong when saving the project")

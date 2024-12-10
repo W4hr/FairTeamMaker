@@ -34,6 +34,7 @@ def create_default_starter_project():
                 "maxDifferenceTeams": 2,
                 "maxDifferencePitches": 2,
                 "auto_save": False,
+                "count_iterations": 10000,
                 "normalizationSettings": {
                     "NormSettingsPrimaryScore": {
                         "status": True,
