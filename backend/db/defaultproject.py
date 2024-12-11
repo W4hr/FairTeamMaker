@@ -15,26 +15,28 @@ def create_default_starter_project():
         "project": {
             "name": "Project Name",
             "description": "Project Description",
-            "color": "#529955",
+            "color": "#3B8E5D",
             "number_of_players": 2,
             "matches": {},
             "pitches": ["Pitch 1"],
             "teams": {
                 "Team 1": {
                     "num_players": None,
-                    "players":[]
+                    "players": []
                 },
                 "Team 2": {
                     "num_players": None,
-                    "players":[]}
-                    },
+                    "players": []
+                }
+            },
             "settings": {
-                "interachangableTeams": True,
+                "interchangeableTeams": True,
                 "maxSittingOut": 2,
                 "maxDifferenceTeams": 2,
                 "maxDifferencePitches": 2,
                 "auto_save": False,
                 "count_iterations": 10000,
+                "algorithmChoice": "random",
                 "normalizationSettings": {
                     "NormSettingsPrimaryScore": {
                         "status": True,
