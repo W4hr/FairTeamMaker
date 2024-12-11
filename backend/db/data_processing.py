@@ -11,6 +11,7 @@ def create_project_data(project: Any, user_id: str):
     full_project = {
         "owner": user_id,
         "uuid": str(uuid.uuid4()),
+        "created_at": dt.utcnow(),
         "preview_project": {
             "name": project.name,
             "color": project.color,
