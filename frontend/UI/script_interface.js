@@ -20,10 +20,7 @@ window.addEventListener("load", () => {
     initializeAddColumnWindow()
     initializeAddRow()
     initializeCheckboxes()
-    
-    get_saves_preview()
 
-    add_new_save()
     cancle_add_new_save()
 
     initializeLoadButton()
@@ -46,6 +43,7 @@ window.addEventListener("load", () => {
     initializeInterchangeableSetting()
     initializeIterationInput()
     initializeResultsSortingOptions()
+    initializeContinuousPreviewLoading()
 })
 
 function initializeTabs(){
@@ -320,29 +318,7 @@ async function load_save_preview(selected_save) {
         console.error("Error in load_save_preview:", error)
     }
 }
-// selected saves
-function selectionsaves(){
-    const list_saves_items = Array.from(document.getElementsByClassName("list_saves_item"))
 
-    list_saves_items.forEach((button) => {
-        button.addEventListener("click", () => {
-            list_saves_items.forEach((item) => {
-                item.classList.remove("list_saves_item_selected")
-            })
-            button.classList.toggle("list_saves_item_selected")
-            load_save_preview(button)
-        })
-    })
-    // remove format when clicking on new project
-    const add_new_save_button = document.getElementById("add_new_save")
-
-    add_new_save_button.addEventListener("click", () => {
-        selected_save_data = ""
-        list_saves_items.forEach((button) => {
-            button.classList.remove("list_saves_item_selected")
-        })
-    })
-}
 function table_player_to_player_toggler_EventListener(){
     const table_player_to_player_toggler_was_toggled = "false"
     table_player_to_player_toggler.addEventListener("click", () => {
@@ -364,25 +340,23 @@ function initializeCheckboxes() {
     })
 }
 
-async function get_saves_preview(){
+async function fetch_saves_preview(skip) {
     try {
-        const response_user_saves = await fetch(`${api_address}/user-project-previews`, {
+        const response_user_saves = await fetch(`${api_address}/user-project-previews?skip=${skip}`, {
             method: "GET",
             credentials: "include"
         });
         if (!response_user_saves.ok) {
-            window.location.href = login_url
+            window.location.href = login_url;
             const errorData = await response_user_saves.json();
             throw new Error("Saves API request returned not ok: " + response_user_saves.statusText);
         }
         const response = await response_user_saves.json();
-        console.log(`Project previews successfully received`)
-        const project_previews = response["project_previews"]
-        const user_data = response["user_data"]
-        apply_user_preferences(user_data)
-        build_save_items(project_previews)
+        console.log(`Project previews successfully received`);
+        return response;
     } catch (error) {
         console.error('There was a problem with the fetch operation:', error);
+        throw error;
     }
 }
 
@@ -393,6 +367,14 @@ function build_save_item (i, project_previews){
     const save_li_div_parent = document.createElement("div");
     save_li_div_parent.setAttribute("class", "list_saves_item");
     save_li_div_parent.id = project_previews[i].uuid;
+    save_li_div_parent.addEventListener("click", () => {
+        const list_saves_items = Array.from(document.getElementsByClassName("list_saves_item"))
+        list_saves_items.forEach((item) => {
+            item.classList.remove("list_saves_item_selected")
+        })
+        save_li_div_parent.classList.toggle("list_saves_item_selected")
+        load_save_preview(save_li_div_parent)
+    })
 
     const save_li_div_input = document.createElement("input");
     save_li_div_input.type = "radio";
@@ -451,39 +433,24 @@ function build_save_add(){
         </li>
     `;
     document.getElementById("list_saves").innerHTML += save_li_add;
-}
-
-// Important! Clear list of all child elements
-function clear_list (list){
-    while (list.firstChild) {
-        list.removeChild(list.firstChild)
-    }
+    document.getElementById("add_new_save").addEventListener("click", () => {
+        const list_saves_items = Array.from(document.getElementsByClassName("list_saves_item"))
+        selected_save_data = ""
+        list_saves_items.forEach((button) => {
+            button.classList.remove("list_saves_item_selected")
+        })
+        document.getElementById("add_project_window_dimming").classList.toggle("hide");
+        document.getElementById("add_project_window").classList.toggle("hide");
+    })
 }
 
 function build_save_items(project_previews){
-    clear_list(document.getElementById("list_saves"))
-    build_save_add()
-    add_new_save();
     for (let i = 0; i < project_previews.length; i++) {
         build_save_item(i, project_previews)
     }
-    selectionsaves()
 }
 
-
-// Open Add Project Window
-function add_new_save() {
-    const add_new_save_button = document.getElementById("add_new_save");
-    const add_project_window_dimming = document.getElementById("add_project_window_dimming");
-    const add_project_window = document.getElementById("add_project_window");
-
-    add_new_save_button.addEventListener("click", () => {
-        add_project_window_dimming.classList.toggle("hide");
-        add_project_window.classList.toggle("hide");
-    });
-}
 // Cancle Add Project Window
-
 function cancle_add_new_save() {
     const add_project_window = document.getElementById("add_project_window");
     cancle_add_project_window.addEventListener("click", () => {
@@ -491,8 +458,6 @@ function cancle_add_new_save() {
         add_project_window.classList.toggle("hide");
     })
 }
-
-
 
 // Build list of Players in preview
 function build_player_preview(data, player_name){
@@ -969,42 +934,82 @@ function initializeAddProjectButton(){
     const default_new_project = {
         "name": "Project Name",
         "description": "Project Description",
-        "color": "#ffffff",
+        "color": "#3B8E5D",
         "number_of_players": 2,
-        "matches":{},
-        "pitches": [],
-        "teams":{},
-        "settings":{
-            "interchangeableTeams": "True",
+        "matches": {},
+        "pitches": ["Pitch 1"],
+        "teams": {
+            "Team 1": {
+                "num_players": null,
+                "players": []
+            },
+            "Team 2": {
+                "num_players": null,
+                "players": []
+            }
+        },
+        "settings": {
+            "interchangeableTeams": true,
             "maxSittingOut": 2,
             "maxDifferenceTeams": 2,
             "maxDifferencePitches": 2,
-            "auto_save": false
+            "auto_save": false,
+            "count_iterations": 10000,
+            "algorithmChoice": "random",
+            "normalizationSettings": {
+                "NormSettingsPrimaryScore": {
+                    "status": true,
+                    "type": "logit",
+                    "minValue": "symmetric",
+                    "minValueCustom": 0,
+                    "maxValue": "symmetric",
+                    "maxValueCustom": 10,
+                    "minValueOutput": "automatic",
+                    "minValueOutputCustom": 1,
+                    "maxValueOutput": "automatic",
+                    "maxValueOutputCustom": 3
+                },
+                "NormSettingsPairPerformance": {
+                    "status": true,
+                    "type": "logit",
+                    "minValue": "symmetric",
+                    "minValueCustom": 0,
+                    "maxValue": "symmetric",
+                    "maxValueCustom": 10,
+                    "minValueOutput": "weight",
+                    "minValueOutputCustom": 0.5,
+                    "maxValueOutput": "weight",
+                    "maxValueOutputCustom": 1.5,
+                    "weight": "custom",
+                    "weightCustom": 0.4
+                }
+            }
         },
-        "categories":[],
+        "categories": [],
         "players": {
-            "player 1" : {
-                "attendanceState": "True",
+            "player 1": {
+                "attendanceState": true,
                 "primaryScore": 0,
                 "scores": {}
             },
-            "player 2" : {
-                "attendanceState": "True",
-                "primaryScore": 0, 
+            "player 2": {
+                "attendanceState": true,
+                "primaryScore": 0,
                 "scores": {}
             }
         },
         "pairPerformance": {
             "player 1": {
-                "player 1" : 0,
-                "player 2" : 1,
+                "player 1": 0,
+                "player 2": 1
             },
             "player 2": {
-                "player 1" : 1,
-                "player 2" : 0,
+                "player 1": 1,
+                "player 2": 0
             }
         }
-    }
+    };
+    
     document.getElementById("add_project").addEventListener("click", () => {
         default_new_project["name"] = document.getElementById("add_project_name_input").value;
         if (document.getElementById("add_project_autosave_option").classList.contains("checked")){
@@ -2379,6 +2384,7 @@ function initializeInterchangeableSetting(){
 }
 
 function apply_user_preferences(user_data){
+    console.log(user_data)
     const user_permissions = user_data["permissions"]
     document.getElementById("analyze_settings_iteration_range").setAttribute("max", Number(user_permissions["max_iterations_count"]))
     if (!user_permissions["custom_iteration_count"]){
@@ -2423,4 +2429,33 @@ function initializeResultsSortingOptions(){
             }
         }
     })
+}
+
+async function initializeContinuousPreviewLoading(){
+    const data = await fetch_saves_preview(0);
+    document.getElementById("list_saves").innerHTML = ""
+    build_save_add()
+    console.log(data)
+    const user_data = data["user_data"];
+    apply_user_preferences(user_data)
+    build_save_items(data["project_previews"])
+    let loaded_saves = data["project_previews"].length
+    let saves_preview_package_count = 1;
+    const list_saved_json = document.getElementById("list_saved_json")
+    let distance_last_scroll_from_top = 0;
+    list_saved_json.onscroll = async (e)=>{
+        if (list_saved_json.scrollTop < distance_last_scroll_from_top){
+            return
+        }
+        distance_last_scroll_from_top = list_saved_json.scrollTop
+        if (list_saved_json.scrollTop + list_saved_json.offsetHeight >= list_saved_json.scrollHeight){
+            const saves_preview = await fetch_saves_preview(saves_preview_package_count)
+            build_save_items(saves_preview["project_previews"])
+            saves_preview_package_count++
+            if (loaded_saves > saves_preview["project_previews"].length){
+                list_saved_json.onscroll = null
+                console.log("No more saves to fetch.")
+            }
+        }
+    }
 }
