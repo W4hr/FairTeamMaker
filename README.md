@@ -1,5 +1,5 @@
 # FairTeamMaker ⚖️
-<img src="/frontend/UI/img/Logo.png" alt="Logo" width="150"/>
+<img src="/frontend/UI/img/Logo_v1.png" alt="Logo" width="150"/>
 
 **FairTeamMaker** is a web app designed to create **balanced teams** using player skill scores and their relationships with other players. The app is ideal for organizing teams in school or after-school sports activities, especially for children. It uses a brute force algorithm to find balanced teams, considering both individual player skills and interactions between players.
 
